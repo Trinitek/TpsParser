@@ -32,7 +32,7 @@ namespace TpsParser.Tps.Header
         {
             if (TableType != expected)
             {
-                throw new ArgumentException($"Header is not of expected type. Expected {expected} but was {TableType}.")
+                throw new ArgumentException($"Header is not of expected type. Expected {expected} but was {TableType}.");
             }
         }
     }

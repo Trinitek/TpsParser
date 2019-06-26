@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TpsParser.Binary;
 
@@ -12,9 +13,14 @@ namespace TpsParser.Tps.Record
         private int FieldCount { get; }
         private int MemoCount { get; }
         private int IndexCount { get; }
-        public List<FieldDefinitionRecord> Fields { get; }
-        public List<MemoDefinitionRecord> Memos { get; }
-        public List<IndexDefinitionRecord> Indexes { get; }
+
+        public IEnumerable<FieldDefinitionRecord> Fields => _fields;
+        private readonly List<FieldDefinitionRecord> _fields;
+        public IEnumerable<MemoDefinitionRecord> Memos => _memos;
+        private readonly List<MemoDefinitionRecord> _memos;
+        public IEnumerable<IndexDefinitionRecord> Indexes => _indexes;
+        private readonly List<IndexDefinitionRecord> _indexes;
+
         private Encoding Encoding { get; }
 
         public TableDefinitionRecord(RandomAccess rx, Encoding encoding)
@@ -32,19 +38,23 @@ namespace TpsParser.Tps.Record
             MemoCount = rx.ShortLE();
             IndexCount = rx.ShortLE();
 
+            _fields = new List<FieldDefinitionRecord>();
+            _memos = new List<MemoDefinitionRecord>();
+            _indexes = new List<IndexDefinitionRecord>();
+
             try
             {
                 for (int i = 0; i < FieldCount; i++)
                 {
-                    Fields.Add(new FieldDefinitionRecord(rx));
+                    _fields.Add(new FieldDefinitionRecord(rx));
                 }
                 for (int i = 0; i < MemoCount; i++)
                 {
-                    Memos.Add(new MemoDefinitionRecord(rx));
+                    _memos.Add(new MemoDefinitionRecord(rx));
                 }
                 for (int i = 0; i < FieldCount; i++)
                 {
-                    Indexes.Add(new IndexDefinitionRecord(rx));
+                    _indexes.Add(new IndexDefinitionRecord(rx));
                 }
             }
             catch (ArgumentException ex)
@@ -85,7 +95,7 @@ namespace TpsParser.Tps.Record
             }
 
             var rx = new RandomAccess(record);
-            var values = new List<object>(Fields.Count);
+            var values = new List<object>(Fields.Count());
 
             foreach (var field in Fields)
             {

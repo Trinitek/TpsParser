@@ -23,7 +23,7 @@ namespace TpsParser.Binary
 
         public bool IsOneByteLeft => Position > Length - 1;
 
-        public bool IsAtEnd => Position > Length - 1;
+        public bool IsAtEnd => Position >= Length - 1;
 
         public RandomAccess(byte[] data)
             : this(
@@ -389,16 +389,10 @@ namespace TpsParser.Binary
             }
             else
             {
-                byte[] result = new byte[Length];
-
-                Array.Copy(
-                    sourceArray: Data,
-                    sourceIndex: BaseOffset,
-                    destinationArray: result,
-                    destinationIndex: 0,
-                    length: Length);
-
-                return result;
+                return Data
+                    .Skip(BaseOffset)
+                    .Take(Length)
+                    .ToArray();
             }
         }
 
@@ -426,20 +420,14 @@ namespace TpsParser.Binary
         {
             CheckSpace(length);
 
-            byte[] result = new byte[Length];
-
             int reference = BaseOffset + Position;
-
-            Array.Copy(
-                sourceArray: Data,
-                sourceIndex: reference,
-                destinationArray: result,
-                destinationIndex: 0,
-                length: length);
 
             Position += length;
 
-            return result;
+            return Data
+                .Skip(reference)
+                .Take(length)
+                .ToArray();
         }
 
         /// <summary>
@@ -461,8 +449,8 @@ namespace TpsParser.Binary
 
                 if (skip > 0x7F)
                 {
-                    byte msb = Byte();
-                    byte lsb = (byte)(skip & 0x7F);
+                    int msb = Byte();
+                    int lsb = skip & 0x7F;
                     int shift = 0x80 * (msb & 0x01);
                     skip = ((msb << 7) & 0xFF00) + lsb + shift;
                 }
@@ -478,8 +466,8 @@ namespace TpsParser.Binary
 
                     if (repeatsMinusOne > 0x7F)
                     {
-                        byte msb = Byte();
-                        byte lsb = (byte)(repeatsMinusOne & 0x7F);
+                        int msb = Byte();
+                        int lsb = repeatsMinusOne & 0x7F;
                         int shift = 0x80 * (msb & 0x01);
                         repeatsMinusOne = ((msb << 7) & 0xFF00) + lsb + shift;
                     }

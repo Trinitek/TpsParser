@@ -38,11 +38,13 @@ namespace TpsParser.Binary
             Data = data ?? throw new ArgumentNullException(nameof(data));
             BaseOffset = baseOffset;
             Length = length;
+
+            PositionStack = new Stack<int>();
         }
 
         public void PushPosition() => PositionStack.Push(Position);
 
-        public void PopPosition() => PositionStack.Pop();
+        public void PopPosition() => Position = PositionStack.Pop();
 
         private void CheckSpace(int numberOfBytes)
         {

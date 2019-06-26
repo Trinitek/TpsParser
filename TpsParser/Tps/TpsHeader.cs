@@ -17,8 +17,8 @@ namespace TpsParser.Tps
         public int Changes { get; }
         public int ManagementPageReference { get; }
 
-        public IList<int> PageStart { get; }
-        public IList<int> PageEnd { get; }
+        public IReadOnlyList<int> PageStart { get; }
+        public IReadOnlyList<int> PageEnd { get; }
 
         private RandomAccess Data { get; }
 

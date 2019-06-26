@@ -7,9 +7,9 @@ namespace TpsParser.Tps
     public sealed class TpsPage
     {
         public int Address { get; }
-        public int PageSize { get; }
-        public int PageSizeUncompressed { get; }
-        public int PageSizeUncompressedWithoutHeader { get; }
+        public int Size { get; }
+        public int SizeUncompressed { get; }
+        public int SizeUncompressedWithoutHeader { get; }
         public int RecordCount { get; }
         public int Flags { get; }
 
@@ -28,20 +28,20 @@ namespace TpsParser.Tps
             }
 
             Address = rx.LongLE();
-            PageSize = rx.ShortLE();
+            Size = rx.ShortLE();
 
-            var header = rx.Read(PageSize - 6);
+            var header = rx.Read(Size - 6);
 
-            PageSizeUncompressed = header.ShortLE();
-            PageSizeUncompressedWithoutHeader = header.ShortLE();
+            SizeUncompressed = header.ShortLE();
+            SizeUncompressedWithoutHeader = header.ShortLE();
             RecordCount = header.ShortLE();
 
-            CompressedData = header.Read(PageSize - 13);
+            CompressedData = header.Read(Size - 13);
         }
 
         private void Decompress()
         {
-            if ((PageSize != PageSizeUncompressed)
+            if ((Size != SizeUncompressed)
                 && (Flags == 0))
             {
                 try
@@ -132,7 +132,7 @@ namespace TpsParser.Tps
         }
 
         public override string ToString() =>
-            $"TpsPage({_data.ToHex8(Address)},{_data.ToHex4(PageSize)},{_data.ToHex4(PageSizeUncompressed)},{_data.ToHex4(PageSizeUncompressedWithoutHeader)}," +
+            $"TpsPage({_data.ToHex8(Address)},{_data.ToHex4(Size)},{_data.ToHex4(SizeUncompressed)},{_data.ToHex4(SizeUncompressedWithoutHeader)}," +
                 $"{_data.ToHex4(RecordCount)},{_data.ToHex2(Flags)})";
     }
 }

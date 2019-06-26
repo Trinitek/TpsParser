@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps
 {
     public sealed class TpsBlock
     {
-        private List<TpsPage> Pages { get; }
+        public IReadOnlyList<TpsPage> Pages => _pages;
+        private readonly List<TpsPage> _pages;
+
         private int Start { get; }
         private int End { get; }
         private RandomAccess Data { get; }
@@ -18,6 +19,7 @@ namespace TpsParser.Tps
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
             Start = start;
             End = end;
+            _pages = new List<TpsPage>();
 
             Data.PushPosition();
             Data.JumpAbsolute(Start);
@@ -32,7 +34,7 @@ namespace TpsParser.Tps
                         try
                         {
                             var page = new TpsPage(Data);
-                            Pages.Add(page);
+                            _pages.Add(page);
                         }
                         catch (RunLengthEncodingException ex)
                         {

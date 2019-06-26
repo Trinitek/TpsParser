@@ -1,6 +1,6 @@
 ﻿using TpsParser.Binary;
 
-namespace TpsParser.TPS.Header
+namespace TpsParser.Tps.Header
 {
     public sealed class TableDefinitionHeader : Header
     {

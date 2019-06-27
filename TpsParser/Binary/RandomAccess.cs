@@ -516,7 +516,7 @@ namespace TpsParser.Binary
         /// Gets an array of the remaining unread data array.
         /// </summary>
         /// <returns></returns>
-        public byte[] Remainder()
+        public byte[] GetRemainder()
         {
             int reference = BaseOffset + Position;
 

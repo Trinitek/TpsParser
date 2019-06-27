@@ -11,7 +11,11 @@ namespace TpsParser.Tps
         public int HeaderSize { get; }
         public int FileLength1 { get; }
         public int FileLength2 { get; }
-        private string TopSpeed { get; }
+
+        /// <summary>
+        /// Gets the magic number signature in the TPS file header. This should be 'tOpS' for all TPS files.
+        /// </summary>
+        public string TopSpeed { get; }
         public int Zeroes { get; }
         public int LastIssuedRow { get; }
         public int Changes { get; }

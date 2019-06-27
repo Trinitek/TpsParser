@@ -18,7 +18,7 @@ namespace TpsParser.Tps.Record
             Record = tpsRecord ?? throw new System.ArgumentNullException(nameof(tpsRecord));
             TableDefinition = tableDefinition ?? throw new System.ArgumentNullException(nameof(tableDefinition));
             Header = (DataHeader)Record.Header;
-            Values = TableDefinition.Parse(tpsRecord.Data.Remainder());
+            Values = TableDefinition.Parse(tpsRecord.Data.GetRemainder());
         }
 
         public override string ToString()

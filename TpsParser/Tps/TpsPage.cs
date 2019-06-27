@@ -64,7 +64,7 @@ namespace TpsParser.Tps
             }
         }
 
-        private void Flush()
+        public void Flush()
         {
             _data = null;
             Records.Clear();

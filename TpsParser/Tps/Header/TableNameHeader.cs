@@ -7,7 +7,7 @@ namespace TpsParser.Tps.Header
         public string Name { get; }
 
         public TableNameHeader(RandomAccess rx)
-            : base(rx)
+            : base(rx, readTable: false)
         {
             AssertIsType(0xFE);
 

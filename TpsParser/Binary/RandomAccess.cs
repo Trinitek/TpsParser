@@ -606,5 +606,10 @@ namespace TpsParser.Binary
         }
 
         private string TrimLeadingZeroes(string number) => string.IsNullOrWhiteSpace(number) ? "0" : decimal.Parse(number).ToString();
+
+        public override string ToString()
+        {
+            return $"{Position:X}/{Length:X}";
+        }
     }
 }

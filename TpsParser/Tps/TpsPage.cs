@@ -132,7 +132,6 @@ namespace TpsParser.Tps
         }
 
         public override string ToString() =>
-            $"TpsPage({_data.ToHex8(Address)},{_data.ToHex4(Size)},{_data.ToHex4(SizeUncompressed)},{_data.ToHex4(SizeUncompressedWithoutHeader)}," +
-                $"{_data.ToHex4(RecordCount)},{_data.ToHex2(Flags)})";
+            $"TpsPage({Address:X8},{Size:X4},{SizeUncompressed:X4},{SizeUncompressedWithoutHeader:X4},{RecordCount:X4},{Flags:X2})";
     }
 }

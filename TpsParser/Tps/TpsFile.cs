@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TpsParser.Binary;
@@ -23,10 +24,33 @@ namespace TpsParser.Tps
         }
         private Encoding _encoding;
 
+        public TpsFile(Stream stream)
+            : this()
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            byte[] fileData;
+
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                fileData = ms.ToArray();
+            }
+
+            Data = new RandomAccess(fileData);
+        }
 
         public TpsFile(RandomAccess rx)
+            : this()
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
+        }
+
+        private TpsFile()
+        {
             Encoding = Encoding.GetEncoding("ISO-8859-1");
         }
 
@@ -50,7 +74,10 @@ namespace TpsParser.Tps
 
             var blocks = Enumerable.Range(0, header.PageStart.Count)
                 .Select(i => (offset: header.PageStart[i], end: header.PageEnd[i]))
-                .Where(pair => ((pair.offset == 0x200) && (pair.end == 0x200)) || (pair.offset >= Data.Length))
+
+                // Skip the first entry (0 length) and any blocks that are beyond the file size
+                .Where(pair => !(((pair.offset == 0x200) && (pair.end == 0x200)) || (pair.offset >= Data.Length)))
+
                 .Select(pair => new TpsBlock(Data, pair.offset, pair.end, ignoreErrors));
 
             return blocks;

@@ -14,11 +14,11 @@ namespace TpsParser.Tps.Record
         private int MemoCount { get; }
         private int IndexCount { get; }
 
-        public IEnumerable<FieldDefinitionRecord> Fields => _fields;
+        public IReadOnlyList<FieldDefinitionRecord> Fields => _fields;
         private readonly List<FieldDefinitionRecord> _fields;
-        public IEnumerable<MemoDefinitionRecord> Memos => _memos;
+        public IReadOnlyList<MemoDefinitionRecord> Memos => _memos;
         private readonly List<MemoDefinitionRecord> _memos;
-        public IEnumerable<IndexDefinitionRecord> Indexes => _indexes;
+        public IReadOnlyList<IndexDefinitionRecord> Indexes => _indexes;
         private readonly List<IndexDefinitionRecord> _indexes;
 
         private Encoding Encoding { get; }
@@ -105,12 +105,12 @@ namespace TpsParser.Tps.Record
 
                     for (int i = 0; i < field.ElementCount; i++)
                     {
-                        values.Add(ParseField(field.FieldType, fieldSize, field, rx));
+                        values.Add(ParseField(field.Type, fieldSize, field, rx));
                     }
                 }
                 else
                 {
-                    values.Add(ParseField(field.FieldType, field.Length, field, rx));
+                    values.Add(ParseField(field.Type, field.Length, field, rx));
                 }
             }
 

@@ -35,7 +35,7 @@ namespace TpsParser.Tps
             SizeUncompressed = header.ShortLE();
             SizeUncompressedWithoutHeader = header.ShortLE();
             RecordCount = header.ShortLE();
-            Flags = header.ShortLE();
+            Flags = header.Byte();
 
             CompressedData = header.Read(Size - 13);
         }

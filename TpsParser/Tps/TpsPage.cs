@@ -27,6 +27,8 @@ namespace TpsParser.Tps
                 throw new ArgumentNullException(nameof(rx));
             }
 
+            Records = new List<TpsRecord>();
+
             Address = rx.LongLE();
             Size = rx.ShortLE();
 

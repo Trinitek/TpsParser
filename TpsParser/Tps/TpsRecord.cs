@@ -108,7 +108,7 @@ namespace TpsParser.Tps
                 {
                     switch (rx.Peek(4))
                     {
-                        case 0xFE:
+                        case 0xF3:
                             Header = new DataHeader(rx);
                             break;
                         case 0xF6:

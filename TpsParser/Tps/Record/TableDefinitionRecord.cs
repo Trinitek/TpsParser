@@ -71,15 +71,15 @@ namespace TpsParser.Tps.Record
 
             foreach (var field in Fields)
             {
-                sb.AppendLine(field.ToString());
+                sb.AppendLine($"  {field.ToString()}");
             }
             foreach (var memo in Memos)
             {
-                sb.AppendLine(memo.ToString());
+                sb.AppendLine($"  {memo.ToString()}");
             }
             foreach (var index in Indexes)
             {
-                sb.AppendLine(index.ToString());
+                sb.AppendLine($"  {index.ToString()}");
             }
 
             sb.Append(")");

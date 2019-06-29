@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record
@@ -120,5 +121,8 @@ namespace TpsParser.Tps.Record
         public bool IsInGroup(FieldDefinitionRecord group) =>
             (group.Offset <= Offset)
             && ((group.Offset + group.Length) >= (Offset + Length));
+
+        public override string ToString() =>
+            $"Field(#{Index},T:{Type},OFS:{Offset},LEN:{Length},{FullName},{ElementCount},{Flags})";
     }
 }

@@ -27,7 +27,7 @@ namespace TpsParser.Tps.Record
 
                 if (read != 0x01)
                 {
-                    throw new ArgumentException($"Bad index definition: missing 0x01 after zero string ({rx.ToHex2(read)})");
+                    throw new ArgumentException($"Bad index definition: missing 0x01 after zero string ({read:X2})");
                 }
             }
 

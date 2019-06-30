@@ -14,7 +14,7 @@ namespace TpsParser.Tps
         /// <param name="password">The password or "owner" of the TPS file.</param>
         public Key(string password)
         {
-            var encoding = Encoding.GetEncoding("CP1258");
+            var encoding = CodePagesEncodingProvider.Instance.GetEncoding("Windows-1258");
             var passwordBytes = encoding.GetBytes(password);
 
             var keyBytes = new byte[passwordBytes.Length + 1];

@@ -43,15 +43,55 @@ namespace TpsParser.Tps
             Data = new RandomAccess(fileData);
         }
 
+        public TpsFile(Stream stream, Key key) 
+            : this(stream)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            Decrypt(key);
+        }
+
         public TpsFile(RandomAccess rx)
             : this()
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
 
+        public TpsFile(RandomAccess rx, Key key)
+            : this(rx)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            Decrypt(key);
+        }
+
         private TpsFile()
         {
             Encoding = Encoding.GetEncoding("ISO-8859-1");
+        }
+
+        private void Decrypt(Key key)
+        {
+            key.Decrypt(new RandomAccess(Data, 0, 0x200));
+
+            var header = GetHeader();
+
+            for (int i = 0; i < header.PageStart.Count; i++)
+            {
+                int offset = header.PageStart[i];
+                int end = header.PageEnd[i];
+
+                if ((offset != 0x200 || end != 0x200) && offset < Data.Length)
+                {
+                    key.Decrypt(new RandomAccess(Data, offset, end - offset));
+                }
+            }
         }
 
         public TpsHeader GetHeader()

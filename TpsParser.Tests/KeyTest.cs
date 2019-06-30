@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using TpsParser.Binary;
@@ -51,6 +52,53 @@ namespace TpsParser.Tests
             var actualDecrypted = rx.GetData();
 
             CollectionAssert.AreEqual(expectedDecrypted, actualDecrypted);
+        }
+
+        [Test]
+        public void ShouldEncryptBlock()
+        {
+            var rx = new RandomAccess(ParseHex(DecryptedHeader));
+            var key = new Key("a");
+
+            key.Encrypt64(rx);
+
+            var expectedEncrypted = ParseHex(EncryptedHeader);
+            var actualEncrypted = rx.GetData();
+
+            CollectionAssert.AreEqual(expectedEncrypted, actualEncrypted);
+        }
+
+        [Test]
+        public void ShouldDecryptFile()
+        {
+            var encryptedFile = new TpsFile(new FileStream("Resources/encrypted-a.tps", FileMode.Open), new Key("a"));
+            var decryptedFile = new TpsFile(new FileStream("Resources/not-encrypted.tps", FileMode.Open));
+
+            var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
+            var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
+
+            Assert.Equals(decryptedDefinitions.Count, encryptedDefinitions.Count);
+
+            // Note that record IDs may differ.
+            var encryptedRecords = encryptedFile.GetDataRecords(table: 2, tableDefinition: encryptedDefinitions[2], ignoreErrors: false);
+            var decryptedRecords = decryptedFile.GetDataRecords(table: 1, tableDefinition: decryptedDefinitions[1], ignoreErrors: false);
+
+            Assert.AreEqual(decryptedRecords.Count(), encryptedRecords.Count());
+
+            var zip = decryptedRecords.Zip(encryptedRecords, (d, e) => (dec: d, enc: e));
+
+            foreach (var (dec, enc) in zip)
+            {
+                CollectionAssert.AreEqual(dec.Values, enc.Values);
+            }
+        }
+
+        [Test]
+        public void ShouldFailToReadEncryptedFileWithoutPassword()
+        {
+            var encryptedFile = new TpsFile(new FileStream("Resources/encrypted-a.tps", FileMode.Open));
+
+            Assert.Throws<NotATopSpeedFileException>(() => encryptedFile.GetHeader());
         }
     }
 }

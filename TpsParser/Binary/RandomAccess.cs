@@ -9,7 +9,11 @@ namespace TpsParser.Binary
     {
         private byte[] Data { get; }
         private Stack<int> PositionStack { get; }
-        private int BaseOffset { get; }
+
+        /// <summary>
+        /// Gets the base offset position in the data array.
+        /// </summary>
+        public int BaseOffset { get; }
 
         /// <summary>
         /// Gets the current position in the data array.
@@ -41,6 +45,13 @@ namespace TpsParser.Binary
 
             PositionStack = new Stack<int>();
         }
+
+        public RandomAccess(RandomAccess existing, int additiveOffset, int length)
+            : this(
+                  data: existing.Data,
+                  baseOffset: existing.BaseOffset + additiveOffset,
+                  length: length)
+        { }
 
         public void PushPosition() => PositionStack.Push(Position);
 

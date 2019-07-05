@@ -198,5 +198,8 @@ namespace TpsParser.Tps
                 Decrypt64(buffer);
             }
         }
+
+        public override string ToString() =>
+            Data.ToHexString(step: 64, ascii: false);
     }
 }

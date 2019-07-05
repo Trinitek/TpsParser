@@ -1,4 +1,6 @@
 ﻿using NUnit.Framework;
+using TpsParser.Binary;
+using TpsParser.Tps;
 using TpsParser.Tps.KeyRecovery;
 
 namespace TpsParser.Tests.KeyRecovery
@@ -37,6 +39,25 @@ namespace TpsParser.Tests.KeyRecovery
 
             Assert.AreEqual(0, k1.GetInvalidIndexes().Count);
             Assert.IsTrue(k1.IsComplete);
+        }
+
+        [Test]
+        public void ShouldDecrypt()
+        {
+            var k = new Key("aaa");
+
+            var plain = new byte[64];
+            var crypt = new byte[64];
+
+            k.Encrypt64(new RandomAccess(crypt));
+
+            var blockPlain = new Block(new RandomAccess(plain), isEncrypted: false);
+            var blockCrypt = new Block(new RandomAccess(crypt), isEncrypted: true);
+
+            var pk = new PartialKey().Apply(index: 15, keyA: k.GetWord(15));
+            var result = pk.PartialDecrypt(index: 15, block: blockCrypt);
+
+            Assert.AreEqual(blockPlain.Values[15], result.Values[15]);
         }
     }
 }

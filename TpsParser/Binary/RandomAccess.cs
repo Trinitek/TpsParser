@@ -622,5 +622,49 @@ namespace TpsParser.Binary
         {
             return $"{Position:X}/{Length:X}";
         }
+
+        public string ToHexString(int step, bool ascii)
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < Length; i++)
+            {
+                sb.Append($"{i:x4} : ");
+
+                for (int y = 0; y < step; y++)
+                {
+                    if (i + y < Length)
+                    {
+                        sb.Append($"{Data[BaseOffset + i + y] & 0xFF:x2} ");
+                    }
+                }
+
+                if (ascii)
+                {
+                    sb.Append(" ");
+
+                    for (int y = 0; y < step; y++)
+                    {
+                        if (i + y < Length)
+                        {
+                            int ch = Data[BaseOffset + i + y] & 0xFF;
+
+                            if (ch < 32 && ch > 127)
+                            {
+                                sb.Append(".");
+                            }
+                            else
+                            {
+                                sb.Append((char)ch);
+                            }
+                        }
+                    }
+                }
+
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
     }
 }

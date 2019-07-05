@@ -171,8 +171,8 @@ namespace TpsParser.Tps.KeyRecovery
             int positionA = index;
             int positionB = keyA & 0x0F;
 
-            int dataA = block.Values[positionA];
-            int dataB = block.Values[positionB];
+            int dataA = block.Values[positionA] - keyA;
+            int dataB = block.Values[positionB] - keyA;
 
             int opAnd1 = dataA & keyA;
             int opNot1 = ~keyA;

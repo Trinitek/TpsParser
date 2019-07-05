@@ -11,7 +11,7 @@ namespace TpsParser.Tps.KeyRecovery
         public int Offset { get; }
 
         public IReadOnlyList<int> Values => _values;
-        private int[] _values;
+        private readonly int[] _values;
 
         public bool IsEncrypted { get; }
 

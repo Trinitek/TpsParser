@@ -71,34 +71,41 @@ namespace TpsParser.Tests
         [Test]
         public void ShouldDecryptFile()
         {
-            var encryptedFile = new TpsFile(new FileStream("Resources/encrypted-a.tps", FileMode.Open), new Key("a"));
-            var decryptedFile = new TpsFile(new FileStream("Resources/not-encrypted.tps", FileMode.Open));
-
-            var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
-            var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
-
-            Assert.Equals(decryptedDefinitions.Count, encryptedDefinitions.Count);
-
-            // Note that record IDs may differ.
-            var encryptedRecords = encryptedFile.GetDataRecords(table: 2, tableDefinition: encryptedDefinitions[2], ignoreErrors: false);
-            var decryptedRecords = decryptedFile.GetDataRecords(table: 1, tableDefinition: decryptedDefinitions[1], ignoreErrors: false);
-
-            Assert.AreEqual(decryptedRecords.Count(), encryptedRecords.Count());
-
-            var zip = decryptedRecords.Zip(encryptedRecords, (d, e) => (dec: d, enc: e));
-
-            foreach (var (dec, enc) in zip)
+            using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
+            using (var fsUnencrypted = new FileStream("Resources/not-encrypted.tps", FileMode.Open))
             {
-                CollectionAssert.AreEqual(dec.Values, enc.Values);
+                var encryptedFile = new TpsFile(fsEncrypted, new Key("a"));
+                var decryptedFile = new TpsFile(fsUnencrypted);
+
+                var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
+                var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
+
+                Assert.AreEqual(decryptedDefinitions.Count, encryptedDefinitions.Count);
+
+                // Note that record IDs may differ.
+                var encryptedRecords = encryptedFile.GetDataRecords(table: 2, tableDefinition: encryptedDefinitions[2], ignoreErrors: false);
+                var decryptedRecords = decryptedFile.GetDataRecords(table: 1, tableDefinition: decryptedDefinitions[1], ignoreErrors: false);
+
+                Assert.AreEqual(decryptedRecords.Count(), encryptedRecords.Count());
+
+                var zip = decryptedRecords.Zip(encryptedRecords, (d, e) => (dec: d, enc: e));
+
+                foreach (var (dec, enc) in zip)
+                {
+                    CollectionAssert.AreEqual(dec.Values, enc.Values);
+                }
             }
         }
 
         [Test]
         public void ShouldFailToReadEncryptedFileWithoutPassword()
         {
-            var encryptedFile = new TpsFile(new FileStream("Resources/encrypted-a.tps", FileMode.Open));
+            using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
+            {
+                var encryptedFile = new TpsFile(fsEncrypted);
 
-            Assert.Throws<NotATopSpeedFileException>(() => encryptedFile.GetHeader());
+                Assert.Throws<NotATopSpeedFileException>(() => encryptedFile.GetHeader());
+            }
         }
     }
 }

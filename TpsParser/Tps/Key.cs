@@ -194,7 +194,7 @@ namespace TpsParser.Tps
 
             for (int offset = 0; offset < encrypted.Length / 64; offset++)
             {
-                var buffer = new RandomAccess(encrypted, offset, 64);
+                var buffer = new RandomAccess(encrypted, offset * 64, 64);
                 Decrypt64(buffer);
             }
         }

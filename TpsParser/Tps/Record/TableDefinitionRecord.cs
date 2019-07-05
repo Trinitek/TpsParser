@@ -52,7 +52,7 @@ namespace TpsParser.Tps.Record
                 {
                     _memos.Add(new MemoDefinitionRecord(rx));
                 }
-                for (int i = 0; i < FieldCount; i++)
+                for (int i = 0; i < IndexCount; i++)
                 {
                     _indexes.Add(new IndexDefinitionRecord(rx));
                 }

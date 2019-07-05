@@ -20,5 +20,23 @@ namespace TpsParser.Tests.KeyRecovery
             Assert.AreEqual(42, k2.CompareTo(k1));
             Assert.AreEqual(0, k2.CompareTo(k3));
         }
+
+        [Test]
+        public void ShouldInvalid()
+        {
+            var k1 = new PartialKey();
+
+            Assert.AreEqual(16, k1.GetInvalidIndexes().Count);
+            Assert.AreEqual(15, k1.GetInvalidIndexes()[0]);
+            Assert.IsFalse(k1.IsComplete);
+
+            for (int i = 0; i < 16; i++)
+            {
+                k1 = k1.Apply(index: i, keyA: i);
+            }
+
+            Assert.AreEqual(0, k1.GetInvalidIndexes().Count);
+            Assert.IsTrue(k1.IsComplete);
+        }
     }
 }

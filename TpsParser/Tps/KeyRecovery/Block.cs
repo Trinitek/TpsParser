@@ -142,7 +142,6 @@ namespace TpsParser.Tps.KeyRecovery
         {
             var hashCode = 1824363456;
             hashCode = hashCode * -1521134295 + Offset.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<IReadOnlyList<int>>.Default.GetHashCode(Values);
             hashCode = hashCode * -1521134295 + IsEncrypted.GetHashCode();
             return hashCode;
         }

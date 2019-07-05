@@ -248,7 +248,7 @@ namespace TpsParser.Tps.KeyRecovery
             {
                 if (Valid[i])
                 {
-                    sb.Append($"{Key[i]:00000000} ");
+                    sb.Append($"{Key[i]:x8} ");
                 }
                 else
                 {
@@ -267,7 +267,7 @@ namespace TpsParser.Tps.KeyRecovery
 
                 if (d != 0)
                 {
-                    return 0;
+                    return d;
                 }
 
                 d = (Valid[i] ? 1 : 0) - (other.Valid[i] ? 1 : 0);

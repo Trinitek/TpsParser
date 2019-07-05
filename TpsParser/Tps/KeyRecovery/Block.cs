@@ -78,7 +78,7 @@ namespace TpsParser.Tps.KeyRecovery
             }
         }
 
-        public static void Read(BinaryReader reader)
+        public static Block Read(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -95,6 +95,11 @@ namespace TpsParser.Tps.KeyRecovery
             {
                 values[i] = reader.ReadInt32();
             }
+
+            return new Block(
+                offset: offset,
+                values: values,
+                isEncrypted: isEncrypted);
         }
 
         public int CompareTo(Block other)

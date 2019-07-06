@@ -115,8 +115,8 @@ namespace TpsParser.Tps.KeyRecovery
                     }
                 }
 
-                int data1 = encryptedBlock.Values[positionA];
-                int data2 = encryptedBlock.Values[positionB];
+                int data1 = encryptedBlock.Values[positionA] - keyA;
+                int data2 = encryptedBlock.Values[positionB] - keyA;
 
                 int opAnd1 = data1 & keyA;
                 int opNotA = ~keyA;

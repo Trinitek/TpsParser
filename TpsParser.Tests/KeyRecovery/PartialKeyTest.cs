@@ -59,5 +59,26 @@ namespace TpsParser.Tests.KeyRecovery
 
             Assert.AreEqual(blockPlain.Values[15], result.Values[15]);
         }
+
+        [Test]
+        public void ShouldKeyScan()
+        {
+            var k = new Key("aaa");
+
+            var plain = new byte[64];
+            var crypt = new byte[64];
+
+            k.Encrypt64(new RandomAccess(crypt));
+
+            var blockPlain = new Block(new RandomAccess(plain), isEncrypted: false);
+            var blockCrypt = new Block(new RandomAccess(crypt), isEncrypted: true);
+
+            var pk = new PartialKey().Apply(index: 15, keyA: k.GetWord(15));
+
+            var result = pk.KeyIndexScan(index: 15, encryptedBlock: blockCrypt, plaintextBlock: blockPlain);
+
+            Assert.IsTrue(result.ContainsKey(pk));
+            Assert.AreEqual(1216, result.Count);
+        }
     }
 }

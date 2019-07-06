@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.KeyRecovery
@@ -72,8 +75,17 @@ namespace TpsParser.Tps.KeyRecovery
         /// <param name="encryptedBlock"></param>
         /// <param name="plaintextBlock"></param>
         /// <returns></returns>
-        public IReadOnlyDictionary<PartialKey, Block> KeyIndexScan(int index, Block encryptedBlock, Block plaintextBlock) =>
-            InternalKeyIndexScan(index, encryptedBlock, plaintextBlock, checkKeyIndex: false);
+        public Task<IReadOnlyDictionary<PartialKey, Block>> KeyIndexScan(
+            int index,
+            Block encryptedBlock,
+            Block plaintextBlock,
+            CancellationToken cancellationToken) =>
+            InternalKeyIndexScan(
+                index,
+                encryptedBlock,
+                plaintextBlock,
+                checkKeyIndex: false,
+                cancellationToken: cancellationToken);
 
         /// <summary>
         /// Attempts to find key values that have their swap column set at their own index.
@@ -82,10 +94,24 @@ namespace TpsParser.Tps.KeyRecovery
         /// <param name="encryptedBlock"></param>
         /// <param name="plaintextBlock"></param>
         /// <returns></returns>
-        public IReadOnlyDictionary<PartialKey, Block> KeyIndexSelfScan(int index, Block encryptedBlock, Block plaintextBlock) =>
-            InternalKeyIndexScan(index, encryptedBlock, plaintextBlock, checkKeyIndex: true);
+        public Task<IReadOnlyDictionary<PartialKey, Block>> KeyIndexSelfScan(
+            int index,
+            Block encryptedBlock,
+            Block plaintextBlock,
+            CancellationToken cancellationToken) =>
+            InternalKeyIndexScan(
+                index,
+                encryptedBlock,
+                plaintextBlock,
+                checkKeyIndex: true,
+                cancellationToken: cancellationToken);
 
-        private IReadOnlyDictionary<PartialKey, Block> InternalKeyIndexScan(int index, Block encryptedBlock, Block plaintextBlock, bool checkKeyIndex)
+        private async Task<IReadOnlyDictionary<PartialKey, Block>> InternalKeyIndexScan(
+            int index,
+            Block encryptedBlock,
+            Block plaintextBlock,
+            bool checkKeyIndex,
+            CancellationToken cancellationToken)
         {
             if (encryptedBlock == null)
             {
@@ -97,12 +123,57 @@ namespace TpsParser.Tps.KeyRecovery
                 throw new ArgumentNullException(nameof(plaintextBlock));
             }
 
-            var results = new Dictionary<PartialKey, Block>();
+            var results = new ConcurrentDictionary<PartialKey, Block>();
+
+            // Evenly split the work among the number of threads in the threadpool.
+
+            ThreadPool.GetMinThreads(out int threadCount, out int _);
+
+            var bruteforcerTasks = new Task[threadCount];
+
+            for (int thread = 0; thread < threadCount; thread++)
+            {
+                uint valuesPerTask = uint.MaxValue / (uint)threadCount;
+                uint startValue = valuesPerTask * (uint)thread;
+                uint stopValue = startValue + valuesPerTask - 1;
+
+                if (thread == threadCount - 1)
+                {
+                    stopValue += uint.MaxValue % (uint)threadCount + 1;
+                }
+
+                bruteforcerTasks[thread] = BruteforceScan(
+                    results,
+                    encryptedBlock,
+                    plaintextBlock,
+                    index,
+                    checkKeyIndex,
+                    startValue,
+                    stopValue,
+                    cancellationToken);
+            }
+
+            await Task.WhenAll(bruteforcerTasks).ConfigureAwait(false);
+
+            return results;
+        }
+
+        private async Task BruteforceScan(
+            IDictionary<PartialKey, Block> results,
+            Block encryptedBlock,
+            Block plaintextBlock,
+            int index,
+            bool checkKeyIndex,
+            uint startValue,
+            uint stopValue,
+            CancellationToken cancellationToken)
+        {
+            await Task.Yield();
 
             int positionA = index;
             int plain = plaintextBlock.Values[positionA];
 
-            for (long v = 0; v <= uint.MaxValue; v++)
+            for (long v = startValue; v <= stopValue; v++)
             {
                 int keyA = (int)v;
                 int positionB = keyA & 0x0F;
@@ -134,9 +205,9 @@ namespace TpsParser.Tps.KeyRecovery
 
                     results.Add(partialKey, decryptedBlock);
                 }
-            }
 
-            return results;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
         }
 
         public PartialKey Apply(int index, int keyA) => new PartialKey(this, index, keyA);
@@ -304,7 +375,7 @@ namespace TpsParser.Tps.KeyRecovery
             {
                 hashCode = hashCode * -1521134295 + v.GetHashCode();
             }
-            
+
             foreach (var k in Key)
             {
                 hashCode = hashCode * -1521134295 + k.GetHashCode();

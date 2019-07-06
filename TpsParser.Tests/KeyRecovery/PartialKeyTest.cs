@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Threading.Tasks;
 using TpsParser.Binary;
 using TpsParser.Tps;
 using TpsParser.Tps.KeyRecovery;
@@ -61,7 +62,7 @@ namespace TpsParser.Tests.KeyRecovery
         }
 
         [Test]
-        public void ShouldKeyScan()
+        public async Task ShouldKeyScan()
         {
             var k = new Key("aaa");
 
@@ -75,7 +76,7 @@ namespace TpsParser.Tests.KeyRecovery
 
             var pk = new PartialKey().Apply(index: 15, keyA: k.GetWord(15));
 
-            var result = pk.KeyIndexScan(index: 15, encryptedBlock: blockCrypt, plaintextBlock: blockPlain);
+            var result = await pk.KeyIndexScan(index: 15, encryptedBlock: blockCrypt, plaintextBlock: blockPlain, cancellationToken: default);
 
             Assert.IsTrue(result.ContainsKey(pk));
             Assert.AreEqual(1216, result.Count);

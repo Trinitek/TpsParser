@@ -174,7 +174,8 @@ namespace TpsParser.Tps.KeyRecovery
         /// <param name="blocks"></param>
         /// <returns></returns>
         public static IReadOnlyDictionary<Block, IEnumerable<Block>> FindIdenticalBlocks(IEnumerable<Block> blocks) =>
-            blocks.GroupBy(b => b)
+            blocks.GroupBy(b => b, BlockValueEqualityComparer.Instance)
+                .Where(g => g.Count() > 1)
                 .ToDictionary(g => g.Key, g => g.Skip(1).AsEnumerable());
 
         /// <summary>
@@ -182,7 +183,7 @@ namespace TpsParser.Tps.KeyRecovery
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static bool IsB0Part(int value) => (uint)value == 0xB0B0B0B0;
+        public static bool IsB0Part(uint value) => value == 0xB0B0B0B0;
 
         /// <summary>
         /// <para>
@@ -249,7 +250,7 @@ namespace TpsParser.Tps.KeyRecovery
         }
 
         /// <summary>
-        /// Returns true when the given value is a byte sequence like 0x2A292827 or 0X0100FFFE.
+        /// Returns true when the given value is a byte sequence like 0x2A292827 or 0x0100FFFE.
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>

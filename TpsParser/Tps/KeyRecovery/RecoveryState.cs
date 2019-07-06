@@ -59,6 +59,16 @@ namespace TpsParser.Tps.KeyRecovery
                   plaintextHeaderBlock: parent.PlaintextHeaderBlock)
         { }
 
+        public RecoveryState(Block encryptedHeaderBlock, Block plaintextHeaderBlock)
+            : this(
+                  parent: null,
+                  partialKey: null,
+                  b0Blocks: Enumerable.Empty<Block>(),
+                  sequentialBlocks: Enumerable.Empty<Block>(),
+                  encryptedHeaderBlock: encryptedHeaderBlock,
+                  plaintextHeaderBlock: plaintextHeaderBlock)
+        { }
+
         internal static RecoveryState CreateFromSequentialBlocks(RecoveryState parent, IEnumerable<Block> sequentialBlocks) =>
             new RecoveryState(parent, parent.B0Blocks, sequentialBlocks);
 
@@ -78,6 +88,18 @@ namespace TpsParser.Tps.KeyRecovery
             return results.Select(r => new RecoveryState(this, r.Key, r.Value));
         }
 
+        /// <summary>
+        /// <para>
+        /// Scans the given key index to find any value that has a swap of the same index that decrypts the header block. Takes 60 of the index's 64 bits into consideration.
+        /// </para>
+        /// <para>
+        /// This does not indicate that the value found is correct, but only indicates that the column swaps with itself. Popular swap columns appear to be 0 and 8, and these
+        /// are often found to swap with themselves.
+        /// </para>
+        /// </summary>
+        /// <param name="keyIndex"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<RecoveryState>> IndexSelfScan(int keyIndex, CancellationToken cancellationToken)
         {
             var results = await PartialKey.KeyIndexSelfScan(keyIndex, EncryptedHeaderBlock, PlaintextHeaderBlock, cancellationToken)

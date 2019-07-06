@@ -72,14 +72,16 @@ namespace TpsParser.Tps.KeyRecovery
         /// <returns></returns>
         public async Task<IEnumerable<RecoveryState>> IndexScan(int keyIndex, CancellationToken cancellationToken)
         {
-            var results = await PartialKey.KeyIndexScan(keyIndex, EncryptedHeaderBlock, PlaintextHeaderBlock, cancellationToken);
+            var results = await PartialKey.KeyIndexScan(keyIndex, EncryptedHeaderBlock, PlaintextHeaderBlock, cancellationToken)
+                .ConfigureAwait(false);
 
             return results.Select(r => new RecoveryState(this, r.Key, r.Value));
         }
 
         public async Task<IEnumerable<RecoveryState>> IndexSelfScan(int keyIndex, CancellationToken cancellationToken)
         {
-            var results = await PartialKey.KeyIndexSelfScan(keyIndex, EncryptedHeaderBlock, PlaintextHeaderBlock, cancellationToken);
+            var results = await PartialKey.KeyIndexSelfScan(keyIndex, EncryptedHeaderBlock, PlaintextHeaderBlock, cancellationToken)
+                .ConfigureAwait(false);
 
             return results.Select(r => new RecoveryState(this, r.Key, r.Value));
         }

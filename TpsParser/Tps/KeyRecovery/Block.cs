@@ -15,7 +15,7 @@ namespace TpsParser.Tps.KeyRecovery
 
         public bool IsEncrypted { get; }
 
-        public Block(int offset, IReadOnlyList<int> values, bool isEncrypted)
+        public Block(int offset, IEnumerable<int> values, bool isEncrypted)
         {
             Offset = offset;
             _values = values?.ToArray() ?? throw new ArgumentNullException(nameof(values));
@@ -159,6 +159,110 @@ namespace TpsParser.Tps.KeyRecovery
         public static bool operator !=(Block left, Block right)
         {
             return !(left == right);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Find blocks with the same (encrypted) content in the file.
+        /// </para>
+        /// <para>
+        /// TPS uses EBC mode, so identical encrypted
+        /// blocks will map to the same plaintext. This is useful because identical blocks are generally empty smace
+        /// whose plaintext contents are known in advance (0xB0B0B0B0).
+        /// </para>
+        /// </summary>
+        /// <param name="blocks"></param>
+        /// <returns></returns>
+        public static IReadOnlyDictionary<Block, IEnumerable<Block>> FindIdenticalBlocks(IEnumerable<Block> blocks) =>
+            blocks.GroupBy(b => b)
+                .ToDictionary(g => g.Key, g => g.Skip(1).AsEnumerable());
+
+        /// <summary>
+        /// Blocks consisting of the pattern 0xB0B0B0B0 are occasionally scattered around the file and seem to indicate empty space.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsB0Part(int value) => (uint)value == 0xB0B0B0B0;
+
+        /// <summary>
+        /// <para>
+        /// Gets the header index end block.
+        /// </para>
+        /// <para>
+        /// This is one of the few blocks in the TPS format with predictable contents and is at a fixed location.
+        /// Typically it is filled with identical values (the size of the file, less the size of the header and right shifted for 8 bits).
+        /// </para>
+        /// </summary>
+        /// <param name="blocks"></param>
+        /// <param name="isEncrypted"></param>
+        /// <returns></returns>
+        public static Block GetHeaderIndexEndBlock(IList<Block> blocks, bool isEncrypted)
+        {
+            if (isEncrypted)
+            {
+                var block = blocks[0x1C0 / 0x40];
+
+                if (block.Offset != 0x1C0)
+                {
+                    throw new ArgumentException(nameof(isEncrypted));
+                }
+                else
+                {
+                    return block;
+                }
+            }
+            else
+            {
+                int value = (blocks.Last().Offset + 0x100 - 0x200) >> 8;
+
+                var values = Enumerable.Repeat(value, 16);
+
+                var block = new Block(offset: 0x1C0, values: values, isEncrypted: isEncrypted);
+
+                return block;
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Generates a sequence block that is usually found at the end of the file.
+        /// </para>
+        /// <para>
+        /// Most files have an area with incrementing bytes near the end of the file. The exact offset differs, but given the last 4 bytes
+        /// the block can be reconstructed.
+        /// </para>
+        /// </summary>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public static Block GenerateSequenceBlock(int end)
+        {
+            int start = (end >> 24) & 0xFF;
+
+            var sequence = new byte[64];
+
+            for (int i = sequence.Length - 1; i >= 0; i--)
+            {
+                sequence[i] = (byte)start--;
+            }
+
+            return new Block(offset: 0, values: new RandomAccess(sequence).LongArrayLE(16), isEncrypted: false);
+        }
+
+        /// <summary>
+        /// Returns true when the given value is a byte sequence like 0x2A292827 or 0X0100FFFE.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsSequencePart(int value)
+        {
+            int a = value & 0xFF;
+            int b = (value >> 8) & 0xFF;
+            int c = (value >> 16) & 0xFF;
+            int d = (value >> 24) & 0xFF;
+
+            return ((d - c == 1) || (d - c == -255))
+                && ((c - b == 1) || (c - b == -255))
+                && ((b - a == 1) || (b - a == -255));
         }
     }
 }

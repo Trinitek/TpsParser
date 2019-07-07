@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Blake Burgess</Authors>
+    <PackageProjectUrl>https://github.com/Trinitek/TpsParser</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Trinitek/TpsParser</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

@@ -21,7 +21,7 @@ namespace TpsParser.Tps.KeyRecovery
 
         private RecoveryState(RecoveryState parent, PartialKey partialKey, IEnumerable<Block> b0Blocks, IEnumerable<Block> sequentialBlocks, Block encryptedHeaderBlock, Block plaintextHeaderBlock)
         {
-            Parent = parent ?? throw new ArgumentNullException(nameof(parent));
+            Parent = parent;
             PartialKey = partialKey ?? throw new ArgumentNullException(nameof(partialKey));
             B0Blocks = b0Blocks ?? throw new ArgumentNullException(nameof(b0Blocks));
             SequentialBlocks = sequentialBlocks ?? throw new ArgumentNullException(nameof(sequentialBlocks));
@@ -62,7 +62,7 @@ namespace TpsParser.Tps.KeyRecovery
         public RecoveryState(Block encryptedHeaderBlock, Block plaintextHeaderBlock)
             : this(
                   parent: null,
-                  partialKey: null,
+                  partialKey: new PartialKey(),
                   b0Blocks: Enumerable.Empty<Block>(),
                   sequentialBlocks: Enumerable.Empty<Block>(),
                   encryptedHeaderBlock: encryptedHeaderBlock,

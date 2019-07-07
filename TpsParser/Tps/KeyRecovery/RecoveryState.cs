@@ -115,6 +115,7 @@ namespace TpsParser.Tps.KeyRecovery
                 throw new ArgumentNullException(nameof(writer));
             }
 
+            PartialKey.Write(writer);
             EncryptedHeaderBlock.Write(writer);
             PlaintextHeaderBlock.Write(writer);
 
@@ -143,18 +144,21 @@ namespace TpsParser.Tps.KeyRecovery
             var newPartialKey = PartialKey.Read(reader);
             var newEncryptedHeaderBlock = Block.Read(reader);
             var newPlaintextHeaderBlock = Block.Read(reader);
-            int size = reader.ReadInt32();
 
-            var newB0Blocks = new List<Block>(size);
+            int b0BlockCount = reader.ReadInt32();
 
-            for (int i = 0; i < size; i++)
+            var newB0Blocks = new List<Block>(b0BlockCount);
+
+            for (int i = 0; i < b0BlockCount; i++)
             {
                 newB0Blocks.Add(Block.Read(reader));
             }
 
-            var newSequentialBlocks = new List<Block>(size);
+            int sequentialBlockCount = reader.ReadInt32();
 
-            for (int i = 0; i < size; i++)
+            var newSequentialBlocks = new List<Block>(sequentialBlockCount);
+
+            for (int i = 0; i < sequentialBlockCount; i++)
             {
                 newSequentialBlocks.Add(Block.Read(reader));
             }

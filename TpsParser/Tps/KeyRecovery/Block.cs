@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.KeyRecovery
@@ -149,6 +150,20 @@ namespace TpsParser.Tps.KeyRecovery
             hashCode = hashCode * -1521134295 + Offset.GetHashCode();
             hashCode = hashCode * -1521134295 + IsEncrypted.GetHashCode();
             return hashCode;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append($"{Offset:x8} ({(IsEncrypted ? 'e' : 'd')}) : ");
+
+            foreach (int value in Values)
+            {
+                sb.Append($"{value:x8} ");
+            }
+
+            return sb.ToString();
         }
 
         public static bool operator ==(Block left, Block right)

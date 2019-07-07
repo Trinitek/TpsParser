@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TpsParser.Binary;
@@ -56,6 +57,44 @@ namespace TpsParser.Tests.KeyRecovery
 
             Assert.AreEqual(1, selfScan1.Count());
             Assert.AreEqual(0, selfScan2.Count());
+        }
+
+        [Test]
+        public async Task ShouldScanAndReduce()
+        {
+            (var plaintext, var encrypted, var blocks) = BuildBlocks();
+
+            var state = new RecoveryState(encrypted, plaintext);
+
+            var scanResults = await state.IndexScan(keyIndex: 15, cancellationToken: default);
+            Assert.AreEqual(192, scanResults.Count());
+
+            var firstReducedScanResults = scanResults.ReduceFirst(index: 15, blocks: blocks);
+            Assert.AreEqual(2, firstReducedScanResults.Count());
+
+            VerifyReadWrite(firstReducedScanResults.First());
+
+            var secondReducedScanResults = await firstReducedScanResults.First().IndexScan(keyIndex: 14, cancellationToken: default);
+            Assert.AreEqual(1450, secondReducedScanResults.Count());
+
+            var thirdReducedScanResults = secondReducedScanResults.ReduceNext(index: 14);
+            Assert.AreEqual(2, thirdReducedScanResults.Count());
+        }
+
+        private void VerifyReadWrite(RecoveryState recoveryState)
+        {
+            var memoryStream = new MemoryStream();
+            var writer = new BinaryWriter(memoryStream);
+
+            recoveryState.Write(writer);
+
+            memoryStream.Position = 0;
+
+            var reader = new BinaryReader(memoryStream);
+
+            var stateCopy = RecoveryState.Read(reader);
+
+            Assert.AreEqual(stateCopy, recoveryState);
         }
     }
 }

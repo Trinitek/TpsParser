@@ -6,7 +6,12 @@ namespace TpsParser.Tps.Record
     public sealed class MemoDefinitionRecord
     {
         private string ExternalFile { get; }
+
+        /// <summary>
+        /// Gets the name of the memo field.
+        /// </summary>
         public string Name { get; }
+
         private int Length { get; }
         public int Flags { get; }
 

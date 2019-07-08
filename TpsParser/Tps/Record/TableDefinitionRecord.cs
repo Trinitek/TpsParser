@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TpsParser.Binary;
+using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
@@ -27,7 +28,7 @@ namespace TpsParser.Tps.Record
         {
             if (rx == null)
             {
-                throw new System.ArgumentNullException(nameof(rx));
+                throw new ArgumentNullException(nameof(rx));
             }
 
             Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
@@ -87,7 +88,7 @@ namespace TpsParser.Tps.Record
             return sb.ToString();
         }
 
-        public IEnumerable<object> Parse(byte[] record)
+        public IEnumerable<TpsObject> Parse(byte[] record)
         {
             if (record == null)
             {
@@ -95,7 +96,7 @@ namespace TpsParser.Tps.Record
             }
 
             var rx = new RandomAccess(record);
-            var values = new List<object>(Fields.Count());
+            var values = new List<TpsObject>(Fields.Count());
 
             foreach (var field in Fields)
             {
@@ -117,7 +118,7 @@ namespace TpsParser.Tps.Record
             return values;
         }
 
-        public object ParseField(int type, int length, FieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
+        public TpsObject ParseField(int type, int length, FieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
         {
             if (fieldDefinitionRecord == null)
             {
@@ -133,57 +134,39 @@ namespace TpsParser.Tps.Record
             {
                 case 0x01:
                     AssertEqual(1, length);
-                    return rx.Byte();
+                    return new TpsByte(rx);
                 case 0x02:
                     AssertEqual(2, length);
-                    return rx.ShortLE();
+                    return new TpsShort(rx);
                 case 0x03:
                     AssertEqual(2, length);
-                    return rx.UnsignedShortLE();
+                    return new TpsUnsignedShort(rx);
                 case 0x04:
-                    // Date, mask encoded
-                    long date = rx.UnsignedLongLE();
-                    if (date != 0)
-                    {
-                        long years = (date & 0xFFFF0000) >> 16;
-                        long months = (date & 0x0000FF00) >> 8;
-                        long days = date & 0x000000FF;
-                        return new DateTime((int)years, (int)months, (int)days);
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return new TpsDate(rx);
                 case 0x05:
-                    // Time, mask encoded
-                    // Currently only knows how to handle hours and minutes, but not seconds or milliseconds.
-                    int time = rx.LongLE();
-                    int mins = (time & 0x00FF0000) >> 16;
-                    int hours = (time & 0x7F000000) >> 24;
-                    return new TimeSpan(hours, mins, 0);
+                    return new TpsTime(rx);
                 case 0x06:
                     AssertEqual(4, length);
-                    return rx.LongLE();
+                    return new TpsLong(rx);
                 case 0x07:
                     AssertEqual(4, length);
-                    return rx.UnsignedLongLE();
+                    return new TpsUnsignedLong(rx);
                 case 0x08:
                     AssertEqual(4, length);
-                    return rx.FloatLE();
+                    return new TpsFloat(rx);
                 case 0x09:
                     AssertEqual(8, length);
-                    return rx.DoubleLE();
+                    return new TpsDouble(rx);
                 case 0x0A:
-                    return rx.BinaryCodedDecimal(length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
+                    return new TpsDecimal(rx, length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
                 case 0x12:
-                    return rx.FixedLengthString(length, Encoding);
+                    return new TpsString(rx, length, Encoding);
                 case 0x13:
-                    return rx.ZeroTerminatedString(Encoding);
+                    return new TpsCString(rx, Encoding);
                 case 0x14:
-                    return rx.PascalString(Encoding);
+                    return new TpsPString(rx, Encoding);
                 case 0x16:
-                    // Group (an overlay on top of existing data, can be anything)
-                    return rx.ReadBytes(length);
+                    return new TpsGroup(rx, length);
                 default:
                     throw new ArgumentException($"Unsupported type {type} ({length})", nameof(type));
             }

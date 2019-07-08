@@ -6,7 +6,7 @@
     <PackageProjectUrl>https://github.com/Trinitek/TpsParser</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Trinitek/TpsParser</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Copyright>Copyright © 2019 Blake Burgess</Copyright>
     <Description>Reads encrypted and unencrypted Clarion TPS files.</Description>
   </PropertyGroup>

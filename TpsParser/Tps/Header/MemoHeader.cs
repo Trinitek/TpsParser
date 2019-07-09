@@ -21,10 +21,6 @@ namespace TpsParser.Tps.Header
             SequenceNumber = rx.ShortBE();
         }
 
-        public bool IsApplicable(int tableNumber, int memoIndex) =>
-            TableNumber == tableNumber
-            && MemoIndex == memoIndex;
-
         public override string ToString() =>
             $"Memo({TableNumber}, {OwningRecord}, {MemoIndex}, {SequenceNumber})";
     }

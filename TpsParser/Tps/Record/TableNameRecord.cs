@@ -5,8 +5,8 @@ namespace TpsParser.Tps.Record
 {
     public sealed class TableNameRecord
     {
-        private TableNameHeader Header { get; }
-        private int TableNumber { get; }
+        public TableNameHeader Header { get; }
+        public int TableNumber { get; }
 
         public TableNameRecord(TpsRecord record)
         {

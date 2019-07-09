@@ -176,10 +176,10 @@ namespace TpsParser.Tps
             return VisitRecords();
         }
 
-        public IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
+
+        private IEnumerable<MemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
         {
-            return VisitRecords(ignoreErrors)
-                .Where(record => record.Header is MemoHeader header && header.IsApplicable(table, memoIndex))
+            return memoRecords
 
                 // Records must be merged in order according to the memo's sequence number.
                 .OrderBy(record => ((MemoHeader)record.Header).SequenceNumber)
@@ -191,6 +191,26 @@ namespace TpsParser.Tps
                 .Where(group => group.Count() == ((MemoHeader)group.Last().Header).SequenceNumber + 1)
 
                 .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
+        }
+        public IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
+        {
+            var memoRecords = VisitRecords(ignoreErrors)
+                .Where(record =>
+                    record.Header is MemoHeader header
+                    && header.TableNumber == table);
+
+            return OrderAndGroupMemos(memoRecords);
+        }
+
+        public IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
+        {
+            var memoRecords = VisitRecords(ignoreErrors)
+                .Where(record =>
+                    record.Header is MemoHeader header
+                    && header.TableNumber == table
+                    && header.MemoIndex == memoIndex);
+
+            return OrderAndGroupMemos(memoRecords);
         }
 
         public IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)

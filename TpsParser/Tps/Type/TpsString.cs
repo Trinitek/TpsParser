@@ -25,5 +25,20 @@ namespace TpsParser.Tps.Type
 
             Value = rx.FixedLengthString(length, encoding);
         }
+
+        public TpsString(RandomAccess rx, Encoding encoding)
+        {
+            if (rx == null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            Value = encoding.GetString(rx.GetData());
+        }
     }
 }

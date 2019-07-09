@@ -10,6 +10,8 @@ namespace TpsParser.Tps.Type
 
         public abstract TpsTypeCode TypeCode { get; }
 
+        public override string ToString() => Value?.ToString();
+
         public override bool Equals(object obj)
         {
             if (obj is TpsObject o)

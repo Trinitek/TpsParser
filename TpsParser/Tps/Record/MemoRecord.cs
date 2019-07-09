@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using TpsParser.Binary;
 using TpsParser.Tps.Header;
+using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
@@ -35,5 +36,22 @@ namespace TpsParser.Tps.Record
         /// <returns></returns>
         public IEnumerable<byte> GetDataAsBlob() =>
             Data.ReadBytes(Data.LongLE());
+
+        public TpsObject GetValue(MemoDefinitionRecord memoDefinitionRecord)
+        {
+            if (memoDefinitionRecord == null)
+            {
+                throw new ArgumentNullException(nameof(memoDefinitionRecord));
+            }
+
+            if (memoDefinitionRecord.IsBlob)
+            {
+                return new TpsBlob(Data);
+            }
+            else
+            {
+                return new TpsString(Data, Encoding.GetEncoding("ISO-8859-1"));
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace TpsParser.Tps.Header
             AssertIsType(0xFC);
 
             OwningRecord = rx.LongBE();
-            MemoIndex = rx.LongBE();
+            MemoIndex = rx.Byte();
             SequenceNumber = rx.ShortBE();
         }
 

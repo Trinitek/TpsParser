@@ -89,8 +89,6 @@ namespace TpsParser
                 throw new Exception($"The given class is not marked with {nameof(TpsTableAttribute)}.");
             }
 
-            
-
             // TODO
             
             return null;

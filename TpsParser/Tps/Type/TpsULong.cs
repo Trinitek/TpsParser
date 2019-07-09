@@ -8,9 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsUnsignedLong : TpsObject<uint>
     {
-        public override string TypeName => "ULONG";
-
-        public override int TypeCode => 0x07;
+        public override TpsTypeCode TypeCode => TpsTypeCode.ULong;
 
         public TpsUnsignedLong(RandomAccess rx)
         {

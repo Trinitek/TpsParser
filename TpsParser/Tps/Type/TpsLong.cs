@@ -8,9 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsLong : TpsObject<int>
     {
-        public override string TypeName => "LONG";
-
-        public override int TypeCode => 0x06;
+        public override TpsTypeCode TypeCode => TpsTypeCode.Long;
 
         public TpsLong(RandomAccess rx)
         {

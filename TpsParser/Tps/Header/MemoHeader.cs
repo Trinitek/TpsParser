@@ -4,6 +4,9 @@ namespace TpsParser.Tps.Header
 {
     public sealed class MemoHeader : Header
     {
+        /// <summary>
+        /// Gets the number of the <see cref="Record.DataRecord"/> that owns this memo.
+        /// </summary>
         public int OwningRecord { get; }
         public int SequenceNumber { get; }
         public int MemoIndex { get; }

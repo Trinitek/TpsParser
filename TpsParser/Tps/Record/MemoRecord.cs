@@ -12,7 +12,7 @@ namespace TpsParser.Tps.Record
         private RandomAccess Data { get; }
 
         /// <summary>
-        /// Gets the ID of the <see cref="DataRecord"/> that owns this record.
+        /// Gets the number of the <see cref="DataRecord"/> that owns this memo.
         /// </summary>
         public int Owner => Header.OwningRecord;
 

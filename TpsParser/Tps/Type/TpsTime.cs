@@ -8,9 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsTime : TpsObject<TimeSpan>
     {
-        public override string TypeName => "TIME";
-
-        public override int TypeCode => 0x05;
+        public override TpsTypeCode TypeCode => TpsTypeCode.Time;
 
         public TpsTime(RandomAccess rx)
         {

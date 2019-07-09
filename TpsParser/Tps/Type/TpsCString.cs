@@ -9,9 +9,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsCString : TpsObject<string>
     {
-        public override string TypeName => "CSTRING";
-
-        public override int TypeCode => 0x13;
+        public override TpsTypeCode TypeCode => TpsTypeCode.CString;
 
         public TpsCString(RandomAccess rx, Encoding encoding)
         {

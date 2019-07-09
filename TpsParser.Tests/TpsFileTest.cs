@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using TpsParser.Tps;
+using TpsParser.Tps.Type;
 
 namespace TpsParser.Tests
 {
@@ -30,7 +31,9 @@ namespace TpsParser.Tests
         [Test]
         public void ShouldParseTableMetadata()
         {
-            Assert.AreEqual(1, File.GetTableNameRecords().Count());
+            var tableNames = File.GetTableNameRecords();
+
+            Assert.AreEqual(1, tableNames.Count());
 
             var tableDefinitions = File.GetTableDefinitions(ignoreErrors: false);
 
@@ -48,11 +51,11 @@ namespace TpsParser.Tests
 
             Assert.AreEqual("CON1:OUDNR", fields[0].FullName);
             Assert.AreEqual("OUDNR", fields[0].Name);
-            Assert.AreEqual("SIGNED-SHORT", fields[0].TypeName);
+            Assert.AreEqual(TpsTypeCode.Short, fields[0].Type);
 
             Assert.AreEqual("CON1:NEWNR", fields[1].FullName);
             Assert.AreEqual("NEWNR", fields[1].Name);
-            Assert.AreEqual("SIGNED-SHORT", fields[1].TypeName);
+            Assert.AreEqual(TpsTypeCode.Short, fields[1].Type);
         }
 
         [Test]
@@ -65,8 +68,8 @@ namespace TpsParser.Tests
             Assert.AreEqual(1, dataRecords.Count());
             Assert.AreEqual(2, dataRecords[0].RecordNumber);
             Assert.AreEqual(2, dataRecords[0].Values.Count());
-            Assert.AreEqual(1, dataRecords[0].Values.ToList()[0]);
-            Assert.AreEqual(1, dataRecords[0].Values.ToList()[1]);
+            Assert.AreEqual(1, dataRecords[0].Values.ToList()[0].Value);
+            Assert.AreEqual(1, dataRecords[0].Values.ToList()[1].Value);
         }
 
         [Test]

@@ -8,9 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsDecimal : TpsObject<string>
     {
-        public override string TypeName => "DECIMAL";
-
-        public override int TypeCode => 0x0A;
+        public override TpsTypeCode TypeCode => TpsTypeCode.Decimal;
 
         /// <summary>
         /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.

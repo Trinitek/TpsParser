@@ -8,9 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsByte : TpsObject<byte>
     {
-        public override string TypeName => "BYTE";
-
-        public override int TypeCode => 0x01;
+        public override TpsTypeCode TypeCode => TpsTypeCode.Byte;
 
         public TpsByte(RandomAccess rx)
         {

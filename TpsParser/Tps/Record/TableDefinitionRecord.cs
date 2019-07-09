@@ -118,7 +118,7 @@ namespace TpsParser.Tps.Record
             return values;
         }
 
-        public TpsObject ParseField(int type, int length, FieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
+        public TpsObject ParseField(TpsTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
         {
             if (fieldDefinitionRecord == null)
             {
@@ -132,40 +132,40 @@ namespace TpsParser.Tps.Record
 
             switch (type)
             {
-                case 0x01:
+                case TpsTypeCode.Byte:
                     AssertEqual(1, length);
                     return new TpsByte(rx);
-                case 0x02:
+                case TpsTypeCode.Short:
                     AssertEqual(2, length);
                     return new TpsShort(rx);
-                case 0x03:
+                case TpsTypeCode.UShort:
                     AssertEqual(2, length);
                     return new TpsUnsignedShort(rx);
-                case 0x04:
+                case TpsTypeCode.Date:
                     return new TpsDate(rx);
-                case 0x05:
+                case TpsTypeCode.Time:
                     return new TpsTime(rx);
-                case 0x06:
+                case TpsTypeCode.Long:
                     AssertEqual(4, length);
                     return new TpsLong(rx);
-                case 0x07:
+                case TpsTypeCode.ULong:
                     AssertEqual(4, length);
                     return new TpsUnsignedLong(rx);
-                case 0x08:
+                case TpsTypeCode.BFloat4:
                     AssertEqual(4, length);
                     return new TpsFloat(rx);
-                case 0x09:
+                case TpsTypeCode.BFloat8:
                     AssertEqual(8, length);
                     return new TpsDouble(rx);
-                case 0x0A:
+                case TpsTypeCode.Decimal:
                     return new TpsDecimal(rx, length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
-                case 0x12:
+                case TpsTypeCode.String:
                     return new TpsString(rx, length, Encoding);
-                case 0x13:
+                case TpsTypeCode.CString:
                     return new TpsCString(rx, Encoding);
-                case 0x14:
+                case TpsTypeCode.PString:
                     return new TpsPString(rx, Encoding);
-                case 0x16:
+                case TpsTypeCode.Group:
                     return new TpsGroup(rx, length);
                 default:
                     throw new ArgumentException($"Unsupported type {type} ({length})", nameof(type));

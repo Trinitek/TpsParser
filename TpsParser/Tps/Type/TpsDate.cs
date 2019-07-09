@@ -8,9 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsDate : TpsObject<DateTime?>
     {
-        public override string TypeName => "DATE";
-
-        public override int TypeCode => 0x04;
+        public override TpsTypeCode TypeCode => TpsTypeCode.Date;
 
         public TpsDate(RandomAccess rx)
         {

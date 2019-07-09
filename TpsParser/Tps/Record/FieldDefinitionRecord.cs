@@ -1,23 +1,32 @@
 ﻿using System;
 using System.Linq;
 using TpsParser.Binary;
+using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
     public sealed class FieldDefinitionRecord
     {
-        public int Type { get; }
+        public TpsTypeCode Type { get; }
         public int Offset { get; }
 
         /// <summary>
+        /// <para>
         /// Gets the fully qualified name of the field with the table prefix, e.g. "INV:INVOICENO".
         /// Use <see cref="Name"/> for only the field name.
+        /// </para>
+        /// <para>
+        /// If the field was not defined with a prefix in Clarion, then it will be absent.
+        /// When present, it is rarely the same as the table name, if the table has a name at all.
+        /// </para>
         /// </summary>
         public string FullName { get; }
 
         /// <summary>
+        /// <para>
         /// Gets the name of the field without the table prefix, e.g. "INVOICENO".
         /// Use <see cref="FullName"/> for the fully qualified field name.
+        /// </para>
         /// </summary>
         public string Name => FullName.Split(':').Last();
 
@@ -33,7 +42,6 @@ namespace TpsParser.Tps.Record
         public int BcdElementLength { get; }
 
         public bool IsArray => ElementCount > 1;
-        public bool IsGroup => Type == 0x16;
 
         public FieldDefinitionRecord(RandomAccess rx)
         {
@@ -42,7 +50,7 @@ namespace TpsParser.Tps.Record
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Type = rx.Byte();
+            Type = (TpsTypeCode)rx.Byte();
             Offset = rx.ShortLE();
             FullName = rx.ZeroTerminatedString();
             ElementCount = rx.ShortLE();
@@ -52,13 +60,13 @@ namespace TpsParser.Tps.Record
 
             switch (Type)
             {
-                case 0x0A:
+                case TpsTypeCode.Decimal:
                     BcdDigitsAfterDecimalPoint = rx.Byte();
                     BcdElementLength = rx.Byte();
                     break;
-                case 0x12:
-                case 0x13:
-                case 0x14:
+                case TpsTypeCode.String:
+                case TpsTypeCode.CString:
+                case TpsTypeCode.PString:
                     StringLength = rx.ShortLE();
                     StringMask = rx.ZeroTerminatedString();
                     if (StringMask.Length == 0)
@@ -66,49 +74,6 @@ namespace TpsParser.Tps.Record
                         rx.Byte();
                     }
                     break;
-            }
-        }
-
-        /// <summary>
-        /// Gets a string representation of the data type.
-        /// </summary>
-        public string TypeName
-        {
-            get
-            {
-                switch (Type)
-                {
-                    case 0x01:
-                        return "BYTE";
-                    case 0x02:
-                        return "SIGNED-SHORT";
-                    case 0x03:
-                        return "UNSIGNED-SHORT";
-                    case 0x04:
-                        return "DATE";
-                    case 0x05:
-                        return "TIME";
-                    case 0x06:
-                        return "SIGNED-LONG";
-                    case 0x07:
-                        return "UNSIGNED-LONG";
-                    case 0x08:
-                        return "Float";
-                    case 0x09:
-                        return "Double";
-                    case 0x0A:
-                        return "BCD";
-                    case 0x12:
-                        return "fixed-length STRING";
-                    case 0x13:
-                        return "zero-terminated STRING";
-                    case 0x14:
-                        return "pascal STRING";
-                    case 0x16:
-                        return "GROUP";
-                    default:
-                        return "unknown";
-                }
             }
         }
 

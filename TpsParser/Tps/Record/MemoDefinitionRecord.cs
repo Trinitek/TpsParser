@@ -29,9 +29,11 @@ namespace TpsParser.Tps.Record
 
             if (ExternalFile.Length == 0)
             {
-                if (rx.Byte() != 0)
+                byte memoMarker = rx.Byte();
+
+                if (memoMarker != 1)
                 {
-                    throw new ArgumentException("Bad memo definition: missing 0x01 after zero string.");
+                    throw new ArgumentException($"Bad memo definition: missing 0x01 after zero string. Was 0x{memoMarker:x2}.");
                 }
             }
 

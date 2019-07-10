@@ -45,8 +45,13 @@ namespace TpsParser.Tps.Type
     {
         public new T Value
         {
-            get => (T)base.Value;
-            set => base.Value = value;
+            get => _typedValue;
+            protected set
+            {
+                _typedValue = value;
+                base.Value = value;
+            }
         }
+        private T _typedValue;
     }
 }

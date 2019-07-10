@@ -3,6 +3,9 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record
 {
+    /// <summary>
+    /// Represents the schema for a particular index.
+    /// </summary>
     public sealed class IndexDefinitionRecord
     {
         private string ExternalFile { get; }

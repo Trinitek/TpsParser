@@ -5,6 +5,9 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps
 {
+    /// <summary>
+    /// Represents a TopSpeed file header.
+    /// </summary>
     public sealed class TpsHeader
     {
         public int Address { get; }
@@ -13,7 +16,7 @@ namespace TpsParser.Tps
         public int FileLength2 { get; }
 
         /// <summary>
-        /// Gets the magic number signature in the TPS file header. This should be 'tOpS' for all TPS files.
+        /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
         /// </summary>
         public string TopSpeed { get; }
         public int Zeroes { get; }

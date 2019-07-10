@@ -5,6 +5,9 @@ using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
+    /// <summary>
+    /// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="MemoDefinitionRecord"/>.
+    /// </summary>
     public sealed class FieldDefinitionRecord
     {
         public TpsTypeCode Type { get; }

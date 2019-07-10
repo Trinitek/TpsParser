@@ -9,6 +9,9 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps
 {
+    /// <summary>
+    /// Represents a TopSpeed file and provides access to low level file and record structures.
+    /// </summary>
     public sealed class TpsFile
     {
         private RandomAccess Data { get; }
@@ -141,6 +144,13 @@ namespace TpsParser.Tps
             }
         }
 
+        /// <summary>
+        /// Gets a list of data records for the associated table and its table definition.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="tableDefinition"></param>
+        /// <param name="ignoreErrors"></param>
+        /// <returns></returns>
         public IEnumerable<DataRecord> GetDataRecords(int table, TableDefinitionRecord tableDefinition, bool ignoreErrors)
         {
             return VisitRecords(ignoreErrors)
@@ -148,6 +158,10 @@ namespace TpsParser.Tps
                 .Select(record => new DataRecord(record, tableDefinition));
         }
 
+        /// <summary>
+        /// Gets a list of table name records that describe the name of the tables included in the file.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<TableNameRecord> GetTableNameRecords()
         {
             return VisitRecords()
@@ -165,6 +179,11 @@ namespace TpsParser.Tps
                 .Select(record => new IndexRecord(record));
         }
 
+        /// <summary>
+        /// Gets a list of metadata that is included for the associated table.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
         public IEnumerable<TpsRecord> GetMetadata(int table)
         {
             return VisitRecords()
@@ -192,6 +211,12 @@ namespace TpsParser.Tps
                 .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
         }
 
+        /// <summary>
+        /// Gets a list of MEMO and BLOB records for the associated table.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="ignoreErrors"></param>
+        /// <returns></returns>
         public IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)
@@ -202,6 +227,13 @@ namespace TpsParser.Tps
             return OrderAndGroupMemos(memoRecords);
         }
 
+        /// <summary>
+        /// Gets a list of MEMO and BLOB records for the associated table.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="memoIndex"></param>
+        /// <param name="ignoreErrors"></param>
+        /// <returns></returns>
         public IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)
@@ -213,6 +245,11 @@ namespace TpsParser.Tps
             return OrderAndGroupMemos(memoRecords);
         }
 
+        /// <summary>
+        /// Gets a list of table definitions for tables found in this file.
+        /// </summary>
+        /// <param name="ignoreErrors"></param>
+        /// <returns></returns>
         public IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
         {
             return VisitRecords(ignoreErrors)

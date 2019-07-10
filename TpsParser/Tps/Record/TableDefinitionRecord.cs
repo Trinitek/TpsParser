@@ -7,12 +7,27 @@ using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
+    /// <summary>
+    /// Represents a file structure that encapsulates a table's schema.
+    /// </summary>
     public sealed class TableDefinitionRecord
     {
         public int DriverVersion { get; }
         public int RecordLength { get; }
+
+        /// <summary>
+        /// Gets the number of fields in the table.  For MEMOs and BLOBs, see <see cref="MemoCount"/>.
+        /// </summary>
         private int FieldCount { get; }
+
+        /// <summary>
+        /// Gets the number of MEMO or BLOB fields in the table.
+        /// </summary>
         private int MemoCount { get; }
+
+        /// <summary>
+        /// Gets the number of indexes in the table.
+        /// </summary>
         private int IndexCount { get; }
 
         public IReadOnlyList<FieldDefinitionRecord> Fields => _fields;

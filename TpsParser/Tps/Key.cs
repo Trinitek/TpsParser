@@ -4,6 +4,9 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps
 {
+    /// <summary>
+    /// Represents a sequence of bytes hashed from a password string that is used to encrypt and decrypt the file.
+    /// </summary>
     public sealed class Key
     {
         private RandomAccess Data { get; }
@@ -11,7 +14,7 @@ namespace TpsParser.Tps
         /// <summary>
         /// Instantiates a key and initializes it using the given password.
         /// </summary>
-        /// <param name="password">The password or "owner" of the TPS file.</param>
+        /// <param name="password">The password or "owner" of the file.</param>
         public Key(string password)
         {
             var encoding = CodePagesEncodingProvider.Instance.GetEncoding("Windows-1258");

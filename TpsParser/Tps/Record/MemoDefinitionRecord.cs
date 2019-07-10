@@ -4,6 +4,9 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record
 {
+    /// <summary>
+    /// Represents the schema for a particular MEMO or BLOB field.
+    /// </summary>
     public sealed class MemoDefinitionRecord
     {
         private string ExternalFile { get; }

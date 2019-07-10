@@ -8,7 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsDouble : TpsObject<double>
     {
-        public override TpsTypeCode TypeCode => TpsTypeCode.BFloat8;
+        public override TpsTypeCode TypeCode => TpsTypeCode.Real;
 
         public TpsDouble(RandomAccess rx)
         {

@@ -166,10 +166,10 @@ namespace TpsParser.Tps.Record
                 case TpsTypeCode.ULong:
                     AssertEqual(4, length);
                     return new TpsUnsignedLong(rx);
-                case TpsTypeCode.BFloat4:
+                case TpsTypeCode.SReal:
                     AssertEqual(4, length);
                     return new TpsFloat(rx);
-                case TpsTypeCode.BFloat8:
+                case TpsTypeCode.Real:
                     AssertEqual(8, length);
                     return new TpsDouble(rx);
                 case TpsTypeCode.Decimal:

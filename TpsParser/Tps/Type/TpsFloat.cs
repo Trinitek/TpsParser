@@ -8,7 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsFloat : TpsObject<float>
     {
-        public override TpsTypeCode TypeCode => TpsTypeCode.BFloat4;
+        public override TpsTypeCode TypeCode => TpsTypeCode.SReal;
 
         public TpsFloat(RandomAccess rx)
         {

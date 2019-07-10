@@ -6,8 +6,6 @@ namespace TpsParser.Tps.Type
     {
         public object Value { get; protected set; }
 
-        public string TypeName => TypeCode.ToString();
-
         public abstract TpsTypeCode TypeCode { get; }
 
         public override string ToString() => Value?.ToString();
@@ -28,7 +26,6 @@ namespace TpsParser.Tps.Type
         {
             var hashCode = -1431579180;
             hashCode = hashCode * -1521134295 + EqualityComparer<object>.Default.GetHashCode(Value);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(TypeName);
             hashCode = hashCode * -1521134295 + TypeCode.GetHashCode();
             return hashCode;
         }

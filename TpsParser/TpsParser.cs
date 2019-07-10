@@ -18,22 +18,24 @@ namespace TpsParser
         public TpsParser(Stream stream)
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            TpsFile = new TpsFile(Stream);
         }
 
         public TpsParser(Stream stream, string password)
-            : this(stream)
         {
+            Stream = stream ?? throw new ArgumentNullException(nameof(stream));
             TpsFile = new TpsFile(Stream, new Key(password));
         }
 
         public TpsParser(string filename)
         {
             Stream = new FileStream(filename, FileMode.Open);
+            TpsFile = new TpsFile(Stream);
         }
 
         public TpsParser(string filename, string password)
-            : this(filename)
         {
+            Stream = new FileStream(filename, FileMode.Open);
             TpsFile = new TpsFile(Stream, new Key(password));
         }
 

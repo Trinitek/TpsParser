@@ -176,7 +176,6 @@ namespace TpsParser.Tps
             return VisitRecords();
         }
 
-
         private IEnumerable<MemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
         {
             return memoRecords
@@ -192,6 +191,7 @@ namespace TpsParser.Tps
 
                 .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
         }
+
         public IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)

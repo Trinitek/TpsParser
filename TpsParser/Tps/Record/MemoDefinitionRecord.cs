@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record
@@ -8,9 +9,24 @@ namespace TpsParser.Tps.Record
         private string ExternalFile { get; }
 
         /// <summary>
-        /// Gets the name of the memo field.
+        /// <para>
+        /// Gets the fully qualified name of the field with the table prefix, e.g. "INV:INVOICENO".
+        /// Use <see cref="Name"/> for only the field name.
+        /// </para>
+        /// <para>
+        /// If the table was not defined with a prefix in Clarion, then it will be absent.
+        /// When present, it is rarely the same as the table name, if the table has a name at all.
+        /// </para>
         /// </summary>
-        public string Name { get; }
+        public string FullName { get; }
+
+        /// <summary>
+        /// <para>
+        /// Gets the name of the field without the table prefix, e.g. "INVOICENO".
+        /// Use <see cref="FullName"/> for the fully qualified field name.
+        /// </para>
+        /// </summary>
+        public string Name => FullName.Split(':').Last();
 
         private int Length { get; }
         public int Flags { get; }
@@ -37,14 +53,14 @@ namespace TpsParser.Tps.Record
                 }
             }
 
-            Name = rx.ZeroTerminatedString();
+            FullName = rx.ZeroTerminatedString();
             Length = rx.ShortLE();
             Flags = rx.ShortLE();
         }
 
         public override string ToString()
         {
-            return $"MemoDefinition({ExternalFile},{Name},{Length},{Flags})";
+            return $"MemoDefinition({ExternalFile},{FullName},{Length},{Flags})";
         }
     }
 }

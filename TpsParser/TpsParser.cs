@@ -53,7 +53,10 @@ namespace TpsParser
             return tableDefinitionRecord.Memos
                 .Zip(memoRecords, (memoDef, memoRec) => (owner: memoRec.Owner, name: memoDef.Name, value: memoRec.GetValue(memoDef)))
                 .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
-                .Select(groupedPair => (groupedPair.Key, (IReadOnlyDictionary<string, TpsObject>)groupedPair.ToDictionary(p => p.name, p => p.value)));
+                .Select(groupedPair => (
+                    groupedPair.Key,
+                    (IReadOnlyDictionary<string, TpsObject>)groupedPair
+                        .ToDictionary(p => p.name, p => p.value)));
         }
 
         public Table BuildTable(bool ignoreErrors = false)
@@ -69,13 +72,16 @@ namespace TpsParser
 
             IEnumerable<(int recordNumber, IReadOnlyDictionary<string, TpsObject> nameValuePairs)> unifiedRecords = Enumerable.Concat(dataRecords, memoRecords)
                 .GroupBy(numberNVPairs => numberNVPairs.recordNumber)
-                .Select(groupedNumberNVPairs => (recordNumber: groupedNumberNVPairs.Key, nameValuePairs: (IReadOnlyDictionary<string, TpsObject>)groupedNumberNVPairs.SelectMany(pair => pair.nameValuePairs)));
+                .Select(groupedNumberNVPairs => (
+                    recordNumber: groupedNumberNVPairs.Key,
+                    nameValuePairs: (IReadOnlyDictionary<string, TpsObject>)groupedNumberNVPairs
+                        .SelectMany(pair => pair.nameValuePairs)
+                        .ToDictionary(kv => kv.Key, kv => kv.Value)));
 
             var rows = unifiedRecords.Select(r => new Row(r.recordNumber, r.nameValuePairs));
 
             string tableName = tableNameDefinitions
-                .Select(n => n.Header)
-                .First(h => h.TableNumber == firstTableDefinition.Key).Name;
+                .First(n => n.TableNumber == firstTableDefinition.Key).Header.Name;
 
             var table = new Table(tableName, rows);
 

@@ -9,21 +9,28 @@ namespace TpsParser.Tests
     [TestFixture]
     public class TpsFileTest
     {
-        private TpsFile File { get; set; }
-
-        [SetUp]
-        public void SetUp()
+        private TpsFile GetTableFile()
         {
             using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
             {
-                File = new TpsFile(stream);
+                return new TpsFile(stream);
+            }
+        }
+
+        private TpsFile GetTableWithMemosFile()
+        {
+            using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
+            {
+                return new TpsFile(stream);
             }
         }
 
         [Test]
         public void ShouldParseFile()
         {
-            var records = File.GetAllRecords();
+            var file = GetTableFile();
+
+            var records = file.GetAllRecords();
 
             Assert.AreEqual(10, records.Count());
         }
@@ -31,11 +38,13 @@ namespace TpsParser.Tests
         [Test]
         public void ShouldParseTableMetadata()
         {
-            var tableNames = File.GetTableNameRecords();
+            var file = GetTableFile();
+
+            var tableNames = file.GetTableNameRecords();
 
             Assert.AreEqual(1, tableNames.Count());
 
-            var tableDefinitions = File.GetTableDefinitions(ignoreErrors: false);
+            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
 
             Assert.AreEqual(1, tableDefinitions.Count());
             Assert.AreEqual(2, tableDefinitions[1].Fields.Count());
@@ -46,7 +55,9 @@ namespace TpsParser.Tests
         [Test]
         public void ShouldParseTableFieldInfo()
         {
-            var tableDefinitions = File.GetTableDefinitions(ignoreErrors: false);
+            var file = GetTableFile();
+
+            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
             var fields = tableDefinitions[1].Fields;
 
             Assert.AreEqual("CON1:OUDNR", fields[0].FullName);
@@ -61,8 +72,10 @@ namespace TpsParser.Tests
         [Test]
         public void ShouldParseRecord()
         {
-            var tableDefinitions = File.GetTableDefinitions(ignoreErrors: false);
-            var dataRecords = File.GetDataRecords(table: 1, tableDefinitions[1], ignoreErrors: false)
+            var file = GetTableFile();
+
+            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+            var dataRecords = file.GetDataRecords(table: 1, tableDefinitions[1], ignoreErrors: false)
                 .ToList();
 
             Assert.AreEqual(1, dataRecords.Count());
@@ -75,17 +88,30 @@ namespace TpsParser.Tests
         [Test]
         public void ShouldParseIndexData()
         {
-            var indexes1 = File.GetIndexes(table: 1, index: 0)
+            var file = GetTableFile();
+
+            var indexes1 = file.GetIndexes(table: 1, index: 0)
                 .ToList();
 
             Assert.AreEqual(1, indexes1.Count());
             Assert.AreEqual(2, indexes1[0].RecordNumber);
 
-            var indexes2 = File.GetIndexes(table: 1, index: 1)
+            var indexes2 = file.GetIndexes(table: 1, index: 1)
                 .ToList();
 
             Assert.AreEqual(1, indexes2.Count());
             Assert.AreEqual(2, indexes2[0].RecordNumber);
+        }
+
+        [Test]
+        public void ShouldParseMemos()
+        {
+            var file = GetTableWithMemosFile();
+
+            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+            var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
+
+            Assert.AreEqual(2, memos.Count());
         }
     }
 }

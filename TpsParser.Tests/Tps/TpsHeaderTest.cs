@@ -2,7 +2,7 @@
 using System.IO;
 using TpsParser.Tps;
 
-namespace TpsParser.Tests
+namespace TpsParser.Tests.Tps
 {
     [TestFixture]
     public class TpsHeaderTest

@@ -7,7 +7,7 @@ using TpsParser.Binary;
 using TpsParser.Tps;
 using TpsParser.Tps.KeyRecovery;
 
-namespace TpsParser.Tests.KeyRecovery
+namespace TpsParser.Tests.Tps.KeyRecovery
 {
     [TestFixture]
     public class RecoveryStateTest

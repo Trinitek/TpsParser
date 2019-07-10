@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using TpsParser.Binary;
 
-namespace TpsParser.Tests.Binary
+namespace TpsParser.Tests.Tps.Binary
 {
     [TestFixture]
     public class RandomAccessTest

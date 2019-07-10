@@ -5,7 +5,7 @@ using System.Linq;
 using TpsParser.Binary;
 using TpsParser.Tps.KeyRecovery;
 
-namespace TpsParser.Tests.KeyRecovery
+namespace TpsParser.Tests.Tps.KeyRecovery
 {
     [TestFixture]
     public class BlockTest

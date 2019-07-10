@@ -31,6 +31,9 @@
     <None Update="Resources\table-with-memos.tps">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\table-with-time.TPS">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\table.tps">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -4,7 +4,7 @@ using System.Linq;
 using TpsParser.Tps;
 using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests
+namespace TpsParser.Tests.Tps
 {
     [TestFixture]
     public class TpsFileTest

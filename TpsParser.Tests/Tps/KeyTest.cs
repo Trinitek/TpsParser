@@ -5,7 +5,7 @@ using System.Linq;
 using TpsParser.Binary;
 using TpsParser.Tps;
 
-namespace TpsParser.Tests
+namespace TpsParser.Tests.Tps
 {
     [TestFixture]
     public class KeyTest

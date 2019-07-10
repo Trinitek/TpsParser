@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using TpsParser.Binary;
 
-namespace TpsParser.Tests.Binary
+namespace TpsParser.Tests.Tps.Binary
 {
     [TestFixture]
     public class RunLengthEncodingTest

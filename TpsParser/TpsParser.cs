@@ -118,35 +118,49 @@ namespace TpsParser
         private void SetProperties<T>(T targetObject, Row row)
         {
             var properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Select(p => (p, tpsFieldAttr: p.GetCustomAttribute<TpsFieldAttribute>()))
+                    .Select(p => (prop: p, tpsFieldAttr: p.GetCustomAttribute<TpsFieldAttribute>()))
                     .Where(pair => pair.tpsFieldAttr != null);
 
-            foreach (var property in properties)
+            foreach (var (prop, tpsFieldAttr) in properties)
             {
-                if (!property.p.CanWrite)
+                if (!prop.CanWrite)
                 {
-                    throw new Exception($"The property '{property.p.Name}' must have a setter.");
+                    throw new Exception($"The property '{prop.Name}' must have a setter.");
                 }
 
-                var tpsFieldName = property.tpsFieldAttr.FieldName;
-                var tpsFieldValue = row.GetValueCaseInsensitive(tpsFieldName, property.tpsFieldAttr.IsRequired);
+                var tpsFieldName = tpsFieldAttr.FieldName;
+                var tpsFieldValue = GetRowValue(row, tpsFieldName, tpsFieldAttr.IsRequired);
+                var tpsValue = CoerceValue(tpsFieldValue?.Value, tpsFieldAttr.FallbackValue);
 
-                property.p.SetValue(targetObject, CoerceValue(tpsFieldValue?.Value, property.tpsFieldAttr.FallbackValue));
+                prop.SetValue(targetObject, tpsValue);
             }
         }
 
         private void SetFields<T>(T targetObject, Row row)
         {
             var fields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Select(f => (f, tpsFieldAttr: f.GetCustomAttribute<TpsFieldAttribute>()))
+                .Select(f => (field: f, tpsFieldAttr: f.GetCustomAttribute<TpsFieldAttribute>()))
                 .Where(pair => pair.tpsFieldAttr != null);
 
-            foreach (var field in fields)
+            foreach (var (field, tpsFieldAttr) in fields)
             {
-                var tpsFieldName = field.tpsFieldAttr.FieldName;
-                var tpsFieldValue = row.GetValueCaseInsensitive(tpsFieldName, field.tpsFieldAttr.IsRequired);
+                var tpsFieldName = tpsFieldAttr.FieldName;
+                var tpsFieldValue = GetRowValue(row, tpsFieldName, tpsFieldAttr.IsRequired);
+                var tpsValue = CoerceValue(tpsFieldValue?.Value, tpsFieldAttr.FallbackValue);
 
-                field.f.SetValue(targetObject, CoerceValue(tpsFieldValue?.Value, field.tpsFieldAttr.FallbackValue));
+                field.SetValue(targetObject, tpsValue);
+            }
+        }
+
+        private TpsObject GetRowValue(Row row, string fieldName, bool isRequired)
+        {
+            try
+            {
+                return row.GetValueCaseInsensitive(fieldName, isRequired);
+            }
+            catch (Exception ex)
+            {
+                throw new TpsParserException("Unable to deserialize field into class member. See the inner exception for details.", ex);
             }
         }
 

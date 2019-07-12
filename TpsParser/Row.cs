@@ -55,7 +55,7 @@ namespace TpsParser
 
                     foreach (var key in Values.Keys)
                     {
-                        sb.Append("key, ");
+                        sb.Append($"{key}, ");
                     }
 
                     var keyList = sb.ToString();

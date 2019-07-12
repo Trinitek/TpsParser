@@ -132,5 +132,18 @@ namespace TpsParser.Tests
             public DateTime Date => _date;
             public string Notes => _notes;
         }
+
+        [TpsTable]
+        public class DeserializeMemosNotesRequired : IDeserializeMemos
+        {
+            [TpsField("Name")]
+            public string Name { get; set; }
+
+            [TpsField("Date")]
+            public DateTime Date { get; set; }
+
+            [TpsField("Notes", isRequired: true)]
+            public string Notes { get; set; }
+        }
     }
 }

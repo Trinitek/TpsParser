@@ -65,5 +65,14 @@ namespace TpsParser.Tests
                 Assert.AreEqual("Joe is a great guy to work with.", first.Notes);
             }
         }
+
+        [Test]
+        public void ShouldThrowMissingFieldWhenDeserializingMemos()
+        {
+            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            {
+                Assert.Throws<TpsParserException>(() => parser.Deserialize<DeserializeMemosNotesRequired>().ToList());
+            }
+        }
     }
 }

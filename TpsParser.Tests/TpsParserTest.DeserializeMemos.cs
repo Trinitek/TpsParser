@@ -81,6 +81,7 @@ namespace TpsParser.Tests
         public class DeserializeMemosPrivateFields : IDeserializeMemos
         {
 #pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable CS0649 // Never assigned to
             [TpsField("Name")]
             private string _name;
 
@@ -92,6 +93,7 @@ namespace TpsParser.Tests
 
             [TpsField("AdditionalNotes")]
             private string _additionalNotes;
+#pragma warning restore CS0649 // Never assigned to
 #pragma warning restore IDE0044 // Add readonly modifier
 
             public string Name => _name;
@@ -103,6 +105,7 @@ namespace TpsParser.Tests
         [TpsTable]
         public class DeserializeMemosInternalFields : IDeserializeMemos
         {
+#pragma warning disable CS0649 // Never assigned to
             [TpsField("Name")]
             internal string _name;
 
@@ -114,6 +117,7 @@ namespace TpsParser.Tests
 
             [TpsField("AdditionalNotes")]
             internal string _additionalNotes;
+#pragma warning restore CS0649 // Never assigned to
 
             public string Name => _name;
             public DateTime Date => _date;

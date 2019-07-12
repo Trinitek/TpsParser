@@ -18,19 +18,26 @@ namespace TpsParser.Tests
 
                 Assert.AreEqual(3, table.Rows.Count());
 
-                var first = table.Rows.OrderBy(r => r.Id).First();
+                var rows = table.Rows.OrderBy(r => r.Id).ToList();
 
-                Assert.AreEqual(3, first.Values.Count());
+                Assert.AreEqual(3, rows.Count());
 
-                // Fixed length string. Dead area is padded with spaces.
-                Assert.AreEqual("Joe Smith".PadRight(64, ' '), first.Values["NAME"].Value);
-                Assert.AreEqual(new DateTime(2016, 2, 9), first.Values["DATE"].Value);
-                Assert.AreEqual("Joe is a great guy to work with.", first.Values["NOTES"].Value);
+                // Fixed length strings. Dead area is padded with spaces, except for memos.
 
-                var noMemo = table.Rows.First(r => "John NoNotes".PadRight(64, ' ') == ((TpsString)r.Values["NAME"]).Value);
+                Assert.AreEqual(3, rows[0].Values.Count());
+                Assert.AreEqual("Joe Smith".PadRight(64, ' '), rows[0].Values["NAME"].Value);
+                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Values["DATE"].Value);
+                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Values["NOTES"].Value);
 
-                Assert.AreEqual(2, noMemo.Values.Count());
-                Assert.IsFalse(noMemo.Values.TryGetValue("NOTES", out var _));
+                Assert.AreEqual(3, rows[1].Values.Count());
+                Assert.AreEqual("Jane Smith".PadRight(64, ' '), rows[1].Values["NAME"].Value);
+                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Values["DATE"].Value);
+                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Values["NOTES"].Value);
+
+                Assert.AreEqual(2, rows[2].Values.Count());
+                Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Values["NAME"].Value);
+                Assert.AreEqual(new DateTime(2016, 2, 9), rows[2].Values["DATE"].Value);
+                Assert.IsFalse(rows[2].Values.TryGetValue("NOTES", out var _));
             }
         }
 

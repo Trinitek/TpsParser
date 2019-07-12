@@ -37,34 +37,45 @@ namespace TpsParser
         public TpsObject GetValue(string column) =>  Values[column];
 
         /// <summary>
-        /// Gets the field name, memo, or blob associated with the given column name.
+        /// Gets the field, memo, or blob value associated with the given column name.
+        /// If the column is not found and <paramref name="isRequired"/> is false, null is returned.
         /// </summary>
         /// <param name="column">The case insensitive name of the column.</param>
+        /// <param name="isRequired">Indicates that the requested field must be present, or an exception is thrown.</param>
         /// <returns></returns>
-        public TpsObject GetValueCaseInsensitive(string column)
+        public TpsObject GetValueCaseInsensitive(string column, bool isRequired)
         {
             var matchingKey = Values.Keys.FirstOrDefault(k => k.Equals(column, StringComparison.OrdinalIgnoreCase));
 
             if (matchingKey is null)
             {
-                var sb = new StringBuilder();
-
-                foreach (var key in Values.Keys)
+                if (isRequired)
                 {
-                    sb.Append("key, ");
+                    var sb = new StringBuilder();
+
+                    foreach (var key in Values.Keys)
+                    {
+                        sb.Append("key, ");
+                    }
+
+                    var keyList = sb.ToString();
+
+                    if (Values.Keys.Any())
+                    {
+                        keyList = keyList.Substring(0, keyList.Length - 2); // Trim trailing space and comma
+                    }
+
+                    throw new ArgumentException($"Could not find column by case insensitive name '{column}'. Available columns are [{keyList}].");
                 }
-
-                var keyList = sb.ToString();
-
-                if (Values.Keys.Any())
+                else
                 {
-                    keyList = keyList.Substring(0, keyList.Length - 2); // Trim trailing space and comma
+                    return null;
                 }
-
-                throw new ArgumentException($"Could not find column by case insensitive name '{column}'. Available columns are [{keyList}].");
             }
-
-            return Values[matchingKey];
+            else
+            {
+                return Values[matchingKey];
+            }
         }
     }
 }

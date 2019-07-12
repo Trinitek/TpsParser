@@ -105,7 +105,7 @@ namespace TpsParser.Tps
 
             if (!header.IsTopSpeedFile)
             {
-                throw new NotATopSpeedFileException($"Not a TopSpeed file ({header.TopSpeed})");
+                throw new NotATopSpeedFileException($"Not a TopSpeed file ({header.MagicNumber})");
             }
 
             return header;

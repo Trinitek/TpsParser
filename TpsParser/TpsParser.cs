@@ -100,7 +100,7 @@ namespace TpsParser
 
             if (tpsTableAttr is null)
             {
-                throw new Exception($"The given class is not marked with {nameof(TpsTableAttribute)}.");
+                throw new TpsParserException($"The given class is not marked with {nameof(TpsTableAttribute)}.");
             }
 
             var table = BuildTable(ignoreErrors);

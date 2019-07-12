@@ -18,7 +18,7 @@ namespace TpsParser.Tps
         /// <summary>
         /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
         /// </summary>
-        public string TopSpeed { get; }
+        public string MagicNumber { get; }
         public int Zeroes { get; }
         public int LastIssuedRow { get; }
         public int Changes { get; }
@@ -29,7 +29,7 @@ namespace TpsParser.Tps
 
         private RandomAccess Data { get; }
 
-        public bool IsTopSpeedFile => TopSpeed == "tOpS";
+        public bool IsTopSpeedFile => MagicNumber == "tOpS";
 
         public TpsHeader(RandomAccess rx)
         {
@@ -48,7 +48,7 @@ namespace TpsParser.Tps
 
             FileLength1 = header.LongLE();
             FileLength2 = header.LongLE();
-            TopSpeed = header.FixedLengthString(4);
+            MagicNumber = header.FixedLengthString(4);
             Zeroes = header.ShortLE();
             LastIssuedRow = header.LongBE();
             Changes = header.LongLE();
@@ -63,7 +63,7 @@ namespace TpsParser.Tps
             var sb = new StringBuilder();
 
             sb.AppendLine($"TpsHeader({Data.ToHex8(Address)},{Data.ToHex4(HeaderSize)},{Data.ToHex8(FileLength1)},{Data.ToHex8(FileLength2)}," +
-                $"{TopSpeed},{Data.ToHex4(Zeroes)},{Data.ToHex8(LastIssuedRow)},{Data.ToHex8(Changes)},{Data.ToHex8(ManagementPageReference)})");
+                $"{MagicNumber},{Data.ToHex4(Zeroes)},{Data.ToHex8(LastIssuedRow)},{Data.ToHex8(Changes)},{Data.ToHex8(ManagementPageReference)})");
 
             for (int i = 0; i < PageStart.Count; i++)
             {

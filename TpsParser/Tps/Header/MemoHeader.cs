@@ -8,7 +8,12 @@ namespace TpsParser.Tps.Header
         /// Gets the number of the <see cref="Record.DataRecord"/> that owns this memo.
         /// </summary>
         public int OwningRecord { get; }
+
         public int SequenceNumber { get; }
+
+        /// <summary>
+        /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="Record.TableDefinitionRecord.Memos"/>.
+        /// </summary>
         public int MemoIndex { get; }
 
         public MemoHeader(RandomAccess rx)
@@ -22,6 +27,6 @@ namespace TpsParser.Tps.Header
         }
 
         public override string ToString() =>
-            $"Memo({TableNumber}, {OwningRecord}, {MemoIndex}, {SequenceNumber})";
+            $"Memo(Table={TableNumber}, Owner={OwningRecord}, Index={MemoIndex}, Sequence={SequenceNumber})";
     }
 }

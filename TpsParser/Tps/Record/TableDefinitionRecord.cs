@@ -32,6 +32,10 @@ namespace TpsParser.Tps.Record
 
         public IReadOnlyList<FieldDefinitionRecord> Fields => _fields;
         private readonly List<FieldDefinitionRecord> _fields;
+
+        /// <summary>
+        /// Gets the memo definitions for this table.  The index of each definition corresponds to <see cref="Header.MemoHeader.MemoIndex"/>.
+        /// </summary>
         public IReadOnlyList<MemoDefinitionRecord> Memos => _memos;
         private readonly List<MemoDefinitionRecord> _memos;
         public IReadOnlyList<IndexDefinitionRecord> Indexes => _indexes;

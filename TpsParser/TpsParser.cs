@@ -88,18 +88,78 @@ namespace TpsParser
             return table;
         }
 
-        public T Deserialize<T>(bool ignoreErrors = false) where T : class
+        public IEnumerable<T> Deserialize<T>(bool ignoreErrors = false) where T : class, new()
         {
-            var tpsTableAttr = typeof(T).GetCustomAttribute(typeof(TpsTableAttribute));
+            var targetClass = typeof(T);
+
+            var tpsTableAttr = targetClass.GetCustomAttribute(typeof(TpsTableAttribute));
 
             if (tpsTableAttr is null)
             {
                 throw new Exception($"The given class is not marked with {nameof(TpsTableAttribute)}.");
             }
 
-            // TODO
+            var table = BuildTable(ignoreErrors);
+
+            var targetObjects = table.Rows
+                .Select(r =>
+                {
+                    var targetObject = new T();
+
+                    SetProperties(targetObject, r);
+                    SetFields(targetObject, r);
+
+                    return targetObject;
+                });
             
-            return null;
+            return targetObjects;
+        }
+
+        private void SetProperties<T>(T targetObject, Row row)
+        {
+            var properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Select(p => (p, tpsFieldAttr: p.GetCustomAttribute<TpsFieldAttribute>()))
+                    .Where(pair => pair.tpsFieldAttr != null);
+
+            foreach (var property in properties)
+            {
+                if (!property.p.CanWrite)
+                {
+                    throw new Exception($"The property '{property.p.Name}' must have a setter.");
+                }
+
+                var tpsFieldName = property.tpsFieldAttr.FieldName;
+                var tpsFieldValue = row.GetValueCaseInsensitive(tpsFieldName, property.tpsFieldAttr.IsRequired);
+
+                property.p.SetValue(targetObject, CoerceValue(tpsFieldValue?.Value, property.tpsFieldAttr.FallbackValue));
+            }
+        }
+
+        private void SetFields<T>(T targetObject, Row row)
+        {
+            var fields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Select(f => (f, tpsFieldAttr: f.GetCustomAttribute<TpsFieldAttribute>()))
+                .Where(pair => pair.tpsFieldAttr != null);
+
+            foreach (var field in fields)
+            {
+                var tpsFieldName = field.tpsFieldAttr.FieldName;
+                var tpsFieldValue = row.GetValueCaseInsensitive(tpsFieldName, field.tpsFieldAttr.IsRequired);
+
+                field.f.SetValue(targetObject, CoerceValue(tpsFieldValue?.Value, field.tpsFieldAttr.FallbackValue));
+            }
+        }
+
+        private object CoerceValue(object value, object fallback)
+        {
+            if (fallback != null)
+            {
+                return value ?? fallback;
+            }
+            else
+            {
+                return value;
+            }
         }
 
         public void Dispose()

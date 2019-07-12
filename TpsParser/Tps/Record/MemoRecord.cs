@@ -9,13 +9,8 @@ namespace TpsParser.Tps.Record
 {
     public sealed class MemoRecord
     {
-        private MemoHeader Header { get; }
+        public MemoHeader Header { get; }
         private RandomAccess Data { get; }
-
-        /// <summary>
-        /// Gets the number of the <see cref="DataRecord"/> that owns this memo.
-        /// </summary>
-        public int Owner => Header.OwningRecord;
 
         public MemoRecord(MemoHeader header, RandomAccess rx)
         {

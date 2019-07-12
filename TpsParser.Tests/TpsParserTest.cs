@@ -15,29 +15,35 @@ namespace TpsParser.Tests
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
                 var table = parser.BuildTable();
-
-                Assert.AreEqual(3, table.Rows.Count());
-
                 var rows = table.Rows.OrderBy(r => r.Id).ToList();
 
-                Assert.AreEqual(3, rows.Count());
+                Assert.AreEqual(4, rows.Count());
 
                 // Fixed length strings. Dead area is padded with spaces, except for memos.
 
-                Assert.AreEqual(3, rows[0].Values.Count());
-                Assert.AreEqual("Joe Smith".PadRight(64, ' '), rows[0].Values["NAME"].Value);
-                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Values["DATE"].Value);
-                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Values["NOTES"].Value);
+                Assert.AreEqual(4, rows[0].Values.Count());
+                Assert.AreEqual("Joe Smith".PadRight(64, ' '), rows[0].Values["Name"].Value);
+                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Values["Date"].Value);
+                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Values["Notes"].Value);
+                Assert.AreEqual("He also likes sushi.", rows[0].Values["AdditionalNotes"].Value);
 
-                Assert.AreEqual(3, rows[1].Values.Count());
-                Assert.AreEqual("Jane Smith".PadRight(64, ' '), rows[1].Values["NAME"].Value);
-                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Values["DATE"].Value);
-                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Values["NOTES"].Value);
+                Assert.AreEqual(4, rows[1].Values.Count());
+                Assert.AreEqual("Jane Jones".PadRight(64, ' '), rows[1].Values["Name"].Value);
+                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Values["Date"].Value);
+                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Values["Notes"].Value);
+                Assert.AreEqual("She doesn't like sushi as much as Joe.", rows[1].Values["AdditionalNotes"].Value);
 
                 Assert.AreEqual(2, rows[2].Values.Count());
-                Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Values["NAME"].Value);
-                Assert.AreEqual(new DateTime(2016, 2, 9), rows[2].Values["DATE"].Value);
-                Assert.IsFalse(rows[2].Values.TryGetValue("NOTES", out var _));
+                Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Values["Name"].Value);
+                Assert.AreEqual(new DateTime(2019, 10, 7), rows[2].Values["Date"].Value);
+                Assert.IsFalse(rows[2].Values.TryGetValue("Notes", out var _));
+                Assert.IsFalse(rows[2].Values.TryGetValue("AdditionalNotes", out var _));
+
+                Assert.AreEqual(3, rows[3].Values.Count());
+                Assert.AreEqual("Jimmy OneNote".PadRight(64, ' '), rows[3].Values["Name"].Value);
+                Assert.AreEqual(new DateTime(2013, 3, 14), rows[3].Values["Date"].Value);
+                Assert.IsFalse(rows[3].Values.TryGetValue("Notes", out var _));
+                Assert.AreEqual("Has a strange last name.", rows[3].Values["AdditionalNotes"].Value);
             }
         }
 
@@ -62,14 +68,30 @@ namespace TpsParser.Tests
         {
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
-                var rows = InvokeDeserialize<IDeserializeMemos>(parser, targetObjectType, ignoreErrors: false);
+                var rows = InvokeDeserialize<IDeserializeMemos>(parser, targetObjectType, ignoreErrors: false)
+                    .ToList();
 
-                var first = rows.First();
+                Assert.AreEqual(4, rows.Count());
 
-                Assert.AreEqual(3, rows.Count());
-                Assert.AreEqual("Joe Smith".PadRight(64, ' '), first.Name);
-                Assert.AreEqual(new DateTime(2016, 2, 9), first.Date);
-                Assert.AreEqual("Joe is a great guy to work with.", first.Notes);
+                Assert.AreEqual("Joe Smith".PadRight(64, ' '), rows[0].Name);
+                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Date);
+                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Notes);
+                Assert.AreEqual("He also likes sushi.", rows[0].AdditionalNotes);
+
+                Assert.AreEqual("Jane Jones".PadRight(64, ' '), rows[1].Name);
+                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Date);
+                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Notes);
+                Assert.AreEqual("She doesn't like sushi as much as Joe.", rows[1].AdditionalNotes);
+                
+                Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Name);
+                Assert.AreEqual(new DateTime(2019, 10, 7), rows[2].Date);
+                Assert.IsNull(rows[2].Notes);
+                Assert.IsNull(rows[2].AdditionalNotes);
+
+                Assert.AreEqual("Jimmy OneNote".PadRight(64, ' '), rows[3].Name);
+                Assert.AreEqual(new DateTime(2013, 3, 14), rows[3].Date);
+                Assert.IsNull(rows[3].Notes);
+                Assert.AreEqual("Has a strange last name.", rows[3].AdditionalNotes);
             }
         }
 

@@ -48,15 +48,19 @@ namespace TpsParser
 
         private IEnumerable<(int recordNumber, IReadOnlyDictionary<string, TpsObject> nameValuePairs)> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
-            var memoRecords = TpsFile.GetMemoRecords(table, ignoreErrors);
+            return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
+                .SelectMany(index =>
+                {
+                    var definition = tableDefinitionRecord.Memos[index];
+                    var memoRecordsForIndex = TpsFile.GetMemoRecords(table, index, ignoreErrors);
 
-            return tableDefinitionRecord.Memos
-                .Zip(memoRecords, (memoDef, memoRec) => (owner: memoRec.Owner, name: memoDef.Name, value: memoRec.GetValue(memoDef)))
+                    return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name, value: record.GetValue(definition)));
+                })
                 .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
                 .Select(groupedPair => (
                     groupedPair.Key,
                     (IReadOnlyDictionary<string, TpsObject>)groupedPair
-                        .ToDictionary(p => p.name, p => p.value)));
+                        .ToDictionary(pair => pair.name, pair => pair.value)));
         }
 
         public Table BuildTable(bool ignoreErrors = false)

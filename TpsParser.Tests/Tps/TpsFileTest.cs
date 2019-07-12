@@ -111,7 +111,7 @@ namespace TpsParser.Tests.Tps
             var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
             var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
 
-            Assert.AreEqual(2, memos.Count());
+            Assert.AreEqual(5, memos.Count());
         }
     }
 }

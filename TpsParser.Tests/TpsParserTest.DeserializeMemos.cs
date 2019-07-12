@@ -9,6 +9,8 @@ namespace TpsParser.Tests
             string Name { get; }
             DateTime Date { get; }
             string Notes { get; }
+
+            string AdditionalNotes { get; }
         }
 
         [TpsTable]
@@ -22,6 +24,9 @@ namespace TpsParser.Tests
 
             [TpsField("Notes")]
             public string Notes { get; private set; }
+
+            [TpsField("AdditionalNotes")]
+            public string AdditionalNotes { get; private set; }
         }
 
         [TpsTable]
@@ -35,6 +40,9 @@ namespace TpsParser.Tests
 
             [TpsField("Notes")]
             public string Notes { get; internal set; }
+
+            [TpsField("AdditionalNotes")]
+            public string AdditionalNotes { get; internal set; }
         }
 
         [TpsTable]
@@ -48,6 +56,9 @@ namespace TpsParser.Tests
 
             [TpsField("Notes")]
             public string Notes { get; protected set; }
+
+            [TpsField("AdditionalNotes")]
+            public string AdditionalNotes { get; protected set; }
         }
 
         [TpsTable]
@@ -61,6 +72,9 @@ namespace TpsParser.Tests
 
             [TpsField("Notes")]
             public string Notes { get; set; }
+
+            [TpsField("AdditionalNotes")]
+            public string AdditionalNotes { get; set; }
         }
 
         [TpsTable]
@@ -75,11 +89,15 @@ namespace TpsParser.Tests
 
             [TpsField("Notes")]
             private string _notes;
+
+            [TpsField("AdditionalNotes")]
+            private string _additionalNotes;
 #pragma warning restore IDE0044 // Add readonly modifier
 
             public string Name => _name;
             public DateTime Date => _date;
             public string Notes => _notes;
+            public string AdditionalNotes => _additionalNotes;
         }
 
         [TpsTable]
@@ -94,9 +112,13 @@ namespace TpsParser.Tests
             [TpsField("Notes")]
             internal string _notes;
 
+            [TpsField("AdditionalNotes")]
+            internal string _additionalNotes;
+
             public string Name => _name;
             public DateTime Date => _date;
             public string Notes => _notes;
+            public string AdditionalNotes => _additionalNotes;
         }
 
         [TpsTable]
@@ -111,9 +133,13 @@ namespace TpsParser.Tests
             [TpsField("Notes")]
             protected string _notes;
 
+            [TpsField("AdditionalNotes")]
+            protected string _additionalNotes;
+
             public string Name => _name;
             public DateTime Date => _date;
             public string Notes => _notes;
+            public string AdditionalNotes => _additionalNotes;
         }
 
         [TpsTable]
@@ -128,9 +154,13 @@ namespace TpsParser.Tests
             [TpsField("Notes")]
             public string _notes;
 
+            [TpsField("AdditionalNotes")]
+            public string _additionalNotes;
+
             public string Name => _name;
             public DateTime Date => _date;
             public string Notes => _notes;
+            public string AdditionalNotes => _additionalNotes;
         }
 
         [TpsTable]
@@ -144,6 +174,9 @@ namespace TpsParser.Tests
 
             [TpsField("Notes", isRequired: true)]
             public string Notes { get; set; }
+
+            [TpsField("AdditionalNotes")]
+            public string AdditionalNotes { get; set; }
         }
     }
 }

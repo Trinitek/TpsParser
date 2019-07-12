@@ -197,24 +197,35 @@ namespace TpsParser.Tps
 
         private IEnumerable<MemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
         {
-            return memoRecords
+            // Records must be merged in order according to the memo's sequence number, so we order them.
+            // Large memos are spread across multiple structures and must be joined later.
+            var orderedBySequenceNumber = memoRecords
+                .OrderBy(record => ((MemoHeader)record.Header).SequenceNumber);
 
-                // Records must be merged in order according to the memo's sequence number.
-                .OrderBy(record => ((MemoHeader)record.Header).SequenceNumber)
+            // Group the records by their owner and index.
+            var groupedByOwnerAndIndex = orderedBySequenceNumber
+                .GroupBy(record =>
+                {
+                    var header = (MemoHeader)record.Header;
+                    return (owner: header.OwningRecord, index: header.MemoIndex);
+                });
 
-                // Group records by the owning record index.
-                .GroupBy(record => ((MemoHeader)record.Header).OwningRecord)
-
-                // Do not process groups that have skipped sequence numbers. (i.e. 0, 1, 3, 4)
-                .Where(group => group.Count() == ((MemoHeader)group.Last().Header).SequenceNumber + 1)
-
+            // Drop memos that have skipped sequence numbers, as this means the memo is missing a chunk of data.
+            // Sequence numbers are zero-based.
+            var filteredByCompleteSequences = groupedByOwnerAndIndex
+                .Where(group => group.Count() - 1 == ((MemoHeader)group.First().Header).SequenceNumber);
+            
+            // Merge memo sequences into a single memo record.
+            var resultingMemoRecords = filteredByCompleteSequences
                 .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
+            
+            return resultingMemoRecords;
         }
 
         /// <summary>
-        /// Gets a list of MEMO and BLOB records for the associated table.
+        /// Gets a dictionary of memo and blob records for the associated table.
         /// </summary>
-        /// <param name="table"></param>
+        /// <param name="table">The table number that owns the memos.</param>
         /// <param name="ignoreErrors"></param>
         /// <returns></returns>
         public IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
@@ -228,10 +239,10 @@ namespace TpsParser.Tps
         }
 
         /// <summary>
-        /// Gets a list of MEMO and BLOB records for the associated table.
+        /// Gets a dictionary of memo and blob records for the associated table.
         /// </summary>
-        /// <param name="table"></param>
-        /// <param name="memoIndex"></param>
+        /// <param name="table">The table number that owns the memo.</param>
+        /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
         /// <param name="ignoreErrors"></param>
         /// <returns></returns>
         public IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)

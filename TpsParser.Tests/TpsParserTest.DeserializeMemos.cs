@@ -9,7 +9,6 @@ namespace TpsParser.Tests
             string Name { get; }
             DateTime Date { get; }
             string Notes { get; }
-
             string AdditionalNotes { get; }
         }
 
@@ -181,6 +180,37 @@ namespace TpsParser.Tests
 
             [TpsField("AdditionalNotes")]
             public string AdditionalNotes { get; set; }
+        }
+
+        [TpsTable]
+        public class DeserializeMemosRecordNumberProperty
+        {
+            [TpsRecordNumber]
+            public int Id { get; private set; }
+
+            [TpsField("Name")]
+            public string Name { get; private set; }
+        }
+
+        [TpsTable]
+        public class DeserializememosRecordNumberField
+        {
+            [TpsRecordNumber]
+            public int _id;
+
+            [TpsField("Name")]
+            public string _name;
+        }
+
+        [TpsTable]
+        public class DeserializeMemosRecordNumberAndFieldAttrOnSameMember
+        {
+            [TpsRecordNumber]
+            [TpsField("Dummy")]
+            public int Id { get; private set; }
+
+            [TpsField("Name")]
+            public string Name { get; private set; }
         }
     }
 }

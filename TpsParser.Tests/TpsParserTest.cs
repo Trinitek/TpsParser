@@ -102,5 +102,42 @@ namespace TpsParser.Tests
                 Assert.Throws<TpsParserException>(() => parser.Deserialize<DeserializeMemosNotesRequired>().ToList());
             }
         }
+
+        [Test]
+        public void ShouldDeserializeRecordNumberField()
+        {
+            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            {
+                var rows = parser.Deserialize<DeserializememosRecordNumberField>().ToList();
+
+                Assert.AreEqual(2, rows[0]._id);
+                Assert.AreEqual(3, rows[1]._id);
+                Assert.AreEqual(4, rows[2]._id);
+                Assert.AreEqual(5, rows[3]._id);
+            }
+        }
+
+        [Test]
+        public void ShouldDeserializeRecordNumberProperty()
+        {
+            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            {
+                var rows = parser.Deserialize<DeserializeMemosRecordNumberProperty>().ToList();
+
+                Assert.AreEqual(2, rows[0].Id);
+                Assert.AreEqual(3, rows[1].Id);
+                Assert.AreEqual(4, rows[2].Id);
+                Assert.AreEqual(5, rows[3].Id);
+            }
+        }
+
+        [Test]
+        public void ShouldThrowRecordNumberAndFieldAttrOnSameMember()
+        {
+            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            {
+                Assert.Throws<TpsParserException>(() => parser.Deserialize<DeserializeMemosRecordNumberAndFieldAttrOnSameMember>().ToList());
+            }
+        }
     }
 }

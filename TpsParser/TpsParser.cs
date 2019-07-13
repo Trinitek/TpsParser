@@ -110,8 +110,7 @@ namespace TpsParser
                 {
                     var targetObject = new T();
 
-                    SetProperties(targetObject, r);
-                    SetFields(targetObject, r);
+                    SetMembers(targetObject, r);
 
                     return targetObject;
                 });
@@ -119,40 +118,49 @@ namespace TpsParser
             return targetObjects;
         }
 
-        private void SetProperties<T>(T targetObject, Row row)
+        private void SetMembers<T>(T targetObject, Row row)
         {
-            var properties = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Select(p => (prop: p, tpsFieldAttr: p.GetCustomAttribute<TpsFieldAttribute>()))
-                    .Where(pair => pair.tpsFieldAttr != null);
+            var members = typeof(T).GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            foreach (var (prop, tpsFieldAttr) in properties)
+            foreach (var member in members)
             {
-                if (!prop.CanWrite)
+                var tpsFieldAttr = member.GetCustomAttribute<TpsFieldAttribute>();
+                var tpsRecordNumberAttr = member.GetCustomAttribute<TpsRecordNumberAttribute>();
+
+                if (tpsFieldAttr != null && tpsRecordNumberAttr != null)
                 {
-                    throw new Exception($"The property '{prop.Name}' must have a setter.");
+                    throw new TpsParserException($"Members cannot be marked with both {nameof(TpsFieldAttribute)} and {nameof(TpsRecordNumberAttribute)}. Property name '{member.Name}'.");
                 }
 
-                var tpsFieldName = tpsFieldAttr.FieldName;
-                var tpsFieldValue = GetRowValue(row, tpsFieldName, tpsFieldAttr.IsRequired);
-                var tpsValue = CoerceValue(tpsFieldValue?.Value, tpsFieldAttr.FallbackValue);
+                if (tpsFieldAttr != null)
+                {
+                    var tpsFieldName = tpsFieldAttr.FieldName;
+                    var tpsFieldValue = GetRowValue(row, tpsFieldName, tpsFieldAttr.IsRequired);
+                    var tpsValue = CoerceValue(tpsFieldValue?.Value, tpsFieldAttr.FallbackValue);
 
-                prop.SetValue(targetObject, tpsValue);
+                    SetMember(member, targetObject, tpsValue);
+                }
+                if (tpsRecordNumberAttr != null)
+                {
+                    SetMember(member, targetObject, row.Id);
+                }
             }
         }
 
-        private void SetFields<T>(T targetObject, Row row)
+        private void SetMember(MemberInfo member, object target, object value)
         {
-            var fields = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Select(f => (field: f, tpsFieldAttr: f.GetCustomAttribute<TpsFieldAttribute>()))
-                .Where(pair => pair.tpsFieldAttr != null);
-
-            foreach (var (field, tpsFieldAttr) in fields)
+            if (member is PropertyInfo prop)
             {
-                var tpsFieldName = tpsFieldAttr.FieldName;
-                var tpsFieldValue = GetRowValue(row, tpsFieldName, tpsFieldAttr.IsRequired);
-                var tpsValue = CoerceValue(tpsFieldValue?.Value, tpsFieldAttr.FallbackValue);
+                if (!prop.CanWrite)
+                {
+                    throw new TpsParserException($"The property '{member.Name}' must have a setter.");
+                }
 
-                field.SetValue(targetObject, tpsValue);
+                prop.SetValue(target, value);
+            }
+            else if (member is FieldInfo field)
+            {
+                field.SetValue(target, value);
             }
         }
 

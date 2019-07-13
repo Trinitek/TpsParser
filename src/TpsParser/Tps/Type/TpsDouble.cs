@@ -8,6 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsDouble : TpsObject<double>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Real;
 
         public TpsDouble(RandomAccess rx)

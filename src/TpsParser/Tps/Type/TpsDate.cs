@@ -8,6 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsDate : TpsObject<DateTime?>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Date;
 
         public TpsDate(RandomAccess rx)

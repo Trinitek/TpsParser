@@ -1,5 +1,8 @@
 ﻿namespace TpsParser.Tps.Type
 {
+    /// <summary>
+    /// Represents a code point in a TopSpeed file that represents a particular data type.
+    /// </summary>
     public enum TpsTypeCode : byte
     {
         /// <summary>

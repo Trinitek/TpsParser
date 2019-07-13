@@ -8,6 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsUnsignedShort : TpsObject<ushort>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.UShort;
 
         public TpsUnsignedShort(RandomAccess rx)

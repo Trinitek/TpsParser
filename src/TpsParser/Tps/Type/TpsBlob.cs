@@ -9,6 +9,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsBlob : TpsObject<IEnumerable<byte>>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Blob;
 
         public TpsBlob(RandomAccess rx)

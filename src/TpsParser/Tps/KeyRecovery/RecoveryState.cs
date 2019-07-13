@@ -79,6 +79,7 @@ namespace TpsParser.Tps.KeyRecovery
         /// Scans the given key index to find a set of potential values that can decrypt the header block. Takes all 64 bits into consideration.
         /// </summary>
         /// <param name="keyIndex"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<IEnumerable<RecoveryState>> IndexScan(int keyIndex, CancellationToken cancellationToken)
         {
@@ -166,6 +167,7 @@ namespace TpsParser.Tps.KeyRecovery
             return new RecoveryState(newPartialKey, newB0Blocks, newSequentialBlocks, newEncryptedHeaderBlock, newPlaintextHeaderBlock);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int CompareTo(RecoveryState other)
         {
             int cmp = other.B0Blocks.Count() - B0Blocks.Count();
@@ -232,5 +234,6 @@ namespace TpsParser.Tps.KeyRecovery
         {
             return !(left == right);
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

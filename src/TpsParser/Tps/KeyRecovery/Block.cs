@@ -9,13 +9,28 @@ namespace TpsParser.Tps.KeyRecovery
 {
     public sealed class Block : IComparable<Block>, IEquatable<Block>
     {
+        /// <summary>
+        /// Gets the offset in the file at which the block resides.
+        /// </summary>
         public int Offset { get; }
 
+        /// <summary>
+        /// Gets the integer values that compose the block.
+        /// </summary>
         public IReadOnlyList<int> Values => _values;
         private readonly int[] _values;
 
+        /// <summary>
+        /// Returns true if the block is encrypted.
+        /// </summary>
         public bool IsEncrypted { get; }
 
+        /// <summary>
+        /// Instantiates a new block.
+        /// </summary>
+        /// <param name="offset">The offset at which the block resides.</param>
+        /// <param name="values">The integer values that compose the block.</param>
+        /// <param name="isEncrypted">The block's encryption status.</param>
         public Block(int offset, IEnumerable<int> values, bool isEncrypted)
         {
             Offset = offset;
@@ -23,6 +38,10 @@ namespace TpsParser.Tps.KeyRecovery
             IsEncrypted = isEncrypted;
         }
 
+        /// <summary>
+        /// Instantiates a new block from an existing block. The given block's offset, values, and encryption status are copied.
+        /// </summary>
+        /// <param name="block">The block that is to be copied.</param>
         public Block(Block block)
             : this(
                   offset: block.Offset,
@@ -30,6 +49,11 @@ namespace TpsParser.Tps.KeyRecovery
                   isEncrypted: block.IsEncrypted)
         { }
 
+        /// <summary>
+        /// Instantiates a new block from an existing block. The given block's values and encryption status are copied.
+        /// </summary>
+        /// <param name="offset">The offset at which the block resides.</param>
+        /// <param name="block">The block that is to be copied.</param>
         public Block(int offset, Block block)
             : this(
                   offset: offset,
@@ -37,6 +61,11 @@ namespace TpsParser.Tps.KeyRecovery
                   isEncrypted: block.IsEncrypted)
         { }
 
+        /// <summary>
+        /// Instantiates a new block from a data stream.
+        /// </summary>
+        /// <param name="rx">The data stream from which to construct the block.</param>
+        /// <param name="isEncrypted">The block's encryption status.</param>
         public Block(RandomAccess rx, bool isEncrypted)
             : this(
                   offset: rx.Position,
@@ -60,8 +89,12 @@ namespace TpsParser.Tps.KeyRecovery
             return target;
         }
 
-        public bool ValueEquals(Block block) => Values.SequenceEqual(block.Values);
+        internal bool ValueEquals(Block block) => Values.SequenceEqual(block.Values);
 
+        /// <summary>
+        /// Writes the block's offset, encryption status, and values to an outgoing stream.
+        /// </summary>
+        /// <param name="writer"></param>
         public void Write(BinaryWriter writer)
         {
             if (writer == null)
@@ -79,6 +112,11 @@ namespace TpsParser.Tps.KeyRecovery
             }
         }
 
+        /// <summary>
+        /// Creates a new block from an incoming stream.
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
         public static Block Read(BinaryReader reader)
         {
             if (reader == null)
@@ -103,6 +141,7 @@ namespace TpsParser.Tps.KeyRecovery
                 isEncrypted: isEncrypted);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int CompareTo(Block other)
         {
             int d = Offset - other.Offset;
@@ -280,5 +319,6 @@ namespace TpsParser.Tps.KeyRecovery
                 && ((c - b == 1) || (c - b == -255))
                 && ((b - a == 1) || (b - a == -255));
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

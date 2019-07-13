@@ -25,7 +25,6 @@ namespace TpsParser.Tps.Type
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override bool Equals(object obj)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (obj is TpsObject o)
             {
@@ -37,9 +36,7 @@ namespace TpsParser.Tps.Type
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override int GetHashCode()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var hashCode = -1431579180;
             hashCode = hashCode * -1521134295 + EqualityComparer<object>.Default.GetHashCode(Value);
@@ -47,19 +44,16 @@ namespace TpsParser.Tps.Type
             return hashCode;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool operator ==(TpsObject left, TpsObject right)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return EqualityComparer<TpsObject>.Default.Equals(left, right);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool operator !=(TpsObject left, TpsObject right)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return !(left == right);
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 
     /// <summary>

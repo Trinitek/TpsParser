@@ -13,8 +13,8 @@ namespace TpsParser.Tests.Tps.KeyRecovery
         public void ShouldEqualsAndCompare()
         {
             var k1 = new PartialKey();
-            var k2 = k1.Apply(index: 0x0F, keyA: 42);
-            var k3 = k1.Apply(index: 0x0F, keyA: 42);
+            var k2 = k1.Apply(index: 0x0F, keyPiece: 42);
+            var k3 = k1.Apply(index: 0x0F, keyPiece: 42);
 
             Assert.AreNotEqual(k1, k2);
             Assert.AreEqual(k3, k2);
@@ -35,7 +35,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             for (int i = 0; i < 16; i++)
             {
-                k1 = k1.Apply(index: i, keyA: i);
+                k1 = k1.Apply(index: i, keyPiece: i);
             }
 
             Assert.AreEqual(0, k1.GetInvalidIndexes().Count);
@@ -55,7 +55,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var blockPlain = new Block(new RandomAccess(plain), isEncrypted: false);
             var blockCrypt = new Block(new RandomAccess(crypt), isEncrypted: true);
 
-            var pk = new PartialKey().Apply(index: 15, keyA: k.GetWord(15));
+            var pk = new PartialKey().Apply(index: 15, keyPiece: k.GetWord(15));
             var result = pk.PartialDecrypt(index: 15, block: blockCrypt);
 
             Assert.AreEqual(blockPlain.Values[15], result.Values[15]);
@@ -74,7 +74,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var blockPlain = new Block(new RandomAccess(plain), isEncrypted: false);
             var blockCrypt = new Block(new RandomAccess(crypt), isEncrypted: true);
 
-            var pk = new PartialKey().Apply(index: 15, keyA: k.GetWord(15));
+            var pk = new PartialKey().Apply(index: 15, keyPiece: k.GetWord(15));
 
             var result = await pk.KeyIndexScan(index: 15, encryptedBlock: blockCrypt, plaintextBlock: blockPlain, cancellationToken: default);
 

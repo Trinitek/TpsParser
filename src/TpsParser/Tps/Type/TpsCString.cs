@@ -9,6 +9,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsCString : TpsObject<string>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.CString;
 
         public TpsCString(RandomAccess rx, Encoding encoding)

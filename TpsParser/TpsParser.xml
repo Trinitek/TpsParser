@@ -248,6 +248,57 @@
             </para>
             </param>
         </member>
+        <member name="T:TpsParser.TpsParser">
+            <summary>
+            An easy to use reader and object deserializer for TopSpeed files.
+            </summary>
+        </member>
+        <member name="P:TpsParser.TpsParser.TpsFile">
+            <summary>
+            Gets the low level representation of the TopSpeed file and its data structures.
+            </summary>
+        </member>
+        <member name="M:TpsParser.TpsParser.#ctor(System.IO.Stream)">
+            <summary>
+            Instantiates a new parser.
+            </summary>
+            <param name="stream">The stream from which to read the TopSpeed file.</param>
+        </member>
+        <member name="M:TpsParser.TpsParser.#ctor(System.IO.Stream,System.String)">
+            <summary>
+            Instantiates a new parser.
+            </summary>
+            <param name="stream">The stream from which to read the TopSpeed file.</param>
+            <param name="password">The password or "owner" to use to decrypt the file.</param>
+        </member>
+        <member name="M:TpsParser.TpsParser.#ctor(System.String)">
+            <summary>
+            Instantiates a new parser.
+            </summary>
+            <param name="filename">The filename of the TopSpeed file.</param>
+        </member>
+        <member name="M:TpsParser.TpsParser.#ctor(System.String,System.String)">
+            <summary>
+            Instantiates a new parser.
+            </summary>
+            <param name="filename">The filename of the TopSpeed file.</param>
+            <param name="password">The password or "owner" to use to decrypt the file.</param>
+        </member>
+        <member name="M:TpsParser.TpsParser.BuildTable(System.Boolean)">
+            <summary>
+            Gets a high level representation of the first table in the file.
+            </summary>
+            <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.TpsParser.Deserialize``1(System.Boolean)">
+            <summary>
+            Deserializes the first table in the file to a collection of the given type.
+            </summary>
+            <typeparam name="T">The type to represent a deserialized row.</typeparam>
+            <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
+            <returns></returns>
+        </member>
         <member name="P:TpsParser.Tps.Header.MemoHeader.OwningRecord">
             <summary>
             Gets the number of the <see cref="T:TpsParser.Tps.Record.DataRecord"/> that owns this memo.
@@ -299,6 +350,49 @@
             </summary>
             <param name="encrypted">The encrypted data to decrypt.</param>
         </member>
+        <member name="P:TpsParser.Tps.KeyRecovery.Block.Offset">
+            <summary>
+            Gets the offset in the file at which the block resides.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.KeyRecovery.Block.Values">
+            <summary>
+            Gets the integer values that compose the block.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.KeyRecovery.Block.IsEncrypted">
+            <summary>
+            Returns true if the block is encrypted.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.#ctor(System.Int32,System.Collections.Generic.IEnumerable{System.Int32},System.Boolean)">
+            <summary>
+            Instantiates a new block.
+            </summary>
+            <param name="offset">The offset at which the block resides.</param>
+            <param name="values">The integer values that compose the block.</param>
+            <param name="isEncrypted">The block's encryption status.</param>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.#ctor(TpsParser.Tps.KeyRecovery.Block)">
+            <summary>
+            Instantiates a new block from an existing block. The given block's offset, values, and encryption status are copied.
+            </summary>
+            <param name="block">The block that is to be copied.</param>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.#ctor(System.Int32,TpsParser.Tps.KeyRecovery.Block)">
+            <summary>
+            Instantiates a new block from an existing block. The given block's values and encryption status are copied.
+            </summary>
+            <param name="offset">The offset at which the block resides.</param>
+            <param name="block">The block that is to be copied.</param>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.#ctor(TpsParser.Binary.RandomAccess,System.Boolean)">
+            <summary>
+            Instantiates a new block from a data stream.
+            </summary>
+            <param name="rx">The data stream from which to construct the block.</param>
+            <param name="isEncrypted">The block's encryption status.</param>
+        </member>
         <member name="M:TpsParser.Tps.KeyRecovery.Block.Apply(System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
             Apply a partial encryption or decryption.
@@ -307,6 +401,19 @@
             <param name="b"></param>
             <param name="va"></param>
             <param name="vb"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.Write(System.IO.BinaryWriter)">
+            <summary>
+            Writes the block's offset, encryption status, and values to an outgoing stream.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.Read(System.IO.BinaryReader)">
+            <summary>
+            Creates a new block from an incoming stream.
+            </summary>
+            <param name="reader"></param>
             <returns></returns>
         </member>
         <member name="M:TpsParser.Tps.KeyRecovery.Block.FindIdenticalBlocks(System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.Block})">
@@ -364,6 +471,22 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="T:TpsParser.Tps.KeyRecovery.PartialKey">
+            <summary>
+            Represents a partial encryption/decryption key. This class provides methods for solving pieces of the key
+            by comparing decrypted blocks with encrypted blocks.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.KeyRecovery.PartialKey.IsComplete">
+            <summary>
+            Returns true if all of the key pieces are present and have been validated.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.#ctor">
+            <summary>
+            Instantiates a new partial key.
+            </summary>
+        </member>
         <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.KeyIndexScan(System.Int32,TpsParser.Tps.KeyRecovery.Block,TpsParser.Tps.KeyRecovery.Block,System.Threading.CancellationToken)">
             <summary>
             <para>
@@ -379,6 +502,7 @@
             <param name="index"></param>
             <param name="encryptedBlock"></param>
             <param name="plaintextBlock"></param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.KeyIndexSelfScan(System.Int32,TpsParser.Tps.KeyRecovery.Block,TpsParser.Tps.KeyRecovery.Block,System.Threading.CancellationToken)">
@@ -388,6 +512,22 @@
             <param name="index"></param>
             <param name="encryptedBlock"></param>
             <param name="plaintextBlock"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.Apply(System.Int32,System.Int32)">
+            <summary>
+            Appends a solved key piece to the current list of pieces and returns a new partial key.
+            </summary>
+            <param name="index">The index at which the piece belongs in the final key.</param>
+            <param name="keyPiece">The solved key piece.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.ToKey">
+            <summary>
+            Returns a completed key.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Thrown if the partial key is not complete. See <see cref="P:TpsParser.Tps.KeyRecovery.PartialKey.IsComplete"/>.</exception>
             <returns></returns>
         </member>
         <member name="M:TpsParser.Tps.KeyRecovery.RecoveryState.IndexScan(System.Int32,System.Threading.CancellationToken)">
@@ -395,6 +535,7 @@
             Scans the given key index to find a set of potential values that can decrypt the header block. Takes all 64 bits into consideration.
             </summary>
             <param name="keyIndex"></param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="M:TpsParser.Tps.KeyRecovery.RecoveryState.IndexSelfScan(System.Int32,System.Threading.CancellationToken)">
@@ -645,25 +786,40 @@
             Represents a blob of bytes.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsBlob.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsByte">
             <summary>
             Represents a byte.
             </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsByte.TypeCode">
+            <inheritdoc/>
         </member>
         <member name="T:TpsParser.Tps.Type.TpsCString">
             <summary>
             Represents a null-terminated string.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsCString.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsDate">
             <summary>
             Represents a date.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsDate.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsDecimal">
             <summary>
             Represents a binary coded decimal.
             </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsDecimal.TypeCode">
+            <inheritdoc/>
         </member>
         <member name="P:TpsParser.Tps.Type.TpsDecimal.ValueAsDecimal">
             <summary>
@@ -675,25 +831,40 @@
             Represents a double-precision floating point number.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsDouble.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsFloat">
             <summary>
             Represents a single-precision floating point number.
             </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsFloat.TypeCode">
+            <inheritdoc/>
         </member>
         <member name="T:TpsParser.Tps.Type.TpsGroup">
             <summary>
             Represents a grouping of fields.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsGroup.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsLong">
             <summary>
             Represents a signed integer.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsLong.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsMemo">
             <summary>
             Represents a memo containing an ISO-8859-1 encoded string.
             </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsMemo.TypeCode">
+            <inheritdoc/>
         </member>
         <member name="T:TpsParser.Tps.Type.TpsObject">
             <summary>
@@ -730,15 +901,24 @@
             Represents a Pascal string where the length is specified at the beginning of the string.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsPString.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsShort">
             <summary>
             Represents a signed short.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsShort.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsString">
             <summary>
             Represents a fixed length string.
             </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsString.TypeCode">
+            <inheritdoc/>
         </member>
         <member name="T:TpsParser.Tps.Type.TpsTime">
             <summary>
@@ -788,6 +968,11 @@
         </member>
         <member name="P:TpsParser.Tps.Type.TpsTime.TypeCode">
             <inheritdoc/>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsTypeCode">
+            <summary>
+            Represents a code point in a TopSpeed file that represents a particular data type.
+            </summary>
         </member>
         <member name="F:TpsParser.Tps.Type.TpsTypeCode.Byte">
             <summary>
@@ -874,10 +1059,16 @@
             Represents an unsigned integer.
             </summary>
         </member>
+        <member name="P:TpsParser.Tps.Type.TpsUnsignedLong.TypeCode">
+            <inheritdoc/>
+        </member>
         <member name="T:TpsParser.Tps.Type.TpsUnsignedShort">
             <summary>
             Represents an unsigned short.
             </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsUnsignedShort.TypeCode">
+            <inheritdoc/>
         </member>
     </members>
 </doc>

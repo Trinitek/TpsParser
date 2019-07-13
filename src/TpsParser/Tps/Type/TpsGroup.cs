@@ -9,6 +9,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsGroup : TpsObject<IEnumerable<byte>>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Group;
 
         public TpsGroup(RandomAccess rx, int length)

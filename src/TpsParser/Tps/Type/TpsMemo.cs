@@ -9,6 +9,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsMemo : TpsObject<string>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Memo;
 
         public TpsMemo(RandomAccess rx)

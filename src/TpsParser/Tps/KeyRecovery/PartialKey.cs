@@ -10,11 +10,18 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps.KeyRecovery
 {
+    /// <summary>
+    /// Represents a partial encryption/decryption key. This class provides methods for solving pieces of the key
+    /// by comparing decrypted blocks with encrypted blocks.
+    /// </summary>
     public sealed class PartialKey : IComparable<PartialKey>, IEquatable<PartialKey>
     {
         private IReadOnlyList<bool> Valid { get; }
-        private IReadOnlyList<int> Key { get; }
+        private IReadOnlyList<int> KeyPiece { get; }
 
+        /// <summary>
+        /// Returns true if all of the key pieces are present and have been validated.
+        /// </summary>
         public bool IsComplete
         {
             get
@@ -31,6 +38,9 @@ namespace TpsParser.Tps.KeyRecovery
             }
         }
 
+        /// <summary>
+        /// Instantiates a new partial key.
+        /// </summary>
         public PartialKey()
             : this(
                   valid: new bool[16],
@@ -40,10 +50,10 @@ namespace TpsParser.Tps.KeyRecovery
         private PartialKey(IReadOnlyList<bool> valid, IReadOnlyList<int> key)
         {
             Valid = valid ?? throw new ArgumentNullException(nameof(valid));
-            Key = key ?? throw new ArgumentNullException(nameof(key));
+            KeyPiece = key ?? throw new ArgumentNullException(nameof(key));
         }
 
-        public PartialKey(PartialKey partialKey, int index, int value)
+        private PartialKey(PartialKey partialKey, int index, int value)
         {
             if (partialKey == null)
             {
@@ -51,13 +61,13 @@ namespace TpsParser.Tps.KeyRecovery
             }
 
             var newValid = partialKey.Valid.ToArray();
-            var newKeys = partialKey.Key.ToArray();
+            var newKeys = partialKey.KeyPiece.ToArray();
 
             newValid[index] = true;
             newKeys[index] = value;
 
             Valid = newValid;
-            Key = newKeys;
+            KeyPiece = newKeys;
         }
 
         /// <summary>
@@ -74,6 +84,7 @@ namespace TpsParser.Tps.KeyRecovery
         /// <param name="index"></param>
         /// <param name="encryptedBlock"></param>
         /// <param name="plaintextBlock"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public Task<IReadOnlyDictionary<PartialKey, Block>> KeyIndexScan(
             int index,
@@ -93,6 +104,7 @@ namespace TpsParser.Tps.KeyRecovery
         /// <param name="index"></param>
         /// <param name="encryptedBlock"></param>
         /// <param name="plaintextBlock"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public Task<IReadOnlyDictionary<PartialKey, Block>> KeyIndexSelfScan(
             int index,
@@ -210,15 +222,26 @@ namespace TpsParser.Tps.KeyRecovery
             }
         }
 
-        public PartialKey Apply(int index, int keyA) => new PartialKey(this, index, keyA);
+        /// <summary>
+        /// Appends a solved key piece to the current list of pieces and returns a new partial key.
+        /// </summary>
+        /// <param name="index">The index at which the piece belongs in the final key.</param>
+        /// <param name="keyPiece">The solved key piece.</param>
+        /// <returns></returns>
+        public PartialKey Apply(int index, int keyPiece) => new PartialKey(this, index, keyPiece);
 
+        /// <summary>
+        /// Returns a completed key.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if the partial key is not complete. See <see cref="IsComplete"/>.</exception>
+        /// <returns></returns>
         public Key ToKey()
         {
             if (IsComplete)
             {
                 var rx = new RandomAccess(new byte[64]);
 
-                foreach (var k in Key)
+                foreach (var k in KeyPiece)
                 {
                     rx.WriteLongLE(k);
                 }
@@ -238,7 +261,7 @@ namespace TpsParser.Tps.KeyRecovery
                 throw new ArgumentException("The given index was not valid.", nameof(index));
             }
 
-            int keyA = Key[index];
+            int keyA = KeyPiece[index];
             int positionA = index;
             int positionB = keyA & 0x0F;
 
@@ -286,7 +309,7 @@ namespace TpsParser.Tps.KeyRecovery
             for (int i = 0; i < Valid.Count; i++)
             {
                 writer.Write(Valid[i]);
-                writer.Write(Key[i]);
+                writer.Write(KeyPiece[i]);
             }
         }
 
@@ -311,6 +334,7 @@ namespace TpsParser.Tps.KeyRecovery
             return new PartialKey(newValid, newKey);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -319,7 +343,7 @@ namespace TpsParser.Tps.KeyRecovery
             {
                 if (Valid[i])
                 {
-                    sb.Append($"{Key[i]:x8} ");
+                    sb.Append($"{KeyPiece[i]:x8} ");
                 }
                 else
                 {
@@ -332,9 +356,9 @@ namespace TpsParser.Tps.KeyRecovery
 
         public int CompareTo(PartialKey other)
         {
-            for (int i = 0; i < Key.Count; i++)
+            for (int i = 0; i < KeyPiece.Count; i++)
             {
-                int d = Key[i] - other.Key[i];
+                int d = KeyPiece[i] - other.KeyPiece[i];
 
                 if (d != 0)
                 {
@@ -361,7 +385,7 @@ namespace TpsParser.Tps.KeyRecovery
             else
             {
                 return Valid.SequenceEqual(other.Valid)
-                    && Key.SequenceEqual(other.Key);
+                    && KeyPiece.SequenceEqual(other.KeyPiece);
             }
         }
 
@@ -376,7 +400,7 @@ namespace TpsParser.Tps.KeyRecovery
                 hashCode = hashCode * -1521134295 + v.GetHashCode();
             }
 
-            foreach (var k in Key)
+            foreach (var k in KeyPiece)
             {
                 hashCode = hashCode * -1521134295 + k.GetHashCode();
             }
@@ -393,5 +417,6 @@ namespace TpsParser.Tps.KeyRecovery
         {
             return !(left == right);
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

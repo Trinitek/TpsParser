@@ -8,6 +8,7 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public sealed class TpsUnsignedLong : TpsObject<uint>
     {
+        /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.ULong;
 
         public TpsUnsignedLong(RandomAccess rx)

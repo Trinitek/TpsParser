@@ -16,20 +16,20 @@ namespace TpsParser.Tps.Type
     /// <term>Range</term>
     /// </listheader>
     /// <item>
-    /// <term>Hours</term>
-    /// <description>0 to 23</description>
-    /// </item>
-    /// <item>
-    /// <term>Minutes</term>
-    /// <description>0 to 59</description>
+    /// <term>Centiseconds</term>
+    /// <description>0 to 99</description>
     /// </item>
     /// <item>
     /// <term>Seconds</term>
     /// <description>0 to 59</description>
     /// </item>
     /// <item>
-    /// <term>Centiseconds</term>
-    /// <description>0 to 99</description>
+    /// <term>Minutes</term>
+    /// <description>0 to 59</description>
+    /// </item>
+    /// <item>
+    /// <term>Hours</term>
+    /// <description>0 to 23</description>
     /// </item>
     /// </list>
     /// A centisecond is 1/100th of a second.

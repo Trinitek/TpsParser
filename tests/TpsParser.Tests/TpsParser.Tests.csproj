@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TpsParser\TpsParser.csproj" />
+    <ProjectReference Include="..\..\src\TpsParser\TpsParser.csproj" />
   </ItemGroup>
 
   <ItemGroup>

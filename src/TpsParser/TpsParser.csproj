@@ -6,7 +6,7 @@
     <PackageProjectUrl>https://github.com/Trinitek/TpsParser</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Trinitek/TpsParser</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Copyright>Copyright © 2019 Blake Burgess</Copyright>
     <Description>Reads encrypted and unencrypted Clarion TPS files.</Description>
   </PropertyGroup>
@@ -20,6 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="docfx.console" Version="2.43.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.1" />
   </ItemGroup>
 

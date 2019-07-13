@@ -1,0 +1,883 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TpsParser</name>
+    </assembly>
+    <members>
+        <member name="P:TpsParser.Binary.RandomAccess.BaseOffset">
+            <summary>
+            Gets the base offset position in the data array.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Binary.RandomAccess.Position">
+            <summary>
+            Gets the current position in the data array.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Binary.RandomAccess.Length">
+            <summary>
+            Gets the length of the data array.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.LongLE">
+            <summary>
+            Reads a little endian 2s-complement signed 4 byte integer.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.WriteLongLE(System.Int32)">
+            <summary>
+            Writes a 4 byte little endian integer to the current position. This is typically used when decrypting.
+            </summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.UnsignedLongLE">
+            <summary>
+            Reads a little endian unsigned 4 byte integer.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.LongBE">
+            <summary>
+            Reads a big endian signed integer.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.UnsignedLongBE">
+            <summary>
+            Reads a big endian unsigned integer.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.ShortLE">
+            <summary>
+            Reads a little endian signed short.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.UnsignedShortLE">
+            <summary>
+            Reads a little endian unsigned short.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.ShortBE">
+            <summary>
+            Reads a big endian signed short.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.Byte">
+            <summary>
+            Reads a byte.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.FloatLE">
+            <summary>
+            Reads a little endian float.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.DoubleLE">
+            <summary>
+            Reads a little endian double.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.FixedLengthString(System.Int32)">
+            <summary>
+            Reads a fixed length string.
+            </summary>
+            <param name="length">The length of the string to read.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.FixedLengthString(System.Int32,System.Text.Encoding)">
+            <summary>
+            Reads a fixed length string.
+            </summary>
+            <param name="length">The length of the string to read.</param>
+            <param name="encoding">The encoding of the string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.ZeroTerminatedString">
+            <summary>
+            Reads a zero-terminated string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.ZeroTerminatedString(System.Text.Encoding)">
+            <summary>
+            Reads a zero-terminated string.
+            </summary>
+            <param name="encoding">The encoding of the string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.PascalString">
+            <summary>
+            Reads a Pascal string. Pascal strings have their length encoded in the first byte.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.PascalString(System.Text.Encoding)">
+            <summary>
+            Reads a Pascal string. Pascal strings have their length encoded in the first byte.
+            </summary>
+            <param name="encoding">The encoding of the string.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.JumpAbsolute(System.Int32)">
+            <summary>
+            Set the current position to the given offset.
+            </summary>
+            <param name="offset">The new offset.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.JumpRelative(System.Int32)">
+            <summary>
+            Set the current position relative to the given offset.
+            </summary>
+            <param name="offset">The relative offset.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.GetData">
+            <summary>
+            Gets the data array. If a base offset and length was specified, then only that section of the array is returned.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.Read(System.Int32)">
+            <summary>
+            Gets a new <see cref="T:TpsParser.Binary.RandomAccess"/> of the given length at the current position and advances the position.
+            </summary>
+            <param name="length">The length of the data array.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.ReadBytes(System.Int32)">
+            <summary>
+            Reads an array from the current position and advances the position.
+            </summary>
+            <param name="length"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.UnpackRunLengthEncoding">
+            <summary>
+            Unpacks a run length encoded sequence of bytes.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.LongArrayLE(System.Int32)">
+            <summary>
+            Reads an array of little endian 2s-complement signed 4 byte integers.
+            </summary>
+            <param name="length"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Binary.RandomAccess.GetRemainder">
+            <summary>
+            Gets an array of the remaining unread data array.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:TpsParser.Row.Id">
+            <summary>
+            Gets the record number.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Row.Values">
+            <summary>
+            <para>
+            Gets the field values that belong to the record, where each <see cref="T:TpsParser.Tps.Type.TpsObject"/> is associated with the name of its column.
+            </para>
+            <para>
+            This contains data fields as well as any associated memos or blobs.
+            </para>
+            </summary>
+        </member>
+        <member name="M:TpsParser.Row.GetValue(System.String)">
+            <summary>
+            Gets the field value, memo, or blob associated with the given column name.
+            </summary>
+            <param name="column"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Row.GetValueCaseInsensitive(System.String,System.Boolean)">
+            <summary>
+            Gets the field, memo, or blob value associated with the given column name.
+            If the column is not found and <paramref name="isRequired"/> is false, null is returned.
+            </summary>
+            <param name="column">The case insensitive name of the column.</param>
+            <param name="isRequired">Indicates that the requested field must be present, or an exception is thrown.</param>
+            <returns></returns>
+        </member>
+        <member name="P:TpsParser.Table.Name">
+            <summary>
+            Gets the name of the table.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Table.Rows">
+            <summary>
+            Gets an unsorted collection of rows that belong to this table.
+            </summary>
+        </member>
+        <member name="T:TpsParser.TpsFieldAttribute">
+            <summary>
+            <para>
+            Marks the property or field as a TopSpeed field, MEMO, or BLOB.
+            </para>
+            <para>
+            If present on a field, the field may be private.
+            </para>
+            <para>
+            If present on a property, the property must have a setter. The setter may be private.
+            </para>
+            </summary>
+        </member>
+        <member name="M:TpsParser.TpsFieldAttribute.#ctor(System.String,System.Object,System.Boolean)">
+            <summary>
+            Marks the property or field as a TopSpeed field, MEMO, or BLOB.
+            </summary>
+            <param name="fieldName">The case insensitive name of the column.</param>
+            <param name="fallbackValue">Fallback value to use if the field is null.</param>
+            <param name="isRequired">
+            <para>
+            Throw an exception if the field is not found during deserialization.
+            </para>
+            <para>
+            Note that a field might be be present in some rows and missing in others. This is especially true for MEMOs and BLOBs.
+            </para>
+            </param>
+        </member>
+        <member name="P:TpsParser.Tps.Header.MemoHeader.OwningRecord">
+            <summary>
+            Gets the number of the <see cref="T:TpsParser.Tps.Record.DataRecord"/> that owns this memo.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Header.MemoHeader.MemoIndex">
+            <summary>
+            Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="P:TpsParser.Tps.Record.TableDefinitionRecord.Memos"/>.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Key">
+            <summary>
+            Represents a sequence of bytes hashed from a password string that is used to encrypt and decrypt the file.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.Key.#ctor(System.String)">
+            <summary>
+            Instantiates a key and initializes it using the given password.
+            </summary>
+            <param name="password">The password or "owner" of the file.</param>
+        </member>
+        <member name="M:TpsParser.Tps.Key.#ctor(TpsParser.Binary.RandomAccess)">
+            <summary>
+            Instantiates a key with an already initialized data state.
+            </summary>
+            <param name="rx"></param>
+        </member>
+        <member name="M:TpsParser.Tps.Key.Shuffle">
+            <summary>
+            Shuffles the smeared key.  This method must be called twice to properly initialize the key.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.Key.Encrypt64(TpsParser.Binary.RandomAccess)">
+            <summary>
+            Encrypts the given buffer. The buffer must be 64 bytes long.
+            </summary>
+            <param name="buffer">The buffer to encrypt.</param>
+        </member>
+        <member name="M:TpsParser.Tps.Key.Decrypt64(TpsParser.Binary.RandomAccess)">
+            <summary>
+            Decrypts the given buffer. The buffer must be 64 bytes long.
+            </summary>
+            <param name="buffer"></param>
+        </member>
+        <member name="M:TpsParser.Tps.Key.Decrypt(TpsParser.Binary.RandomAccess)">
+            <summary>
+            Decodes the given encrypted data in blocks of 64 bytes.
+            The data must have a position of 0, and an offset and length that are divisible by 64.
+            </summary>
+            <param name="encrypted">The encrypted data to decrypt.</param>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.Apply(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Apply a partial encryption or decryption.
+            </summary>
+            <param name="a"></param>
+            <param name="b"></param>
+            <param name="va"></param>
+            <param name="vb"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.FindIdenticalBlocks(System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.Block})">
+            <summary>
+            <para>
+            Find blocks with the same (encrypted) content in the file.
+            </para>
+            <para>
+            TPS uses EBC mode, so identical encrypted
+            blocks will map to the same plaintext. This is useful because identical blocks are generally empty smace
+            whose plaintext contents are known in advance (0xB0B0B0B0).
+            </para>
+            </summary>
+            <param name="blocks"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.IsB0Part(System.UInt32)">
+            <summary>
+            Blocks consisting of the pattern 0xB0B0B0B0 are occasionally scattered around the file and seem to indicate empty space.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.GetHeaderIndexEndBlock(System.Collections.Generic.IList{TpsParser.Tps.KeyRecovery.Block},System.Boolean)">
+            <summary>
+            <para>
+            Gets the header index end block.
+            </para>
+            <para>
+            This is one of the few blocks in the TPS format with predictable contents and is at a fixed location.
+            Typically it is filled with identical values (the size of the file, less the size of the header and right shifted for 8 bits).
+            </para>
+            </summary>
+            <param name="blocks"></param>
+            <param name="isEncrypted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.GenerateSequenceBlock(System.Int32)">
+            <summary>
+            <para>
+            Generates a sequence block that is usually found at the end of the file.
+            </para>
+            <para>
+            Most files have an area with incrementing bytes near the end of the file. The exact offset differs, but given the last 4 bytes
+            the block can be reconstructed.
+            </para>
+            </summary>
+            <param name="end"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.Block.IsSequencePart(System.Int32)">
+            <summary>
+            Returns true when the given value is a byte sequence like 0x2A292827 or 0x0100FFFE.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.KeyIndexScan(System.Int32,TpsParser.Tps.KeyRecovery.Block,TpsParser.Tps.KeyRecovery.Block,System.Threading.CancellationToken)">
+            <summary>
+            <para>
+            Attempts to find matching key values for the given index by matching a block
+            of crypttext with plaintext.
+            </para>
+            <para>
+            This only works if there are no other key indexes
+            with a swap for this index.  For index 0x0F it always works because none of
+            the other indexes will select index 0x0F.
+            </para>
+            </summary>
+            <param name="index"></param>
+            <param name="encryptedBlock"></param>
+            <param name="plaintextBlock"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.PartialKey.KeyIndexSelfScan(System.Int32,TpsParser.Tps.KeyRecovery.Block,TpsParser.Tps.KeyRecovery.Block,System.Threading.CancellationToken)">
+            <summary>
+            Attempts to find key values that have their swap column set at their own index.
+            </summary>
+            <param name="index"></param>
+            <param name="encryptedBlock"></param>
+            <param name="plaintextBlock"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.RecoveryState.IndexScan(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Scans the given key index to find a set of potential values that can decrypt the header block. Takes all 64 bits into consideration.
+            </summary>
+            <param name="keyIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.RecoveryState.IndexSelfScan(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            <para>
+            Scans the given key index to find any value that has a swap of the same index that decrypts the header block. Takes 60 of the index's 64 bits into consideration.
+            </para>
+            <para>
+            This does not indicate that the value found is correct, but only indicates that the column swaps with itself. Popular swap columns appear to be 0 and 8, and these
+            are often found to swap with themselves.
+            </para>
+            </summary>
+            <param name="keyIndex"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.RecoveryStateExtensions.ReduceFirstSequential(System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.RecoveryState},System.Int32,System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.Block})">
+            <summary>
+            <para>
+            Reduces the number of candidate solutions by finding any blocks that decrypt to a sequence (like 0x40414243).
+            </para>
+            <para>
+            Blocks that are found to hold a sequence are added to the recovery state for further evaluation.
+            </para>
+            </summary>
+            <param name="candidates"></param>
+            <param name="index"></param>
+            <param name="blocks"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.RecoveryStateExtensions.ReduceNextSequential(System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.RecoveryState},System.Int32)">
+            <summary>
+            Reduces the number of candidate solutions by finding any blocks that decrypt to a sequence (like 0x40414243).
+            </summary>
+            <param name="candidates"></param>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.RecoveryStateExtensions.ReduceFirstB0(System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.RecoveryState},System.Int32,System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.Block})">
+            <summary>
+            <para>
+            Reduces the number of solutions by attempting to decrypt blocks with duplicates of 0xB0B0B0B0 blocks.
+            </para>
+            <para>
+            If at least one of those blocks is found, the solution is kept. The blocks that decrypt to 0xB0B0 are saved in the keys
+            recovery state for further decryption.
+            </para>
+            </summary>
+            <param name="candidates"></param>
+            <param name="index"></param>
+            <param name="blocks"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.KeyRecovery.RecoveryStateExtensions.ReduceNextB0(System.Collections.Generic.IEnumerable{TpsParser.Tps.KeyRecovery.RecoveryState},System.Int32)">
+            <summary>
+            <para>
+            Reduces the number of solutions by re-evaluating the found 0xB0B0 blocks at this index.
+            </para>
+            <para>
+            If at least one block still decrypts to 0xB0B0, the candidate is kept.
+            </para>
+            </summary>
+            <param name="candidates"></param>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="T:TpsParser.Tps.Record.FieldDefinitionRecord">
+            <summary>
+            Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="T:TpsParser.Tps.Record.MemoDefinitionRecord"/>.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.FieldDefinitionRecord.FullName">
+            <summary>
+            <para>
+            Gets the fully qualified name of the field with the table prefix, e.g. "INV:INVOICENO".
+            Use <see cref="P:TpsParser.Tps.Record.FieldDefinitionRecord.Name"/> for only the field name.
+            </para>
+            <para>
+            If the field was not defined with a prefix in Clarion, then it will be absent.
+            When present, it is rarely the same as the table name, if the table has a name at all.
+            </para>
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.FieldDefinitionRecord.Name">
+            <summary>
+            <para>
+            Gets the name of the field without the table prefix, e.g. "INVOICENO".
+            Use <see cref="P:TpsParser.Tps.Record.FieldDefinitionRecord.FullName"/> for the fully qualified field name.
+            </para>
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.Record.FieldDefinitionRecord.IsInGroup(TpsParser.Tps.Record.FieldDefinitionRecord)">
+            <summary>
+            Checks to see if this field fits in the given group field.
+            </summary>
+            <param name="group">The group field to check.</param>
+            <returns></returns>
+        </member>
+        <member name="T:TpsParser.Tps.Record.IndexDefinitionRecord">
+            <summary>
+            Represents the schema for a particular index.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Record.MemoDefinitionRecord">
+            <summary>
+            Represents the schema for a particular MEMO or BLOB field.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.MemoDefinitionRecord.FullName">
+            <summary>
+            <para>
+            Gets the fully qualified name of the field with the table prefix, e.g. "INV:INVOICENO".
+            Use <see cref="P:TpsParser.Tps.Record.MemoDefinitionRecord.Name"/> for only the field name.
+            </para>
+            <para>
+            If the table was not defined with a prefix in Clarion, then it will be absent.
+            When present, it is rarely the same as the table name, if the table has a name at all.
+            </para>
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.MemoDefinitionRecord.Name">
+            <summary>
+            <para>
+            Gets the name of the field without the table prefix, e.g. "INVOICENO".
+            Use <see cref="P:TpsParser.Tps.Record.MemoDefinitionRecord.FullName"/> for the fully qualified field name.
+            </para>
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.Record.MemoRecord.GetDataAsMemo">
+            <summary>
+            Returns the memo data as an ISO-8859-1 encoded string.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.Record.MemoRecord.GetDataAsBlob">
+            <summary>
+            Returns the memo data as a raw byte array.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:TpsParser.Tps.Record.TableDefinitionRecord">
+            <summary>
+            Represents a file structure that encapsulates a table's schema.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.TableDefinitionRecord.FieldCount">
+            <summary>
+            Gets the number of fields in the table.  For MEMOs and BLOBs, see <see cref="P:TpsParser.Tps.Record.TableDefinitionRecord.MemoCount"/>.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.TableDefinitionRecord.MemoCount">
+            <summary>
+            Gets the number of MEMO or BLOB fields in the table.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.TableDefinitionRecord.IndexCount">
+            <summary>
+            Gets the number of indexes in the table.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Record.TableDefinitionRecord.Memos">
+            <summary>
+            Gets the memo definitions for this table.  The index of each definition corresponds to <see cref="P:TpsParser.Tps.Header.MemoHeader.MemoIndex"/>.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.TpsFile">
+            <summary>
+            Represents a TopSpeed file and provides access to low level file and record structures.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.TpsFile.Encoding">
+            <summary>
+            Gets or sets the encoding to use when reading strings in the TPS file.
+            The default is ISO-8859-1.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.TpsFile.GetDataRecords(System.Int32,TpsParser.Tps.Record.TableDefinitionRecord,System.Boolean)">
+            <summary>
+            Gets a list of data records for the associated table and its table definition.
+            </summary>
+            <param name="table"></param>
+            <param name="tableDefinition"></param>
+            <param name="ignoreErrors"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.TpsFile.GetTableNameRecords">
+            <summary>
+            Gets a list of table name records that describe the name of the tables included in the file.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.TpsFile.GetMetadata(System.Int32)">
+            <summary>
+            Gets a list of metadata that is included for the associated table.
+            </summary>
+            <param name="table"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.TpsFile.GetMemoRecords(System.Int32,System.Boolean)">
+            <summary>
+            Gets a dictionary of memo and blob records for the associated table.
+            </summary>
+            <param name="table">The table number that owns the memos.</param>
+            <param name="ignoreErrors"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.TpsFile.GetMemoRecords(System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Gets a dictionary of memo and blob records for the associated table.
+            </summary>
+            <param name="table">The table number that owns the memo.</param>
+            <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
+            <param name="ignoreErrors"></param>
+            <returns></returns>
+        </member>
+        <member name="M:TpsParser.Tps.TpsFile.GetTableDefinitions(System.Boolean)">
+            <summary>
+            Gets a list of table definitions for tables found in this file.
+            </summary>
+            <param name="ignoreErrors"></param>
+            <returns></returns>
+        </member>
+        <member name="T:TpsParser.Tps.TpsHeader">
+            <summary>
+            Represents a TopSpeed file header.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.TpsHeader.MagicNumber">
+            <summary>
+            Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.TpsRecord.#ctor(TpsParser.Binary.RandomAccess)">
+            <summary>
+            Creates a new <see cref="T:TpsParser.Tps.TpsRecord"/>. This is typically done on the first of a list.
+            </summary>
+            <param name="rx">The data to read from.</param>
+        </member>
+        <member name="M:TpsParser.Tps.TpsRecord.#ctor(TpsParser.Tps.TpsRecord,TpsParser.Binary.RandomAccess)">
+            <summary>
+            Creates a new <see cref="T:TpsParser.Tps.TpsRecord"/> by partially copying the previous one.
+            </summary>
+            <param name="previous">The previous record.</param>
+            <param name="rx">The data to read from.</param>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsBlob">
+            <summary>
+            Represents a blob of bytes.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsByte">
+            <summary>
+            Represents a byte.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsCString">
+            <summary>
+            Represents a null-terminated string.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsDate">
+            <summary>
+            Represents a date.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsDecimal">
+            <summary>
+            Represents a binary coded decimal.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsDecimal.ValueAsDecimal">
+            <summary>
+            Gets the value as a <see cref="T:System.Decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="T:System.Decimal"/>'s 29, so precision loss is possible.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsDouble">
+            <summary>
+            Represents a double-precision floating point number.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsFloat">
+            <summary>
+            Represents a single-precision floating point number.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsGroup">
+            <summary>
+            Represents a grouping of fields.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsLong">
+            <summary>
+            Represents a signed integer.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsMemo">
+            <summary>
+            Represents a memo containing an ISO-8859-1 encoded string.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsObject">
+            <summary>
+            Represents a typed object within the TopSpeed file.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsObject.Value">
+            <summary>
+            Gets the .NET equivalent value of the TopSpeed object.
+            </summary>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsObject.TypeCode">
+            <summary>
+            Gets the type code of the object.
+            </summary>
+        </member>
+        <member name="M:TpsParser.Tps.Type.TpsObject.ToString">
+            <summary>
+            Gets the string representation of the value that this object encapsulates.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsObject`1">
+            <summary>
+            Represents a typed object within the TopSpeed file.
+            </summary>
+            <typeparam name="T">The .NET equivalent type of the value this object encapsulates.</typeparam>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsObject`1.Value">
+            <inheritdoc/>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsPString">
+            <summary>
+            Represents a Pascal string where the length is specified at the beginning of the string.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsShort">
+            <summary>
+            Represents a signed short.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsString">
+            <summary>
+            Represents a fixed length string.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsTime">
+            <summary>
+            Represents a moment in time. Some time keeping fields you expect to be of type <see cref="T:TpsParser.Tps.Type.TpsTime"/> may actually be of type <see cref="T:TpsParser.Tps.Type.TpsLong"/>.
+            See the remarks section for details.
+            </summary>
+            <remarks>
+            <para>
+            A TIME is composed of 4 bytes. The structure is composed as such:
+            <list type="table">
+            <listheader>
+            <term>Type</term>
+            <term>Description</term>
+            <term>Range</term>
+            </listheader>
+            <item>
+            <term><see cref="T:System.Byte"/></term>
+            <term>Hours</term>
+            <term>0 to 23</term>
+            </item>
+            <item>
+            <term><see cref="T:System.Byte"/></term>
+            <term>Minutes</term>
+            <term>0 to 59</term>
+            </item>
+            <item>
+            <term><see cref="T:System.Byte"/></term>
+            <term>Seconds</term>
+            <term>0 to 59</term>
+            </item>
+            <item>
+            <term><see cref="T:System.Byte"/></term>
+            <term>Centiseconds (1/100 seconds)</term>
+            <term>0 to 99</term>
+            </item>
+            </list>
+            A centisecond is 1/100th of a second.
+            </para>
+            <para>
+            In the Clarion programming language, when an expression is performed on a TIME data type, it is implicitly converted to a
+            LONG as a Clarion Standard Time value. This value is the number of centiseconds (1/100 seconds) since midnight. Clarion
+            documentation recommends that the 4-byte TIME type be used when communicating with external applications. However, because
+            TopSpeed files are typically used exclusively by Clarion applications, the field may sometimes be defined as a LONG in
+            order to avoid repetitive casting.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:TpsParser.Tps.Type.TpsTime.TypeCode">
+            <inheritdoc/>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Byte">
+            <summary>
+            1-byte unsigned integer
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Short">
+            <summary>
+            2-byte signed integer
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.UShort">
+            <summary>
+            2-byte unsigned integer
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Date">
+            <summary>
+            4-byte date
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Time">
+            <summary>
+            4-byte time
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Long">
+            <summary>
+            4-byte signed integer
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.ULong">
+            <summary>
+            4-byte unsigned integer
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.SReal">
+            <summary>
+            4-byte signed floating point
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Real">
+            <summary>
+            8-byte signed floating point
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Decimal">
+            <summary>
+            Signed packed decimal
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.String">
+            <summary>
+            Fixed length string, padded with spaces
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.CString">
+            <summary>
+            Null terminated string
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.PString">
+            <summary>
+            Embedded length-byte "Pascal" string
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Group">
+            <summary>
+            Compound data structure
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Blob">
+            <summary>
+            Variable-length binary large object
+            </summary>
+        </member>
+        <member name="F:TpsParser.Tps.Type.TpsTypeCode.Memo">
+            <summary>
+            Fixed length string
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsUnsignedLong">
+            <summary>
+            Represents an unsigned integer.
+            </summary>
+        </member>
+        <member name="T:TpsParser.Tps.Type.TpsUnsignedShort">
+            <summary>
+            Represents an unsigned short.
+            </summary>
+        </member>
+    </members>
+</doc>

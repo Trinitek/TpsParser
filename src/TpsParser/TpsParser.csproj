@@ -12,11 +12,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\Users\trini\Source\Repos\TpsParser\src\TpsParser\bin\debug\TpsParser.xml</DocumentationFile>
+    <DocumentationFile>bin\debug\TpsParser.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>C:\Users\trini\Source\Repos\TpsParser\src\TpsParser\bin\release\TpsParser.xml</DocumentationFile>
+    <DocumentationFile>bin\release\TpsParser.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

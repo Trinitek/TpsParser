@@ -49,9 +49,20 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Time;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Instantiates a new TIME from the given binary reader.
+        /// </summary>
+        /// <remarks>
+        /// The byte stream is read in the following order:
+        /// <list type="bullet">
+        /// <item>Centiseconds</item>
+        /// <item>Seconds</item>
+        /// <item>Minutes</item>
+        /// <item>Hours</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="rx"></param>
         public TpsTime(RandomAccess rx)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (rx == null)
             {
@@ -75,6 +86,15 @@ namespace TpsParser.Tps.Type
             int centi = time & 0x000000FF;
 
             Value = new TimeSpan(0, hours, mins, secs, centi * 10);
+        }
+
+        /// <summary>
+        /// Instantiates a new TIME from the given value.
+        /// </summary>
+        /// <param name="time"></param>
+        public TpsTime(TimeSpan time)
+        {
+            Value = time;
         }
     }
 }

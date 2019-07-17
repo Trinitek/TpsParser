@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using TpsParser.Tps;
 using TpsParser.Tps.Record;
 using TpsParser.Tps.Type;
@@ -127,101 +126,7 @@ namespace TpsParser
         /// <typeparam name="T">The type to represent a deserialized row.</typeparam>
         /// <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
         /// <returns></returns>
-        public IEnumerable<T> Deserialize<T>(bool ignoreErrors = false) where T : class, new()
-        {
-            var targetClass = typeof(T);
-
-            var tpsTableAttr = targetClass.GetCustomAttribute(typeof(TpsTableAttribute));
-
-            if (tpsTableAttr is null)
-            {
-                throw new TpsParserException($"The given class is not marked with {nameof(TpsTableAttribute)}.");
-            }
-
-            var table = BuildTable(ignoreErrors);
-
-            var targetObjects = table.Rows
-                .Select(r =>
-                {
-                    var targetObject = new T();
-
-                    SetMembers(targetObject, r);
-
-                    return targetObject;
-                });
-            
-            return targetObjects;
-        }
-
-        private void SetMembers<T>(T targetObject, Row row)
-        {
-            var members = typeof(T).GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            foreach (var member in members)
-            {
-                var tpsFieldAttr = member.GetCustomAttribute<TpsFieldAttribute>();
-                var tpsRecordNumberAttr = member.GetCustomAttribute<TpsRecordNumberAttribute>();
-
-                if (tpsFieldAttr != null && tpsRecordNumberAttr != null)
-                {
-                    throw new TpsParserException($"Members cannot be marked with both {nameof(TpsFieldAttribute)} and {nameof(TpsRecordNumberAttribute)}. Property name '{member.Name}'.");
-                }
-
-                if (tpsFieldAttr != null)
-                {
-                    var tpsFieldName = tpsFieldAttr.FieldName;
-                    var tpsFieldValue = GetRowValue(row, tpsFieldName, tpsFieldAttr.IsRequired);
-                    var tpsValue = CoerceValue(tpsFieldValue?.Value, tpsFieldAttr.FallbackValue);
-
-                    SetMember(member, targetObject, tpsValue);
-                }
-                if (tpsRecordNumberAttr != null)
-                {
-                    SetMember(member, targetObject, row.Id);
-                }
-            }
-        }
-
-        private void SetMember(MemberInfo member, object target, object value)
-        {
-            if (member is PropertyInfo prop)
-            {
-                if (!prop.CanWrite)
-                {
-                    throw new TpsParserException($"The property '{member.Name}' must have a setter.");
-                }
-
-                prop.SetValue(target, value);
-            }
-            else if (member is FieldInfo field)
-            {
-                field.SetValue(target, value);
-            }
-        }
-
-        private TpsObject GetRowValue(Row row, string fieldName, bool isRequired)
-        {
-            try
-            {
-                return row.GetValueCaseInsensitive(fieldName, isRequired);
-            }
-            catch (Exception ex)
-            {
-                throw new TpsParserException("Unable to deserialize field into class member. See the inner exception for details.", ex);
-            }
-        }
-
-        private object CoerceValue(object value, object fallback)
-        {
-            if (fallback != null)
-            {
-                return value ?? fallback;
-            }
-            else
-            {
-                return value;
-            }
-        }
+        public IEnumerable<T> Deserialize<T>(bool ignoreErrors = false) where T : class, new() => BuildTable(ignoreErrors).Deserialize<T>();
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Dispose()

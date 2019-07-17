@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
+    /// <summary>
+    /// Provides a high level representation of a row within a TopSpeed file.
+    /// </summary>
     public class Row
     {
         /// <summary>
@@ -23,6 +27,11 @@ namespace TpsParser
         /// </summary>
         public IReadOnlyDictionary<string, TpsObject> Values { get; }
 
+        /// <summary>
+        /// Instantiates a new row.
+        /// </summary>
+        /// <param name="recordNumber">The record number of the row.</param>
+        /// <param name="values">The values in the row, keyed by their column names.</param>
         public Row(int recordNumber, IReadOnlyDictionary<string, TpsObject> values)
         {
             Id = recordNumber;
@@ -75,6 +84,148 @@ namespace TpsParser
             else
             {
                 return Values[matchingKey];
+            }
+        }
+
+        /// <summary>
+        /// Deserializes the row into the given type. Members on the type should be marked with the appropriate attributes.
+        /// </summary>
+        /// <typeparam name="T">The type to represent the deserialized row.</typeparam>
+        /// <returns></returns>
+        public T Deserialize<T>() where T : class, new()
+        {
+            var targetObject = new T();
+
+            SetMembers(targetObject);
+
+            return targetObject;
+        }
+
+        private void SetMembers<T>(T targetObject)
+        {
+            var members = typeof(T).GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+            foreach (var member in members)
+            {
+                var tpsFieldAttr = member.GetCustomAttribute<TpsFieldAttribute>();
+                var tpsRecordNumberAttr = member.GetCustomAttribute<TpsRecordNumberAttribute>();
+
+                if (tpsFieldAttr != null && tpsRecordNumberAttr != null)
+                {
+                    throw new TpsParserException($"Members cannot be marked with both {nameof(TpsFieldAttribute)} and {nameof(TpsRecordNumberAttribute)}. Property name '{member.Name}'.");
+                }
+
+                if (tpsFieldAttr != null)
+                {
+                    var tpsFieldName = tpsFieldAttr.FieldName;
+                    var tpsFieldValue = GetRowValue(tpsFieldName, tpsFieldAttr.IsRequired);
+                    var convertedValue = ConvertValue(GetMemberType(member), tpsFieldValue);
+                    var tpsValue = CoerceValue(convertedValue?.Value, tpsFieldAttr.FallbackValue);
+
+                    SetMember(member, targetObject, tpsValue);
+                }
+                if (tpsRecordNumberAttr != null)
+                {
+                    SetMember(member, targetObject, Id);
+                }
+            }
+        }
+
+        private static void SetMember(MemberInfo member, object target, object value)
+        {
+            if (member is PropertyInfo prop)
+            {
+                if (!prop.CanWrite)
+                {
+                    throw new TpsParserException($"The property '{member.Name}' must have a setter.");
+                }
+
+                prop.SetValue(target, value);
+            }
+            else if (member is FieldInfo field)
+            {
+                field.SetValue(target, value);
+            }
+        }
+
+        private TpsObject GetRowValue(string fieldName, bool isRequired)
+        {
+            try
+            {
+                return GetValueCaseInsensitive(fieldName, isRequired);
+            }
+            catch (Exception ex)
+            {
+                throw new TpsParserException("Unable to deserialize field into class member. See the inner exception for details.", ex);
+            }
+        }
+
+        private static Type GetMemberType(MemberInfo info)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            switch (info)
+            {
+                case PropertyInfo propInfo:
+                    return propInfo.PropertyType;
+                case FieldInfo fieldInfo:
+                    return fieldInfo.FieldType;
+                default:
+                    throw new TpsParserException($"Tried to get the type of an unsupported member on the target deserialization class ({info}).");
+            }
+        }
+
+        /// <summary>
+        /// Performs conversion on the source <see cref="TpsObject"/> to another object type compatible with the target
+        /// member's type where a conversion exists. If a conversion does not exist or is not necessary, the
+        /// original object is returned. (Ex.: <see cref="DateTime"/> members can accept a value from <see cref="TpsLong"/>
+        /// in addition to its native <see cref="TpsDate"/>.
+        /// </summary>
+        /// <param name="targetType"></param>
+        /// <param name="sourceObject"></param>
+        /// <returns></returns>
+        private static TpsObject ConvertValue(Type targetType, TpsObject sourceObject)
+        {
+            if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
+            {
+                if (sourceObject is TpsLong longSource)
+                {
+                    return new TpsDate(longSource.AsDate());
+                }
+                else
+                {
+                    return sourceObject;
+                }
+            }
+            else if (targetType == typeof(TimeSpan) || targetType == typeof(TimeSpan?))
+            {
+                if (sourceObject is TpsLong longSource)
+                {
+                    return new TpsTime(longSource.AsTime());
+                }
+                else
+                {
+                    return sourceObject;
+                }
+            }
+            else
+            {
+                return sourceObject;
+            }
+        }
+
+        private static object CoerceValue(object value, object fallback)
+        {
+            if (fallback != null)
+            {
+                return value ?? fallback;
+            }
+            else
+            {
+                return value;
             }
         }
     }

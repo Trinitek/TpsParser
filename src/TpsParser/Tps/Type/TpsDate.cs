@@ -46,7 +46,7 @@ namespace TpsParser.Tps.Type
         public override TpsTypeCode TypeCode => TpsTypeCode.Date;
 
         /// <summary>
-        /// Instantiates a new date from the given binary reader.
+        /// Instantiates a new DATE from the given binary reader.
         /// </summary>
         /// <remarks>
         /// The byte stream is read in the following order:
@@ -83,7 +83,7 @@ namespace TpsParser.Tps.Type
         }
 
         /// <summary>
-        /// Instantiates a new date from the given <see cref="DateTime"/>.
+        /// Instantiates a new DATE from the given value.
         /// </summary>
         /// <param name="date"></param>
         public TpsDate(DateTime? date)

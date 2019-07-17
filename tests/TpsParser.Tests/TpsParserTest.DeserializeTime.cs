@@ -4,7 +4,6 @@ namespace TpsParser.Tests
 {
     public partial class TpsParserTest
     {
-        [TpsTable]
         public class DeserializeTime
         {
             [TpsField("Time")]

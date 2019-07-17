@@ -12,7 +12,6 @@ namespace TpsParser.Tests
             string AdditionalNotes { get; }
         }
 
-        [TpsTable]
         public class DeserializeMemosPrivateSetters : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -28,7 +27,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes { get; private set; }
         }
 
-        [TpsTable]
         public class DeserializeMemosInternalSetters : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -44,7 +42,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes { get; internal set; }
         }
 
-        [TpsTable]
         public class DeserializeMemosProtectedSetters : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -60,7 +57,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes { get; protected set; }
         }
 
-        [TpsTable]
         public class DeserializeMemosPublicSetters : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -76,7 +72,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes { get; set; }
         }
 
-        [TpsTable]
         public class DeserializeMemosPrivateFields : IDeserializeMemos
         {
 #pragma warning disable IDE0044 // Add readonly modifier
@@ -101,7 +96,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes => _additionalNotes;
         }
 
-        [TpsTable]
         public class DeserializeMemosInternalFields : IDeserializeMemos
         {
 #pragma warning disable CS0649 // Never assigned to
@@ -124,7 +118,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes => _additionalNotes;
         }
 
-        [TpsTable]
         public class DeserializeMemosProtectedFields : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -145,7 +138,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes => _additionalNotes;
         }
 
-        [TpsTable]
         public class DeserializeMemosPublicFields : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -166,7 +158,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes => _additionalNotes;
         }
 
-        [TpsTable]
         public class DeserializeMemosNotesRequired : IDeserializeMemos
         {
             [TpsField("Name")]
@@ -182,7 +173,6 @@ namespace TpsParser.Tests
             public string AdditionalNotes { get; set; }
         }
 
-        [TpsTable]
         public class DeserializeMemosRecordNumberProperty
         {
             [TpsRecordNumber]
@@ -192,7 +182,6 @@ namespace TpsParser.Tests
             public string Name { get; private set; }
         }
 
-        [TpsTable]
         public class DeserializememosRecordNumberField
         {
             [TpsRecordNumber]
@@ -202,7 +191,6 @@ namespace TpsParser.Tests
             public string _name;
         }
 
-        [TpsTable]
         public class DeserializeMemosRecordNumberAndFieldAttrOnSameMember
         {
             [TpsRecordNumber]

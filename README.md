@@ -39,7 +39,7 @@ using (var parser = new TpsParser("contacts.tps"))
 
 ## Deserializer
 
-This library includes a deserializer that allows you to read fields--including MEMOs and BLOBs--into POCO objects marked with the appropriate annotations.
+This library includes a deserializer that allows you to read fields--including MEMOs and BLOBs--into POCO objects marked with the appropriate attributes.
 
 ```cs
 class Contact

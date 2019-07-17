@@ -1,10 +1,10 @@
 # TpsParser
 
-A library for parsing Clarion TPS files.
+A library for parsing Clarion TopSpeed (TPS) files.
 
-Copyright 2019 Blake Burgess.  Licensed under MIT (see [LICENSE](LICENSE)).
+Copyright © 2019 Blake Burgess.  Licensed under MIT (see [LICENSE](LICENSE)).
 
-Based on the previous work by Erik Hooijmeijer, [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). Copyright 2012-2013 Erik Hooijmeijer.  Licensed under [Apache 2](https://www.apache.org/licenses/LICENSE-2.0.html).
+Based on the previous work by Erik Hooijmeijer, [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). Copyright © 2012-2013 Erik Hooijmeijer.  Licensed under [Apache 2](https://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Overview
 
@@ -15,3 +15,71 @@ Unlike the original library, this version does not include a CSV exporter, and t
 Included in the port is a set of classes that is able to recover encrypted files where the password is not known.  Compute intensive portions of this section have been parallelized and make use of asynchronous Tasks.
 
 Other miscellaneous performance improvmements have also been made.
+
+## Clean Table Objects
+
+You can get a higher level representation of a table to abstract away the low-level file structures for easier manipulation.
+
+```cs
+using (var parser = new TpsParser("contacts.tps"))
+{
+    // Currently only supports one table per file
+    Table contactsTable = parser.BuildTable();
+
+    Row firstContactRow = contactsTable.First();
+
+    // Look up values by case-insensitive column names
+    string firstName = firstContactRow.GetValueCaseInsensitive("fname");
+    // Throws an exception if the field is not present in the row
+    string lastName = firstContactRow.GetValueCaseInsensitive("lname", isRequired: true);
+    // MEMO fields are mapped, too
+    string notes = firstContactRow.GetValueCaseInsensitive("notes");
+}
+```
+
+## Deserializer
+
+This library includes a deserializer that allows you to read fields--including MEMOs and BLOBs--into POCO objects marked with the appropriate annotations.
+
+```cs
+class Contact
+{
+    // Use this to include the TPS record number
+    [TpsRecordNumber]
+    public int Id { get; set; }
+
+    // Special attribute for string properties. Trims ending whitespace by default.
+    [TpsFieldString("fname")]
+    public string FirstName { get; set; }
+
+    // Throw an exception if the field is not present in all rows
+    [TpsString("lname", isRequired: true)]
+    public string LastName { get; set; }
+
+    // Column names are case-insensitive.
+    [TpsFieldString("addrStreet")]
+    public string Street { get; set; }
+
+    [TpsFieldString("addrCity")]
+    public string City { get; set; }
+
+    // Conversions from the internal LONG type to DATE/TIME are handled automatically when necessary.
+    [TpsField("entry")]
+    public DateTime EntryDate { get; set; }
+
+    // TpsFieldString lets you specify a StringFormat when reading from non-string fields -- in this case, a DATE
+    [TpsFieldString("modified", stringFormat: "MM - dd - yyyy")]
+    public string LastModified { get; set; }
+
+    // Reads from MEMO fields too
+    [TpsField("notes")]
+    public string Notes { get; set; }
+}
+```
+
+```cs
+using (var parser = new TpsParser("contacts.tps"))
+{
+    var contacts = parser.Deserialize<Contact>();
+}
+```

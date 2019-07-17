@@ -45,9 +45,20 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Date;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Instantiates a new date from the given binary reader.
+        /// </summary>
+        /// <remarks>
+        /// The byte stream is read in the following order:
+        /// <list type="bullet">
+        /// <item>Day</item>
+        /// <item>Month</item>
+        /// <item>Year (low half)</item>
+        /// <item>Year (high half)</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="rx"></param>
         public TpsDate(RandomAccess rx)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (rx == null)
             {
@@ -69,6 +80,15 @@ namespace TpsParser.Tps.Type
             {
                 Value = null;
             }
+        }
+
+        /// <summary>
+        /// Instantiates a new date from the given <see cref="DateTime"/>.
+        /// </summary>
+        /// <param name="date"></param>
+        public TpsDate(DateTime? date)
+        {
+            Value = date;
         }
     }
 }

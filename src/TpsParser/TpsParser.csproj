@@ -8,7 +8,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Copyright>Copyright © 2019 Blake Burgess</Copyright>
-    <Description>Reads encrypted and unencrypted Clarion TPS files.</Description>
+    <Description>Reads encrypted and unencrypted Clarion TopSpeed (TPS) files.</Description>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

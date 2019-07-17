@@ -190,6 +190,48 @@ namespace TpsParser.Tests
         }
 
         [Test]
+        public void ShouldDeserializeDateString()
+        {
+            var expected = new DateTime(2019, 7, 17);
+
+            var row = BuildRow(1, ("Date", new TpsDate(expected)));
+
+            var deserialized = row.Deserialize<DeserializeDateString>();
+
+            Assert.AreEqual(expected.ToString(), deserialized.Date);
+        }
+
+        [Test]
+        public void ShouldDeserializeDateStringFormatted()
+        {
+            var expected = new DateTime(2019, 7, 17);
+
+            var row = BuildRow(1, ("Date", new TpsDate(expected)));
+
+            var deserialized = row.Deserialize<DeserializeDateStringFormatted>();
+
+            Assert.AreEqual(expected.ToString("MM - dd - yyyy"), deserialized.Date);
+        }
+
+        [Test]
+        public void ShouldThrowDeserializingDateStringToNonStringMember()
+        {
+            var row = BuildRow(1, ("Date", new TpsDate(new DateTime(2019, 7, 17))));
+
+            Assert.Throws<TpsParserException>(() => row.Deserialize<DeserializeDateStringNonStringMember>());
+        }
+
+        [Test]
+        public void ShouldUseFallbackDeserializingNullDate()
+        {
+            var row = BuildRow(1, ("Date", new TpsDate((DateTime?)null)));
+
+            var deserialized = row.Deserialize<DeserializeDateStringFallback>();
+
+            Assert.AreEqual("nothing", deserialized.Date);
+        }
+
+        [Test]
         public void ShouldDeserializeTime()
         {
             var time = new TimeSpan(12, 13, 42);

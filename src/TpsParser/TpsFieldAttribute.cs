@@ -14,12 +14,21 @@ namespace TpsParser
     /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public sealed class TpsFieldAttribute : Attribute
+    public class TpsFieldAttribute : Attribute
     {
+        /// <summary>
+        /// Gets the case-insensitive name of the column.
+        /// </summary>
         public string FieldName { get; }
 
+        /// <summary>
+        /// Gets the fallback value to use if the field is null.
+        /// </summary>
         public object FallbackValue { get; }
 
+        /// <summary>
+        /// Returns true if the deserializer should throw a <see cref="TpsParserException"/> if the column is not found on the row.
+        /// </summary>
         public bool IsRequired { get; }
 
         /// <summary>

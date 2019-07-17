@@ -117,10 +117,11 @@ namespace TpsParser
 
                 if (tpsFieldAttr != null)
                 {
-                    var tpsFieldName = tpsFieldAttr.FieldName;
-                    var tpsFieldValue = GetRowValue(tpsFieldName, tpsFieldAttr.IsRequired);
-                    var convertedValue = ConvertValue(GetMemberType(member), tpsFieldValue);
-                    var tpsValue = CoerceValue(convertedValue?.Value, tpsFieldAttr.FallbackValue);
+                    string tpsFieldName = tpsFieldAttr.FieldName;
+                    TpsObject tpsFieldValue = GetRowValue(tpsFieldName, tpsFieldAttr.IsRequired);
+                    object convertedTpsValue = ConvertValue(GetMemberType(member), tpsFieldValue);
+                    object stringyTpsValue = ApplyStringConversion(member, tpsFieldAttr, convertedTpsValue);
+                    object tpsValue = CoerceNullValue(stringyTpsValue, tpsFieldAttr.FallbackValue);
 
                     SetMember(member, targetObject, tpsValue);
                 }
@@ -128,6 +129,56 @@ namespace TpsParser
                 {
                     SetMember(member, targetObject, Id);
                 }
+            }
+        }
+
+        private static object ApplyStringConversion(MemberInfo member, TpsFieldAttribute tpsFieldAttr, object tpsValue)
+        {
+            var memberType = GetMemberType(member);
+
+            if (tpsFieldAttr is TpsFieldStringAttribute tpsFieldStringAttr && tpsValue != null)
+            {
+                if (memberType != typeof(string))
+                {
+                    throw new TpsParserException($"{nameof(TpsFieldStringAttribute)} is only valid on members of type {typeof(string)} ({member}).");
+                }
+
+                if (tpsValue is string tpsStringValue)
+                {
+                    return tpsStringValue?.TrimEnd() ?? tpsValue;
+                }
+                else
+                {
+                    return InvokeToString(member, tpsValue, tpsFieldStringAttr);
+                }
+
+            }
+            else
+            {
+                return tpsValue;
+            }
+        }
+
+        private static string InvokeToString(MemberInfo member, object tpsValue, TpsFieldStringAttribute tpsFieldStringAttr)
+        {
+            try
+            {
+                if (tpsValue.GetType().GetMethod("ToString", new Type[] { typeof(string) }) is var miStringParam && miStringParam != null)
+                {
+                    return (string)miStringParam.Invoke(tpsValue, new string[] { tpsFieldStringAttr.StringFormat });
+                }
+                else if (tpsValue.GetType().GetMethod("ToString", Type.EmptyTypes) is var miNoParams && miNoParams != null)
+                {
+                    return (string)miNoParams.Invoke(tpsValue, null);
+                }
+                else
+                {
+                    throw new TpsParserException("No suitable ToString method was found on the object. This is probably a bug in the library.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new TpsParserException($"Unable to apply string conversion on the given member. See the inner exception for details. ({member})", ex);
             }
         }
 
@@ -180,44 +231,44 @@ namespace TpsParser
 
         /// <summary>
         /// Performs conversion on the source <see cref="TpsObject"/> to another object type compatible with the target
-        /// member's type where a conversion exists. If a conversion does not exist or is not necessary, the
-        /// original object is returned. (Ex.: <see cref="DateTime"/> members can accept a value from <see cref="TpsLong"/>
-        /// in addition to its native <see cref="TpsDate"/>.
+        /// member's type where a conversion exists and returns the value. If a conversion does not exist or is not necessary,
+        /// the value of the original object is returned. (Ex.: <see cref="DateTime"/> members can accept a value from
+        /// <see cref="TpsLong"/> in addition to its native <see cref="TpsDate"/>.
         /// </summary>
         /// <param name="targetType"></param>
         /// <param name="sourceObject"></param>
         /// <returns></returns>
-        private static TpsObject ConvertValue(Type targetType, TpsObject sourceObject)
+        private static object ConvertValue(Type targetType, TpsObject sourceObject)
         {
             if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
             {
                 if (sourceObject is TpsLong longSource)
                 {
-                    return new TpsDate(longSource.AsDate());
+                    return new TpsDate(longSource.AsDate()).Value;
                 }
                 else
                 {
-                    return sourceObject;
+                    return sourceObject?.Value;
                 }
             }
             else if (targetType == typeof(TimeSpan) || targetType == typeof(TimeSpan?))
             {
                 if (sourceObject is TpsLong longSource)
                 {
-                    return new TpsTime(longSource.AsTime());
+                    return new TpsTime(longSource.AsTime()).Value;
                 }
                 else
                 {
-                    return sourceObject;
+                    return sourceObject?.Value;
                 }
             }
             else
             {
-                return sourceObject;
+                return sourceObject?.Value;
             }
         }
 
-        private static object CoerceValue(object value, object fallback)
+        private static object CoerceNullValue(object value, object fallback)
         {
             if (fallback != null)
             {

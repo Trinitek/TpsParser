@@ -143,9 +143,9 @@ namespace TpsParser
                     throw new TpsParserException($"{nameof(TpsFieldStringAttribute)} is only valid on members of type {typeof(string)} ({member}).");
                 }
 
-                if (tpsValue is string tpsStringValue)
+                if (tpsFieldStringAttr.TrimEnd && tpsValue is string tpsStringValue)
                 {
-                    return tpsStringValue?.TrimEnd() ?? tpsValue;
+                    return tpsStringValue.TrimEnd();
                 }
                 else
                 {

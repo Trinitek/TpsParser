@@ -254,5 +254,49 @@ namespace TpsParser.Tests
 
             Assert.AreEqual(new TimeSpan(0, 0, 13, 20, 850), deserialized.Time);
         }
+
+        [Test]
+        public void ShouldDeserializeString()
+        {
+            string expected = " Hello world!     ";
+
+            var row = BuildRow(1, ("Notes", new TpsString(expected)));
+
+            var deserialized = row.Deserialize<DeserializeString>();
+
+            Assert.AreEqual(expected, deserialized.Notes);
+        }
+
+        [Test]
+        public void ShouldDeserializeAndTrimString()
+        {
+            var row = BuildRow(1, ("Notes", new TpsString(" Hello world!     ")));
+
+            var deserialized = row.Deserialize<DeserializeStringTrimmingEnabled>();
+
+            Assert.AreEqual(" Hello world!", deserialized.Notes);
+        }
+
+        [Test]
+        public void ShouldDeserializeAndNotTrimString()
+        {
+            string expected = " Hello world!     ";
+
+            var row = BuildRow(1, ("Notes", new TpsString(expected)));
+
+            var deserialized = row.Deserialize<DeserializeStringTrimmingDisabled>();
+
+            Assert.AreEqual(expected, deserialized.Notes);
+        }
+
+        [Test]
+        public void ShouldDeserializeAndTrimNullString()
+        {
+            var row = BuildRow(1, ("Notes", new TpsString(null)));
+
+            var deserialized = row.Deserialize<DeserializeStringTrimmingEnabled>();
+
+            Assert.IsNull(deserialized.Notes);
+        }
     }
 }

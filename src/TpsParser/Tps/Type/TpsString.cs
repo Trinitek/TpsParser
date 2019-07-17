@@ -12,6 +12,12 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.String;
 
+        /// <summary>
+        /// Instantiates a new STRING from the given binary reader.
+        /// </summary>
+        /// <param name="rx">The reader from which to read the string data.</param>
+        /// <param name="length">The length of the string.</param>
+        /// <param name="encoding">The encoding to use to decode the string data.</param>
         public TpsString(RandomAccess rx, int length, Encoding encoding)
         {
             if (rx == null)
@@ -27,6 +33,11 @@ namespace TpsParser.Tps.Type
             Value = rx.FixedLengthString(length, encoding);
         }
 
+        /// <summary>
+        /// Instantiates a new STRING from the given binary reader.
+        /// </summary>
+        /// <param name="rx">The reader from which to read the raw string data.</param>
+        /// <param name="encoding">The encoding to use to decode the string data.</param>
         public TpsString(RandomAccess rx, Encoding encoding)
         {
             if (rx == null)
@@ -40,6 +51,15 @@ namespace TpsParser.Tps.Type
             }
 
             Value = encoding.GetString(rx.GetData());
+        }
+
+        /// <summary>
+        /// Instantiates a new STRING from the given value.
+        /// </summary>
+        /// <param name="value"></param>
+        public TpsString(string value)
+        {
+            Value = value;
         }
     }
 }

@@ -18,7 +18,7 @@ Other miscellaneous performance improvmements have also been made.
 
 ## Clean Table Objects
 
-You can get a higher level representation of a table to abstract away the low-level file structures for easier manipulation.
+The `Table` class abstracts away the low-level file structures for easier manipulation.
 
 ```cs
 using (var parser = new TpsParser("contacts.tps"))
@@ -26,7 +26,7 @@ using (var parser = new TpsParser("contacts.tps"))
     // Currently only supports one table per file
     Table contactsTable = parser.BuildTable();
 
-    Row firstContactRow = contactsTable.First();
+    Row firstContactRow = contactsTable.Rows.First();
 
     // Look up values by case-insensitive column names
     string firstName = firstContactRow.GetValueCaseInsensitive("fname");

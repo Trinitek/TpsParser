@@ -11,6 +11,10 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.SReal;
 
+        /// <summary>
+        /// Instantiates a new SREAL.
+        /// </summary>
+        /// <param name="rx"></param>
         public TpsFloat(RandomAccess rx)
         {
             if (rx == null)
@@ -20,5 +24,11 @@ namespace TpsParser.Tps.Type
 
             Value = rx.FloatLE();
         }
+
+        /// <summary>
+        /// Returns true if the value is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value != 0.0;
     }
 }

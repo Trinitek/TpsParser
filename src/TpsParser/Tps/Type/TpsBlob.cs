@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
@@ -12,6 +13,10 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Blob;
 
+        /// <summary>
+        /// Instantiates a new BLOB.
+        /// </summary>
+        /// <param name="rx"></param>
         public TpsBlob(RandomAccess rx)
         {
             if (rx == null)
@@ -21,5 +26,11 @@ namespace TpsParser.Tps.Type
 
             Value = rx.ReadBytes(rx.LongLE());
         }
+
+        /// <summary>
+        /// Returns true if the size of the blob is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value.Count() > 0;
     }
 }

@@ -164,7 +164,7 @@ namespace TpsParser.Tests.DeserializerModels
         [TpsField("Date")]
         public DateTime Date { get; set; }
 
-        [TpsField("Notes", isRequired: true)]
+        [TpsField("Notes", IsRequired = true)]
         public string Notes { get; set; }
 
         [TpsField("AdditionalNotes")]

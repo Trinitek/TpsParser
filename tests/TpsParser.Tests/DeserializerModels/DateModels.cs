@@ -22,7 +22,7 @@ namespace TpsParser.Tests.DeserializerModels
 
     public class DateStringFormattedModel
     {
-        [TpsStringField("Date", stringFormat: "MM - dd - yyyy")]
+        [TpsStringField("Date", StringFormat = "MM - dd - yyyy")]
         public string Date { get; set; }
     }
 
@@ -34,7 +34,7 @@ namespace TpsParser.Tests.DeserializerModels
 
     public class DateStringFallbackModel
     {
-        [TpsStringField("Date", fallbackValue: "nothing")]
+        [TpsStringField("Date", FallbackValue = "nothing")]
         public string Date { get; set; }
     }
 }

@@ -11,6 +11,10 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Real;
 
+        /// <summary>
+        /// Instantiates a new REAL.
+        /// </summary>
+        /// <param name="rx"></param>
         public TpsDouble(RandomAccess rx)
         {
             if (rx == null)
@@ -20,5 +24,11 @@ namespace TpsParser.Tps.Type
 
             Value = rx.DoubleLE();
         }
+
+        /// <summary>
+        /// Returns true if the value is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value != 0.0;
     }
 }

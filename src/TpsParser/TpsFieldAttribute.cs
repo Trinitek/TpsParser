@@ -22,33 +22,27 @@ namespace TpsParser
         public string FieldName { get; }
 
         /// <summary>
-        /// Gets the fallback value to use if the field is null.
+        /// Gets or sets the fallback value to use if the field is null.
         /// </summary>
-        public object FallbackValue { get; }
+        public object FallbackValue { get; set; } = null;
 
         /// <summary>
-        /// Returns true if the deserializer should throw a <see cref="TpsParserException"/> if the column is not found on the row.
+        /// <para>
+        /// True if the deserializer should throw a <see cref="TpsParserException"/> if the column is not found on the row. This is false by default.
+        /// </para>
+        /// <para>
+        /// Note that a field might be be present in some rows and missing in others. This is especially true for MEMOs and BLOBs.
+        /// </para>
         /// </summary>
-        public bool IsRequired { get; }
+        public bool IsRequired { get; set; } = false;
 
         /// <summary>
         /// Marks the property or field as a TopSpeed field, MEMO, or BLOB.
         /// </summary>
         /// <param name="fieldName">The case insensitive name of the column.</param>
-        /// <param name="fallbackValue">Fallback value to use if the field is null.</param>
-        /// <param name="isRequired">
-        /// <para>
-        /// Throw an exception if the field is not found during deserialization.
-        /// </para>
-        /// <para>
-        /// Note that a field might be be present in some rows and missing in others. This is especially true for MEMOs and BLOBs.
-        /// </para>
-        /// </param>
-        public TpsFieldAttribute(string fieldName, object fallbackValue = null, bool isRequired = false)
+        public TpsFieldAttribute(string fieldName)
         {
             FieldName = fieldName;
-            FallbackValue = fallbackValue;
-            IsRequired = isRequired;
         }
     }
 }

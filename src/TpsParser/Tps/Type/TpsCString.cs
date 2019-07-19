@@ -12,6 +12,11 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.CString;
 
+        /// <summary>
+        /// Instantiates a new null-terminated string.
+        /// </summary>
+        /// <param name="rx">The binary reader containing the raw string data.</param>
+        /// <param name="encoding">The text encoding from which to create a well-formed string.</param>
         public TpsCString(RandomAccess rx, Encoding encoding)
         {
             if (rx == null)
@@ -26,5 +31,11 @@ namespace TpsParser.Tps.Type
 
             Value = rx.ZeroTerminatedString(encoding);
         }
+
+        /// <summary>
+        /// Returns true if the string's length is greater than zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value.Length > 0;
     }
 }

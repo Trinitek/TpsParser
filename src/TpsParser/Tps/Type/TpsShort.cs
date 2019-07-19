@@ -11,6 +11,10 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Short;
 
+        /// <summary>
+        /// Instantiates a new SHORT.
+        /// </summary>
+        /// <param name="rx"></param>
         public TpsShort(RandomAccess rx)
         {
             if (rx == null)
@@ -20,5 +24,11 @@ namespace TpsParser.Tps.Type
 
             Value = rx.ShortLE();
         }
+
+        /// <summary>
+        /// Returns true if the value is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value != 0;
     }
 }

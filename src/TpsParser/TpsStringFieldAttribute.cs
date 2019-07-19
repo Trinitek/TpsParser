@@ -17,36 +17,22 @@ namespace TpsParser
     public sealed class TpsStringFieldAttribute : TpsFieldAttribute
     {
         /// <summary>
-        /// Returns true if the end of the string should be trimmed. This is useful when converting from <see cref="TpsString"/>
+        /// True if the end of the string should be trimmed. This is useful when converting from <see cref="TpsString"/>
         /// values as those strings are padded with whitespace up to their total lengths. This is true by default.
         /// </summary>
-        public bool TrimEnd { get; }
+        public bool TrimEnd { get; set; } = true;
 
         /// <summary>
-        /// Gets the string format to use when calling ToString() on a non-string type.
+        /// Gets or sets the string format to use when calling ToString() on a non-string type.
         /// </summary>
-        public string StringFormat { get; }
+        public string StringFormat { get; set; }
 
         /// <summary>
         /// Marks the property or field as a TopSpeed field, MEMO, or BLOB.
         /// </summary>
         /// <param name="fieldName">The case insensitive name of the column.</param>
-        /// <param name="fallbackValue">Fallback value to use if the field is null. The fallback value is applied after any necessary ToString() conversion and trimming.</param>
-        /// <param name="isRequired">
-        /// <para>
-        /// Throw an exception if the field is not found during deserialization.
-        /// </para>
-        /// <para>
-        /// Note that a field might be be present in some rows and missing in others. This is especially true for MEMOs and BLOBs.
-        /// </para>
-        /// </param>
-        /// <param name="trimEnd">True if the end of the string should be trimmed.</param>
-        /// <param name="stringFormat">The string format to use when calling ToString() on a non-string type.</param>
-        public TpsStringFieldAttribute(string fieldName, object fallbackValue = null, bool isRequired = false, bool trimEnd = true, string stringFormat = null)
-            : base(fieldName, fallbackValue, isRequired)
-        {
-            TrimEnd = trimEnd;
-            StringFormat = stringFormat;
-        }
+        public TpsStringFieldAttribute(string fieldName)
+            : base(fieldName)
+        { }
     }
 }

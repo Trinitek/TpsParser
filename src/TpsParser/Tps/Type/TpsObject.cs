@@ -18,6 +18,12 @@ namespace TpsParser.Tps.Type
         public abstract TpsTypeCode TypeCode { get; }
 
         /// <summary>
+        /// Gets a boolean representation of the value as governed by Clarion logic evaluation rules for the type.
+        /// </summary>
+        /// <returns></returns>
+        public abstract bool AsBoolean();
+
+        /// <summary>
         /// Gets the string representation of the value that this object encapsulates.
         /// </summary>
         /// <returns></returns>

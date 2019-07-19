@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
@@ -16,6 +17,12 @@ namespace TpsParser.Tps.Type
         /// </summary>
         public decimal ValueAsDecimal { get; }
 
+        /// <summary>
+        /// Instantiates a new DECIMAL.
+        /// </summary>
+        /// <param name="rx">The binary reader that contains the raw data.</param>
+        /// <param name="length">The total number of digits in the value.</param>
+        /// <param name="digitsAfterDecimal">The number of digits that follow after the decimal point.</param>
         public TpsDecimal(RandomAccess rx, int length, int digitsAfterDecimal)
         {
             if (rx == null)
@@ -29,5 +36,11 @@ namespace TpsParser.Tps.Type
 
             ValueAsDecimal = decValue;
         }
+
+        /// <summary>
+        /// Returns true if the value is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => !Value.Any(v => v == '0' || v == '.');
     }
 }

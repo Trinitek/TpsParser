@@ -52,5 +52,11 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <returns></returns>
         public TimeSpan AsTime() => new TimeSpan(0, 0, 0, 0, Value * 10);
+
+        /// <summary>
+        /// Returns true if the value is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value != 0;
     }
 }

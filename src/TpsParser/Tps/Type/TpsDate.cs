@@ -90,5 +90,11 @@ namespace TpsParser.Tps.Type
         {
             Value = date;
         }
+
+        /// <summary>
+        /// Returns true if the date value is not null.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value != null;
     }
 }

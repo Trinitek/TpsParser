@@ -12,6 +12,11 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.PString;
 
+        /// <summary>
+        /// Instantiates a new PSTRING.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <param name="encoding"></param>
         public TpsPString(RandomAccess rx, Encoding encoding)
         {
             if (rx == null)
@@ -26,5 +31,11 @@ namespace TpsParser.Tps.Type
 
             Value = rx.PascalString(encoding);
         }
+
+        /// <summary>
+        /// Returns true if the string length is not zero.
+        /// </summary>
+        /// <returns></returns>
+        public override bool AsBoolean() => Value.Length > 0;
     }
 }

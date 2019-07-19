@@ -2,8 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TpsParser.Binary;
-using TpsParser.Tps.Type;
+using TpsParser.Tests.DeserializerModels;
 
 namespace TpsParser.Tests
 {
@@ -57,19 +56,19 @@ namespace TpsParser.Tests
                 .Invoke(parser, new object[] { ignoreErrors });
         }
 
-        [TestCase(typeof(DeserializeMemosInternalFields))]
-        [TestCase(typeof(DeserializeMemosInternalSetters))]
-        [TestCase(typeof(DeserializeMemosPrivateFields))]
-        [TestCase(typeof(DeserializeMemosPrivateSetters))]
-        [TestCase(typeof(DeserializeMemosProtectedFields))]
-        [TestCase(typeof(DeserializeMemosProtectedSetters))]
-        [TestCase(typeof(DeserializeMemosPublicFields))]
-        [TestCase(typeof(DeserializeMemosPublicSetters))]
+        [TestCase(typeof(MemosInternalFieldsModel))]
+        [TestCase(typeof(MemosInternalSettersModel))]
+        [TestCase(typeof(MemosPrivateFieldsModel))]
+        [TestCase(typeof(MemosPrivateSettersModel))]
+        [TestCase(typeof(MemosProtectedFieldsModel))]
+        [TestCase(typeof(MemosProtectedSettersModel))]
+        [TestCase(typeof(MemosPublicFieldsModel))]
+        [TestCase(typeof(MemosPublicSettersModel))]
         public void ShouldDeserializeMemos(Type targetObjectType)
         {
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
-                var rows = InvokeDeserialize<IDeserializeMemos>(parser, targetObjectType, ignoreErrors: false)
+                var rows = InvokeDeserialize<IMemoModel>(parser, targetObjectType, ignoreErrors: false)
                     .ToList();
 
                 Assert.AreEqual(4, rows.Count());
@@ -101,7 +100,7 @@ namespace TpsParser.Tests
         {
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
-                Assert.Throws<TpsParserException>(() => parser.Deserialize<DeserializeMemosNotesRequired>().ToList());
+                Assert.Throws<TpsParserException>(() => parser.Deserialize<MemosNotesRequiredModel>().ToList());
             }
         }
 
@@ -110,7 +109,7 @@ namespace TpsParser.Tests
         {
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
-                var rows = parser.Deserialize<DeserializememosRecordNumberField>().ToList();
+                var rows = parser.Deserialize<MemosRecordNumberFieldModel>().ToList();
 
                 Assert.AreEqual(2, rows[0]._id);
                 Assert.AreEqual(3, rows[1]._id);
@@ -124,7 +123,7 @@ namespace TpsParser.Tests
         {
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
-                var rows = parser.Deserialize<DeserializeMemosRecordNumberProperty>().ToList();
+                var rows = parser.Deserialize<MemosRecordNumberPropertyModel>().ToList();
 
                 Assert.AreEqual(2, rows[0].Id);
                 Assert.AreEqual(3, rows[1].Id);
@@ -138,165 +137,8 @@ namespace TpsParser.Tests
         {
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
-                Assert.Throws<TpsParserException>(() => parser.Deserialize<DeserializeMemosRecordNumberAndFieldAttrOnSameMember>().ToList());
+                Assert.Throws<TpsParserException>(() => parser.Deserialize<MemosRecordNumberAndFieldAttrOnSameMemberModel>().ToList());
             }
-        }
-
-        private Row BuildRow(int rowNumber, params (string columnName, TpsObject value)[] fields) =>
-            new Row(rowNumber, new Dictionary<string, TpsObject>(fields.Select(f => new KeyValuePair<string, TpsObject>(f.columnName, f.value))));
-
-        [Test]
-        public void ShouldDeserializeDate()
-        {
-            var date = new DateTime(2019, 7, 17);
-
-            var row = BuildRow(1, ("Date", new TpsDate(date)));
-
-            var deserialized = row.Deserialize<DeserializeDate>();
-
-            Assert.AreEqual(date, deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldDeserializeDateFromLong()
-        {
-            int clarionStandardDate = 80085;
-
-            var row = BuildRow(1, ("Date", new TpsLong(clarionStandardDate)));
-
-            var deserialized = row.Deserialize<DeserializeDate>();
-
-            Assert.AreEqual(new DateTime(2020, 4, 3), deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldDeserializeNullDate()
-        {
-            var row = BuildRow(1, ("Date", new TpsDate(new RandomAccess( new byte[] { 0, 0, 0, 0 } ))));
-
-            var deserialized = row.Deserialize<DeserializeNullDate>();
-
-            Assert.IsNull(deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldSetDefaultWhenDeserializingNullDateIntoNonNullableDate()
-        {
-            var row = BuildRow(1, ("Date", new TpsDate(new RandomAccess(new byte[] { 0, 0, 0, 0 }))));
-
-            var deserialized = row.Deserialize<DeserializeDate>();
-
-            Assert.AreEqual(default(DateTime), deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldDeserializeDateString()
-        {
-            var expected = new DateTime(2019, 7, 17);
-
-            var row = BuildRow(1, ("Date", new TpsDate(expected)));
-
-            var deserialized = row.Deserialize<DeserializeDateString>();
-
-            Assert.AreEqual(expected.ToString(), deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldDeserializeDateStringFormatted()
-        {
-            var expected = new DateTime(2019, 7, 17);
-
-            var row = BuildRow(1, ("Date", new TpsDate(expected)));
-
-            var deserialized = row.Deserialize<DeserializeDateStringFormatted>();
-
-            Assert.AreEqual(expected.ToString("MM - dd - yyyy"), deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldThrowDeserializingDateStringToNonStringMember()
-        {
-            var row = BuildRow(1, ("Date", new TpsDate(new DateTime(2019, 7, 17))));
-
-            Assert.Throws<TpsParserException>(() => row.Deserialize<DeserializeDateStringNonStringMember>());
-        }
-
-        [Test]
-        public void ShouldUseFallbackDeserializingNullDate()
-        {
-            var row = BuildRow(1, ("Date", new TpsDate((DateTime?)null)));
-
-            var deserialized = row.Deserialize<DeserializeDateStringFallback>();
-
-            Assert.AreEqual("nothing", deserialized.Date);
-        }
-
-        [Test]
-        public void ShouldDeserializeTime()
-        {
-            var time = new TimeSpan(12, 13, 42);
-
-            var row = BuildRow(1, ("Time", new TpsTime(time)));
-
-            var deserialized = row.Deserialize<DeserializeTime>();
-
-            Assert.AreEqual(time, deserialized.Time);
-        }
-
-        [Test]
-        public void ShouldDeserializeTimeFromLong()
-        {
-            int centiseconds = 80085;
-
-            var row = BuildRow(1, ("Time", new TpsLong(centiseconds)));
-
-            var deserialized = row.Deserialize<DeserializeTime>();
-
-            Assert.AreEqual(new TimeSpan(0, 0, 13, 20, 850), deserialized.Time);
-        }
-
-        [Test]
-        public void ShouldDeserializeString()
-        {
-            string expected = " Hello world!     ";
-
-            var row = BuildRow(1, ("Notes", new TpsString(expected)));
-
-            var deserialized = row.Deserialize<DeserializeString>();
-
-            Assert.AreEqual(expected, deserialized.Notes);
-        }
-
-        [Test]
-        public void ShouldDeserializeAndTrimString()
-        {
-            var row = BuildRow(1, ("Notes", new TpsString(" Hello world!     ")));
-
-            var deserialized = row.Deserialize<DeserializeStringTrimmingEnabled>();
-
-            Assert.AreEqual(" Hello world!", deserialized.Notes);
-        }
-
-        [Test]
-        public void ShouldDeserializeAndNotTrimString()
-        {
-            string expected = " Hello world!     ";
-
-            var row = BuildRow(1, ("Notes", new TpsString(expected)));
-
-            var deserialized = row.Deserialize<DeserializeStringTrimmingDisabled>();
-
-            Assert.AreEqual(expected, deserialized.Notes);
-        }
-
-        [Test]
-        public void ShouldDeserializeAndTrimNullString()
-        {
-            var row = BuildRow(1, ("Notes", new TpsString(null)));
-
-            var deserialized = row.Deserialize<DeserializeStringTrimmingEnabled>();
-
-            Assert.IsNull(deserialized.Notes);
         }
     }
 }

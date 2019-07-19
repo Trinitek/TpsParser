@@ -136,11 +136,11 @@ namespace TpsParser
         {
             var memberType = GetMemberType(member);
 
-            if (tpsFieldAttr is TpsFieldStringAttribute tpsFieldStringAttr && tpsValue != null)
+            if (tpsFieldAttr is TpsStringFieldAttribute tpsFieldStringAttr && tpsValue != null)
             {
                 if (memberType != typeof(string))
                 {
-                    throw new TpsParserException($"{nameof(TpsFieldStringAttribute)} is only valid on members of type {typeof(string)} ({member}).");
+                    throw new TpsParserException($"{nameof(TpsStringFieldAttribute)} is only valid on members of type {typeof(string)} ({member}).");
                 }
 
                 if (tpsFieldStringAttr.TrimEnd && tpsValue is string tpsStringValue)
@@ -159,7 +159,7 @@ namespace TpsParser
             }
         }
 
-        private static string InvokeToString(MemberInfo member, object tpsValue, TpsFieldStringAttribute tpsFieldStringAttr)
+        private static string InvokeToString(MemberInfo member, object tpsValue, TpsStringFieldAttribute tpsFieldStringAttr)
         {
             try
             {

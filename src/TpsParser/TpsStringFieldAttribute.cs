@@ -14,7 +14,7 @@ namespace TpsParser
     /// If present on a property, the property must have a setter. The setter may be private.
     /// </para>
     /// </summary>
-    public sealed class TpsFieldStringAttribute : TpsFieldAttribute
+    public sealed class TpsStringFieldAttribute : TpsFieldAttribute
     {
         /// <summary>
         /// Returns true if the end of the string should be trimmed. This is useful when converting from <see cref="TpsString"/>
@@ -42,7 +42,7 @@ namespace TpsParser
         /// </param>
         /// <param name="trimEnd">True if the end of the string should be trimmed.</param>
         /// <param name="stringFormat">The string format to use when calling ToString() on a non-string type.</param>
-        public TpsFieldStringAttribute(string fieldName, object fallbackValue = null, bool isRequired = false, bool trimEnd = true, string stringFormat = null)
+        public TpsStringFieldAttribute(string fieldName, object fallbackValue = null, bool isRequired = false, bool trimEnd = true, string stringFormat = null)
             : base(fieldName, fallbackValue, isRequired)
         {
             TrimEnd = trimEnd;

@@ -8,13 +8,13 @@
 
     public class StringTrimmingEnabledModel
     {
-        [TpsFieldString("Notes")]
+        [TpsStringField("Notes")]
         public string Notes { get; set; }
     }
 
     public class StringTrimmingDisabledModel
     {
-        [TpsFieldString("Notes", trimEnd: false)]
+        [TpsStringField("Notes", trimEnd: false)]
         public string Notes { get; set; }
     }
 }

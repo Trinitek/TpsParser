@@ -103,7 +103,7 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]
-            [TestCase("?", false)]
+            [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFalseCondition(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));

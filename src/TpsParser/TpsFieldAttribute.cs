@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
@@ -44,5 +46,76 @@ namespace TpsParser
         {
             FieldName = fieldName;
         }
+        internal static Type GetMemberType(MemberInfo info)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            switch (info)
+            {
+                case PropertyInfo propInfo:
+                    return propInfo.PropertyType;
+                case FieldInfo fieldInfo:
+                    return fieldInfo.FieldType;
+                default:
+                    throw new TpsParserException($"Tried to get the type of an unsupported member on the target deserialization class ({info}).");
+            }
+        }
+
+        internal virtual object InterpretValue(MemberInfo member, TpsObject sourceObject)
+        {
+            if (member == null)
+            {
+                throw new ArgumentNullException(nameof(member));
+            }
+
+            Type memberType = GetMemberType(member);
+
+            var interpretedValue = InterpretValuePrivate(memberType, sourceObject);
+
+            return CoerceFallback(interpretedValue);
+        }
+
+        private static object InterpretValuePrivate(Type memberType, TpsObject sourceObject)
+        {
+            if (memberType == typeof(DateTime) || memberType == typeof(DateTime?))
+            {
+                if (sourceObject is TpsLong longSource)
+                {
+                    return new TpsDate(longSource.AsDate()).Value;
+                }
+                else
+                {
+                    return sourceObject?.Value;
+                }
+            }
+            else if (memberType == typeof(TimeSpan) || memberType == typeof(TimeSpan?))
+            {
+                if (sourceObject is TpsLong longSource)
+                {
+                    return new TpsTime(longSource.AsTime()).Value;
+                }
+                else
+                {
+                    return sourceObject?.Value;
+                }
+            }
+            else if (memberType == typeof(bool) || memberType == typeof(bool?))
+            {
+                return sourceObject?.AsBoolean();
+            }
+            else if (memberType == typeof(string))
+            {
+                return sourceObject?.ToString();
+            }
+            else
+            {
+                return sourceObject?.Value;
+            }
+        }
+
+        private object CoerceFallback(object value) => value is null ? FallbackValue : value;
     }
 }

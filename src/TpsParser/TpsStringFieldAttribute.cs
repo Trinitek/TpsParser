@@ -1,4 +1,6 @@
-﻿using TpsParser.Tps.Type;
+﻿using System;
+using System.Reflection;
+using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
@@ -34,5 +36,53 @@ namespace TpsParser
         public TpsStringFieldAttribute(string fieldName)
             : base(fieldName)
         { }
+
+        internal override object InterpretValue(MemberInfo member, TpsObject sourceObject)
+        {
+            if (member == null)
+            {
+                throw new ArgumentNullException(nameof(member));
+            }
+
+            Type memberType = GetMemberType(member);
+
+            if (memberType != typeof(string))
+            {
+                throw new TpsParserException($"{nameof(TpsStringFieldAttribute)} is only valid on members of type {typeof(string)} ({member}).");
+            }
+
+            object tpsValue = sourceObject?.Value;
+
+            if (tpsValue is null)
+            {
+                return FallbackValue;
+            }
+            else if (TrimEnd && tpsValue is string tpsStringValue)
+            {
+                return tpsStringValue.TrimEnd();
+            }
+            else
+            {
+                try
+                {
+                    if (tpsValue.GetType().GetMethod("ToString", new Type[] { typeof(string) }) is var miStringParam && miStringParam != null)
+                    {
+                        return (string)miStringParam.Invoke(tpsValue, new string[] { StringFormat });
+                    }
+                    else if (tpsValue.GetType().GetMethod("ToString", Type.EmptyTypes) is var miNoParams && miNoParams != null)
+                    {
+                        return (string)miNoParams.Invoke(tpsValue, null);
+                    }
+                    else
+                    {
+                        throw new TpsParserException("No suitable ToString method was found on the object. This is probably a bug in the library.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new TpsParserException($"Unable to apply string conversion on the given member. See the inner exception for details. ({member})", ex);
+                }
+            }
+        }
     }
 }

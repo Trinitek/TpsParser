@@ -9,5 +9,8 @@
         /// Gets the default behavior.
         /// </summary>
         public static readonly Behavior Default = new Behavior();
+
+        private Behavior()
+        { }
     }
 }

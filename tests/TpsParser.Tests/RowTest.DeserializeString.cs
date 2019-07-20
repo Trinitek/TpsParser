@@ -55,6 +55,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", true)]
+            [TestCase("y", true)]
+            [TestCase("n", true)]
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]
@@ -70,6 +72,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", true)]
+            [TestCase("y", true)]
+            [TestCase("n", true)]
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]
@@ -85,6 +89,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", false)]
+            [TestCase("y", true)]
+            [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]
@@ -100,6 +106,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", false)]
+            [TestCase("y", true)]
+            [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]
@@ -115,6 +123,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", false)]
+            [TestCase("y", true)]
+            [TestCase("n", false)]
             [TestCase("", true)]
             [TestCase(" ", true)]
             [TestCase(null, true)]
@@ -130,6 +140,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", false)]
+            [TestCase("y", true)]
+            [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]
@@ -145,6 +157,8 @@ namespace TpsParser.Tests
 
             [TestCase("Y", true)]
             [TestCase("N", false)]
+            [TestCase("y", true)]
+            [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase(null, false)]

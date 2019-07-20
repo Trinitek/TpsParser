@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a deserializer behavior.
     /// </summary>
-    public sealed class Behavior
+    internal sealed class Behavior
     {
         /// <summary>
         /// Gets the default behavior.

@@ -38,13 +38,24 @@ namespace TpsParser.Tests.Tps.Binary
             Assert.AreEqual(value, parsed);
         }
 
-        [Test]
-        public void ShouldParseLong()
+        [TestCase(unchecked((int)0x01020304), new byte[] { 0x01, 0x02, 0x03, 0x04 })]
+        [TestCase(unchecked((int)0x81828384), new byte[] { 0x81, 0x82, 0x83, 0x84 })]
+        public void ShouldParseLongBigEndian(int value, byte[] data)
         {
-            Assert.AreEqual(unchecked((int)0x01020304), new RandomAccess(new byte[] { 0x01, 0x02, 0x03, 0x04 }).LongBE());
-            Assert.AreEqual(unchecked((int)0x81828384), new RandomAccess(new byte[] { 0x81, 0x82, 0x83, 0x84 }).LongBE());
-            Assert.AreEqual(unchecked((int)0x01020304), new RandomAccess(new byte[] { 0x04, 0x03, 0x02, 0x01 }).LongLE());
-            Assert.AreEqual(unchecked((int)0x81828384), new RandomAccess(new byte[] { 0x84, 0x83, 0x82, 0x81 }).LongLE());
+            var rx = new RandomAccess(data);
+            var parsed = rx.LongBE();
+
+            Assert.AreEqual(value, parsed);
+        }
+
+        [TestCase(unchecked((int)0x01020304), new byte[] { 0x04, 0x03, 0x02, 0x01 })]
+        [TestCase(unchecked((int)0x81828384), new byte[] { 0x84, 0x83, 0x82, 0x81 })]
+        public void ShouldParseLongLittleEndian(int value, byte[] data)
+        {
+            var rx = new RandomAccess(data);
+            var parsed = rx.LongLE();
+
+            Assert.AreEqual(value, parsed);
         }
 
         [Test]

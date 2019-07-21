@@ -8,20 +8,34 @@ namespace TpsParser.Tests.Tps.Binary
     [TestFixture]
     public class RandomAccessTest
     {
-        [Test]
-        public void ShouldParseByte()
+        [TestCase(0x01, new byte[] { 0x01 })]
+        [TestCase(0x81, new byte[] { 0x81 })]
+        public void ShouldParseByte(byte value, byte[] data)
         {
-            Assert.AreEqual((byte)0x01, new RandomAccess(new byte[] { 0x01 }).Byte());
-            Assert.AreEqual((byte)0x81, new RandomAccess(new byte[] { 0x81 }).Byte());
+            var rx = new RandomAccess(data);
+            byte parsed = rx.Byte();
+
+            Assert.AreEqual(value, parsed);
         }
 
-        [Test]
-        public void ShouldParseShort()
+        [TestCase((short)0x0102, new byte[] { 0x01, 0x02 })]
+        [TestCase(unchecked((short)0x8182), new byte[] { 0x81, 0x82 })]
+        public void ShouldParseShortBigEndian(short value, byte[] data)
         {
-            Assert.AreEqual(unchecked((short)0x0102), new RandomAccess(new byte[] { 0x01, 0x02 }).ShortBE());
-            Assert.AreEqual(unchecked((short)0x8182), new RandomAccess(new byte[] { 0x81, 0x82 }).ShortBE());
-            Assert.AreEqual(unchecked((short)0x0102), new RandomAccess(new byte[] { 0x02, 0x01 }).ShortLE());
-            Assert.AreEqual(unchecked((short)0x8182), new RandomAccess(new byte[] { 0x82, 0x81 }).ShortLE());
+            var rx = new RandomAccess(data);
+            short parsed = rx.ShortBE();
+
+            Assert.AreEqual(value, parsed);
+        }
+
+        [TestCase((short)0x0102, new byte[] { 0x02, 0x01 })]
+        [TestCase(unchecked((short)0x8182), new byte[] { 0x82, 0x81 })]
+        public void ShouldParseShortLittleEndian(short value, byte[] data)
+        {
+            var rx = new RandomAccess(data);
+            short parsed = rx.ShortLE();
+
+            Assert.AreEqual(value, parsed);
         }
 
         [Test]

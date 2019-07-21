@@ -33,6 +33,15 @@ namespace TpsParser.Tps.Type
         }
 
         /// <summary>
+        /// Instantiate a new PSTRING.
+        /// </summary>
+        /// <param name="value"></param>
+        public TpsPString(string value)
+        {
+            Value = value;
+        }
+
+        /// <summary>
         /// Returns true if the string length is not zero.
         /// </summary>
         /// <returns></returns>

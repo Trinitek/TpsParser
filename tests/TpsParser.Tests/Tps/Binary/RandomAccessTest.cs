@@ -46,7 +46,7 @@ namespace TpsParser.Tests.Tps.Binary
 
             Assert.AreEqual("é!", new RandomAccess(new byte[] { 0x82, 0x21, 0x22 }).FixedLengthString(2, codepage850));
         }
-
+        
         [Test]
         public void ShouldReadZeroTerminatedString()
         {
@@ -77,19 +77,22 @@ namespace TpsParser.Tests.Tps.Binary
             Assert.AreEqual(0.1d, new RandomAccess(new byte[] { 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F }).DoubleLE(), delta: 0.0);
         }
 
-        [Test]
-        public void ShouldParseBCD()
+        [TestCase("0", 2, 0, new byte[] { 0x00, 0x00 })]
+        [TestCase("979", 2, 0, new byte[] { 0x09, 0x79 })]
+        [TestCase("0.00", 2, 2, new byte[] { 0x00, 0x00 })]
+        [TestCase("10.0", 2, 1, new byte[] { 0x01, 0x00 })]
+        [TestCase("0.0", 2, 1, new byte[] { 0x00, 0x00 })]
+        [TestCase("0.00", 3, 2, new byte[] { 0x00, 0x00, 0x00 })]
+        [TestCase("1.23", 2, 2, new byte[] { 0x01, 0x23 })]
+        [TestCase("-1.23", 2, 2, new byte[] { 0xF1, 0x23 })]
+        [TestCase("0.00000000", 7, 8, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })]
+        [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
+        public void ShouldParseBCD(string value, int bcdLength, int bcdDigitsAfterDecimal, byte[] data)
         {
-            Assert.AreEqual("0", new RandomAccess(new byte[] { 0x00, 0x00 }).BinaryCodedDecimal(2, 0));
-            Assert.AreEqual("979", new RandomAccess(new byte[] { 0x09, 0x79 }).BinaryCodedDecimal(2, 0));
-            Assert.AreEqual("0.00", new RandomAccess(new byte[] { 0x00, 0x00 }).BinaryCodedDecimal(2, 2));
-            Assert.AreEqual("10.0", new RandomAccess(new byte[] { 0x01, 0x00 }).BinaryCodedDecimal(2, 1));
-            Assert.AreEqual("0.0", new RandomAccess(new byte[] { 0x00, 0x00 }).BinaryCodedDecimal(2, 1));
-            Assert.AreEqual("0.00", new RandomAccess(new byte[] { 0x00, 0x00, 0x00 }).BinaryCodedDecimal(3, 2));
-            Assert.AreEqual("1.23", new RandomAccess(new byte[] { 0x01, 0x23 }).BinaryCodedDecimal(2, 2));
-            Assert.AreEqual("-1.23", new RandomAccess(new byte[] { 0xF1, 0x23 }).BinaryCodedDecimal(2, 2));
-            Assert.AreEqual("0.00000000", new RandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).BinaryCodedDecimal(7, 8));
-            Assert.AreEqual("0.50000", new RandomAccess(new byte[] { 0x05, 0x00, 0x00 }).BinaryCodedDecimal(3, 5));
+            var rx = new RandomAccess(data);
+            var bcd = rx.BinaryCodedDecimal(bcdLength, bcdDigitsAfterDecimal);
+
+            Assert.AreEqual(value, bcd);
         }
 
         [Test]

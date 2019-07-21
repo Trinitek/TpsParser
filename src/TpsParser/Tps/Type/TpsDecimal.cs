@@ -15,7 +15,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
         /// </summary>
-        public decimal ValueAsDecimal { get; }
+        public decimal ValueAsDecimal { get; private set; }
 
         /// <summary>
         /// Instantiates a new DECIMAL.
@@ -30,7 +30,36 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Value = rx.BinaryCodedDecimal(length, digitsAfterDecimal);
+            string bcdValue = rx.BinaryCodedDecimal(length, digitsAfterDecimal);
+
+            SetValue(bcdValue);
+        }
+
+        /// <summary>
+        /// Instantiates a new DECIMAL.
+        /// </summary>
+        /// <param name="value"></param>
+        public TpsDecimal(string value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (value.Any(v => !(char.IsDigit(v) || v == '.' || v == '-'))
+                || value.Count(v => v == '-') > 1
+                || value.Count(v => v == '.') > 1
+                || value.Count() == 0)
+            {
+                throw new ArgumentException("The given value does not represent a well-formed number.", nameof(value));
+            }
+
+            SetValue(value);
+        }
+
+        private void SetValue(string newValue)
+        {
+            Value = newValue;
 
             decimal.TryParse(Value, out decimal decValue);
 
@@ -41,6 +70,6 @@ namespace TpsParser.Tps.Type
         /// Returns true if the value is not zero.
         /// </summary>
         /// <returns></returns>
-        public override bool AsBoolean() => !Value.Any(v => v == '0' || v == '.');
+        public override bool AsBoolean() => Value.Where(v => char.IsDigit(v)).Any(v => v != '0');
     }
 }

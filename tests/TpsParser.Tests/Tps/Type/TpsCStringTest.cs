@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Text;
 using TpsParser.Binary;
 using TpsParser.Tps.Type;
@@ -24,6 +25,12 @@ namespace TpsParser.Tests.Tps.Type
             var str = new TpsCString("Hello");
 
             Assert.AreEqual("Hello", str.Value);
+        }
+
+        [Test]
+        public void ShouldThrowWhenStringCtorIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => new TpsCString(null));
         }
     }
 }

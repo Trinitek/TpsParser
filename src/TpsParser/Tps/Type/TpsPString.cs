@@ -35,10 +35,10 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Instantiate a new PSTRING.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The string value. Must not be null.</param>
         public TpsPString(string value)
         {
-            Value = value;
+            Value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>

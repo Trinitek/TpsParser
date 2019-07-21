@@ -43,23 +43,12 @@ namespace TpsParser.Tests
                 Assert.AreEqual(expected, deserialized.Notes);
             }
 
-            [Test]
-            public void ShouldDeserializeAndTrimNullString()
-            {
-                var row = BuildRow(1, ("Notes", new TpsPString(null)));
-
-                var deserialized = row.Deserialize<StringTrimmingEnabledModel>();
-
-                Assert.IsNull(deserialized.Notes);
-            }
-
             [TestCase("Y", true)]
             [TestCase("N", true)]
             [TestCase("y", true)]
             [TestCase("n", true)]
             [TestCase("", false)]
-            [TestCase(" ", false)]
-            [TestCase(null, false)]
+            [TestCase(" ", true)]
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanTpsFieldAttribute(string value, bool expected)
             {
@@ -75,8 +64,7 @@ namespace TpsParser.Tests
             [TestCase("y", true)]
             [TestCase("n", true)]
             [TestCase("", false)]
-            [TestCase(" ", false)]
-            [TestCase(null, false)]
+            [TestCase(" ", true)]
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanTpsBooleanFieldAttribute(string value, bool expected)
             {
@@ -93,7 +81,6 @@ namespace TpsParser.Tests
             [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
-            [TestCase(null, false)]
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanTrueCondition(string value, bool expected)
             {
@@ -109,8 +96,7 @@ namespace TpsParser.Tests
             [TestCase("y", true)]
             [TestCase("n", false)]
             [TestCase("", false)]
-            [TestCase(" ", false)]
-            [TestCase(null, false)]
+            [TestCase(" ", true)]
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFalseCondition(string value, bool expected)
             {
@@ -127,7 +113,6 @@ namespace TpsParser.Tests
             [TestCase("n", false)]
             [TestCase("", true)]
             [TestCase(" ", true)]
-            [TestCase(null, true)]
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFallbackTrue(string value, bool expected)
             {
@@ -144,7 +129,6 @@ namespace TpsParser.Tests
             [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
-            [TestCase(null, false)]
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanFallbackFalse(string value, bool expected)
             {
@@ -161,7 +145,6 @@ namespace TpsParser.Tests
             [TestCase("n", false)]
             [TestCase("", false)]
             [TestCase(" ", false)]
-            [TestCase(null, false)]
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanFallbackDefault(string value, bool expected)
             {

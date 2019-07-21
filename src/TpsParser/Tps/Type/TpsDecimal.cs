@@ -45,7 +45,8 @@ namespace TpsParser.Tps.Type
         /// </para>
         /// <para>
         /// This value must have at least one digit before the decimal point. A leading negation sign is permitted.
-        /// The decimal point is optional for whole numbers. It must not be blank or null.
+        /// The decimal point is optional for whole numbers. It must not be blank or null. Spaces or characters that
+        /// are not digits, '.', or '-' are not permitted.
         /// </para>
         /// </param>
         public TpsDecimal(string value)

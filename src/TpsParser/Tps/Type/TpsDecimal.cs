@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
@@ -38,7 +39,15 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Instantiates a new DECIMAL.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">
+        /// <para>
+        /// The string representation of the decimal.
+        /// </para>
+        /// <para>
+        /// This value must have at least one digit before the decimal point. A leading negation sign is permitted.
+        /// The decimal point is optional for whole numbers. It must not be blank or null.
+        /// </para>
+        /// </param>
         public TpsDecimal(string value)
         {
             if (value == null)
@@ -46,10 +55,7 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(value));
             }
 
-            if (value.Any(v => !(char.IsDigit(v) || v == '.' || v == '-'))
-                || value.Count(v => v == '-') > 1
-                || value.Count(v => v == '.') > 1
-                || value.Count() == 0)
+            if (!Regex.IsMatch(value, @"^-?\d+\.?\d*$"))
             {
                 throw new ArgumentException("The given value does not represent a well-formed number.", nameof(value));
             }

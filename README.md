@@ -44,34 +44,42 @@ This library includes a deserializer that allows you to read fields--including M
 ```cs
 class Contact
 {
-    // Use this to include the TPS record number
+    // Use this to include the TPS record number.
     [TpsRecordNumber]
     public int Id { get; set; }
 
     // Special attribute for string properties. Trims ending whitespace by default.
-    [TpsFieldString("fname")]
+    [TpsStringField("fname")]
     public string FirstName { get; set; }
 
-    // Throw an exception if the field is not present in all rows
-    [TpsString("lname", isRequired: true)]
+    // Throw an exception if the field is not present in all rows.
+    [TpsString("lname", IsRequired = true)]
     public string LastName { get; set; }
 
     // Column names are case-insensitive.
-    [TpsFieldString("addrStreet")]
+    [TpsStringField("addrStreet")]
     public string Street { get; set; }
 
-    [TpsFieldString("addrCity")]
+    [TpsStringField("addrCity")]
     public string City { get; set; }
+
+    // Field values can be automatically converted to booleans in accordance with Clarion expression rules.
+    [TpsField("addrCity")]
+    public bool HasCity { get; set; }
+
+    // Fields, string fields especially, might encode booleans with specific values for true/false.
+    [TpsBooleanField("validated", TrueValue = "Y", FalseValue = "N")]
+    public bool IsValidated { get; set; }
 
     // Conversions from the internal LONG type to DATE/TIME are handled automatically when necessary.
     [TpsField("entry")]
     public DateTime EntryDate { get; set; }
 
-    // TpsFieldString lets you specify a StringFormat when reading from non-string fields -- in this case, a DATE
-    [TpsFieldString("modified", stringFormat: "MM - dd - yyyy")]
+    // TpsStringField lets you specify a StringFormat when reading from non-string fields -- in this case, a DATE.
+    [TpsStringField("modified", StringFormat = "MM - dd - yyyy")]
     public string LastModified { get; set; }
 
-    // Reads from MEMO fields too
+    // Reads from MEMO fields too.
     [TpsField("notes")]
     public string Notes { get; set; }
 }

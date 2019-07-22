@@ -16,7 +16,9 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
         /// </summary>
-        public decimal ValueAsDecimal { get; private set; }
+        public decimal AsDecimal() => _valueAsDecimal;
+
+        private decimal _valueAsDecimal;
 
         /// <summary>
         /// Instantiates a new DECIMAL.
@@ -70,7 +72,7 @@ namespace TpsParser.Tps.Type
 
             decimal.TryParse(Value, out decimal decValue);
 
-            ValueAsDecimal = decValue;
+            _valueAsDecimal = decValue;
         }
 
         /// <summary>

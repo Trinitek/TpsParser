@@ -84,7 +84,7 @@ namespace TpsParser
             {
                 if (sourceObject is TpsLong longSource)
                 {
-                    return new TpsDate(longSource.AsDate()).Value;
+                    return longSource.AsDate();
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace TpsParser
             {
                 if (sourceObject is TpsLong longSource)
                 {
-                    return new TpsTime(longSource.AsTime()).Value;
+                    return longSource.AsTime();
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace TpsParser
             {
                 if (sourceObject is TpsDecimal decimalSource)
                 {
-                    return decimalSource.ValueAsDecimal;
+                    return decimalSource.AsDecimal();
                 }
                 else
                 {

@@ -68,7 +68,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var dec = new TpsDecimal(value);
 
-            Assert.AreEqual(expected, dec.ValueAsDecimal);
+            Assert.AreEqual(expected, dec.AsDecimal());
         }
 
         private class ShouldConvertToDecimalData

@@ -110,7 +110,7 @@ namespace TpsParser
             {
                 return sourceObject?.ToString();
             }
-            else if (memberType == typeof(decimal))
+            else if (memberType == typeof(decimal) || memberType == typeof(decimal?))
             {
                 if (sourceObject is TpsDecimal decimalSource)
                 {

@@ -121,7 +121,14 @@ namespace TpsParser
                     TpsObject tpsFieldValue = GetRowValue(tpsFieldName, tpsFieldAttr.IsRequired);
                     object tpsValue = tpsFieldAttr.InterpretValue(member, tpsFieldValue);
 
-                    SetMember(member, targetObject, tpsValue);
+                    try
+                    {
+                        SetMember(member, targetObject, tpsValue);
+                    }
+                    catch (Exception ex) when (ex.GetType() != typeof(TpsParserException))
+                    {
+                        throw new TpsParserException($"Cannot set member [{member}] to value '{tpsValue}' of type '{tpsValue.GetType()}' (Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). See the inner exception for details.", ex);
+                    }
                 }
                 if (tpsRecordNumberAttr != null)
                 {

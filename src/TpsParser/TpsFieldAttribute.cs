@@ -110,7 +110,15 @@ namespace TpsParser
             {
                 return sourceObject?.ToString();
             }
-            else if (memberType == typeof(decimal) || memberType == typeof(decimal?))
+            else if (memberType == typeof(decimal) || memberType == typeof(decimal?)
+                || memberType == typeof(int) || memberType == typeof(int?)
+                || memberType == typeof(uint) || memberType == typeof(uint?)
+                || memberType == typeof(short) || memberType == typeof(short?)
+                || memberType == typeof(ushort) || memberType == typeof(ushort?)
+                || memberType == typeof(long) || memberType == typeof(long?)
+                || memberType == typeof(ulong) || memberType == typeof(ulong?)
+                || memberType == typeof(byte) || memberType == typeof(byte?)
+                || memberType == typeof(sbyte) || memberType == typeof(sbyte?))
             {
                 if (sourceObject is TpsDecimal decimalSource)
                 {

@@ -110,19 +110,52 @@ namespace TpsParser
             {
                 return sourceObject?.ToString();
             }
-            else if (memberType == typeof(decimal) || memberType == typeof(decimal?)
-                || memberType == typeof(int) || memberType == typeof(int?)
-                || memberType == typeof(uint) || memberType == typeof(uint?)
-                || memberType == typeof(short) || memberType == typeof(short?)
-                || memberType == typeof(ushort) || memberType == typeof(ushort?)
-                || memberType == typeof(long) || memberType == typeof(long?)
-                || memberType == typeof(ulong) || memberType == typeof(ulong?)
-                || memberType == typeof(byte) || memberType == typeof(byte?)
-                || memberType == typeof(sbyte) || memberType == typeof(sbyte?))
+            else if (memberType == typeof(decimal) || memberType == typeof(decimal?))
             {
                 if (sourceObject is TpsDecimal decimalSource)
                 {
                     return decimalSource.AsDecimal();
+                }
+                else
+                {
+                    return sourceObject?.Value;
+                }
+            }
+            else if (memberType == typeof(int) || memberType == typeof(int?)
+                || memberType == typeof(short) || memberType == typeof(short?)
+                || memberType == typeof(long) || memberType == typeof(long?)
+                || memberType == typeof(sbyte) || memberType == typeof(sbyte?))
+            {
+                if (sourceObject is TpsDecimal decimalSource)
+                {
+                    decimal sourceValue = decimalSource.AsDecimal();
+                    Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
+
+                    // Convert will round to the nearest whole value, so we floor/ceiling the value to emulate behavior of an explicit cast.
+                    decimal value = sourceValue < 0 ? Math.Ceiling(sourceValue) : Math.Floor(sourceValue);
+
+                    return Convert.ChangeType(value, destType);
+                }
+                else
+                {
+                    return sourceObject?.Value;
+                }
+            }
+            else if (memberType == typeof(uint) || memberType == typeof(uint?)
+                || memberType == typeof(ushort) || memberType == typeof(ushort?)
+                || memberType == typeof(ulong) || memberType == typeof(ulong?)
+                || memberType == typeof(byte) || memberType == typeof(byte?))
+            {
+                if (sourceObject is TpsDecimal decimalSource)
+                {
+                    decimal sourceValue = decimalSource.AsDecimal();
+                    Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
+
+                    // Convert will round to the nearest whole value, so we floor the value to emulate the behavior of an explicit cast.
+                    // If the value is negative, we coerce it to zero.
+                    decimal value = sourceValue < 0 ? 0 : Math.Floor(sourceValue);
+
+                    return Convert.ChangeType(value, destType);
                 }
                 else
                 {

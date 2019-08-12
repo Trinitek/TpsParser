@@ -404,9 +404,9 @@ namespace TpsParser.Tests
                 {
                     get
                     {
-                        yield return new TestCaseData("0", (long?)0);
-                        yield return new TestCaseData("-2.4", (long?)-2);
-                        yield return new TestCaseData("3.5", (long?)3);
+                        yield return new TestCaseData("0", (sbyte?)0);
+                        yield return new TestCaseData("-2.4", (sbyte?)-2);
+                        yield return new TestCaseData("3.5", (sbyte?)3);
                     }
                 }
             }

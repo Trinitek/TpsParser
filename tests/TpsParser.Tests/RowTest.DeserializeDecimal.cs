@@ -120,6 +120,7 @@ namespace TpsParser.Tests
             }
 
             [TestCase("0", (uint)0)]
+            [TestCase("-2.4", (uint)0)]
             [TestCase("3.5", (uint)3)]
             public void ShouldDeserializeDecimalAsUInt(string value, uint expected)
             {
@@ -127,26 +128,6 @@ namespace TpsParser.Tests
                 var des = row.Deserialize<DecimalUIntModel>();
 
                 Assert.AreEqual(expected, des.Price);
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsUInt(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalUIntModel>());
-            }
-
-            private class ShouldThrowWhenDeserializingNegativeData
-            {
-                public static IEnumerable Data
-                {
-                    get
-                    {
-                        yield return "-2.4";
-                        yield return "-0.1";
-                        yield return "-127";
-                    }
-                }
             }
 
             [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableUIntData), nameof(ShouldDeserializeDecimalAsNullableUIntData.Data))]
@@ -165,16 +146,10 @@ namespace TpsParser.Tests
                     get
                     {
                         yield return new TestCaseData("0", (uint?)0);
+                        yield return new TestCaseData("-2.4", (uint?)0);
                         yield return new TestCaseData("3.5", (uint?)3);
                     }
                 }
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsNullableUInt(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalNullableUIntModel>());
             }
 
             [TestCase("0", (short)0)]
@@ -211,6 +186,7 @@ namespace TpsParser.Tests
             }
 
             [TestCase("0", (ushort)0)]
+            [TestCase("-2.4", (ushort)0)]
             [TestCase("3.5", (ushort)3)]
             public void ShouldDeserializeDecimalAsUShort(string value, ushort expected)
             {
@@ -218,13 +194,6 @@ namespace TpsParser.Tests
                 var des = row.Deserialize<DecimalUShortModel>();
 
                 Assert.AreEqual(expected, des.Price);
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsUShort(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalUShortModel>());
             }
 
             [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableUShortData), nameof(ShouldDeserializeDecimalAsNullableUShortData.Data))]
@@ -243,16 +212,10 @@ namespace TpsParser.Tests
                     get
                     {
                         yield return new TestCaseData("0", (ushort?)0);
+                        yield return new TestCaseData("-2.4", (ushort?)0);
                         yield return new TestCaseData("3.5", (ushort?)3);
                     }
                 }
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsNullableUShort(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalNullableUShortModel>());
             }
 
             [TestCase("0", (long)0)]
@@ -289,6 +252,7 @@ namespace TpsParser.Tests
             }
 
             [TestCase("0", (ulong)0)]
+            [TestCase("-2.4", (ulong)0)]
             [TestCase("3.5", (ulong)3)]
             public void ShouldDeserializeDecimalAsULong(string value, ulong expected)
             {
@@ -296,13 +260,6 @@ namespace TpsParser.Tests
                 var des = row.Deserialize<DecimalULongModel>();
 
                 Assert.AreEqual(expected, des.Price);
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsULong(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalULongModel>());
             }
 
             [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableULongData), nameof(ShouldDeserializeDecimalAsNullableULongData.Data))]
@@ -321,19 +278,14 @@ namespace TpsParser.Tests
                     get
                     {
                         yield return new TestCaseData("0", (ulong?)0);
+                        yield return new TestCaseData("-2.4", (ulong?)0);
                         yield return new TestCaseData("3.5", (ulong?)3);
                     }
                 }
             }
 
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsNullableULong(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalNullableULongModel>());
-            }
-
             [TestCase("0", (byte)0)]
+            [TestCase("-2.4", (byte)0)]
             [TestCase("3.5", (byte)3)]
             public void ShouldDeserializeDecimalAsByte(string value, byte expected)
             {
@@ -341,13 +293,6 @@ namespace TpsParser.Tests
                 var des = row.Deserialize<DecimalByteModel>();
 
                 Assert.AreEqual(expected, des.Price);
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsByte(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalByteModel>());
             }
 
             [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableByteData), nameof(ShouldDeserializeDecimalAsNullableByteData.Data))]
@@ -366,16 +311,10 @@ namespace TpsParser.Tests
                     get
                     {
                         yield return new TestCaseData("0", (byte?)0);
+                        yield return new TestCaseData("-2.4", (byte?)0);
                         yield return new TestCaseData("3.5", (byte?)3);
                     }
                 }
-            }
-
-            [TestCaseSource(typeof(ShouldThrowWhenDeserializingNegativeData), nameof(ShouldThrowWhenDeserializingNegativeData.Data))]
-            public void ShouldThrowWhenDeserializingDecimalAsNullableByte(string value)
-            {
-                var row = BuildRow(1, ("Price", new TpsDecimal(value)));
-                Assert.Throws<TpsParserException>(() => row.Deserialize<DecimalNullableByteModel>());
             }
 
             [TestCase("0", (sbyte)0)]

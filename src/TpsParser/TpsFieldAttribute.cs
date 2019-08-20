@@ -82,9 +82,9 @@ namespace TpsParser
         {
             if (memberType == typeof(DateTime) || memberType == typeof(DateTime?))
             {
-                if (sourceObject is TpsLong longSource)
+                if (sourceObject is IConvertible<DateTime> dateTimeConvertible)
                 {
-                    return longSource.AsDate();
+                    return dateTimeConvertible.AsType();
                 }
                 else
                 {
@@ -93,9 +93,9 @@ namespace TpsParser
             }
             else if (memberType == typeof(TimeSpan) || memberType == typeof(TimeSpan?))
             {
-                if (sourceObject is TpsLong longSource)
+                if (sourceObject is IConvertible<TimeSpan> timeSpanConvertible)
                 {
-                    return longSource.AsTime();
+                    return timeSpanConvertible.AsType();
                 }
                 else
                 {
@@ -104,7 +104,7 @@ namespace TpsParser
             }
             else if (memberType == typeof(bool) || memberType == typeof(bool?))
             {
-                return sourceObject?.AsBoolean();
+                return ((IConvertible<bool>)sourceObject)?.AsType();
             }
             else if (memberType == typeof(string))
             {
@@ -112,9 +112,9 @@ namespace TpsParser
             }
             else if (memberType == typeof(decimal) || memberType == typeof(decimal?))
             {
-                if (sourceObject is TpsDecimal decimalSource)
+                if (sourceObject is IConvertible<decimal> decimalConvertible)
                 {
-                    return decimalSource.AsDecimal();
+                    return decimalConvertible.AsType();
                 }
                 else
                 {
@@ -128,7 +128,7 @@ namespace TpsParser
             {
                 if (sourceObject is TpsDecimal decimalSource)
                 {
-                    decimal sourceValue = decimalSource.AsDecimal();
+                    decimal sourceValue = ((IConvertible<decimal>)decimalSource).AsType();
                     Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
 
                     // Convert will round to the nearest whole value, so we floor/ceiling the value to emulate behavior of an explicit cast.
@@ -148,7 +148,7 @@ namespace TpsParser
             {
                 if (sourceObject is TpsDecimal decimalSource)
                 {
-                    decimal sourceValue = decimalSource.AsDecimal();
+                    decimal sourceValue = ((IConvertible<decimal>)decimalSource).AsType();
                     Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
 
                     // Convert will round to the nearest whole value, so we floor the value to emulate the behavior of an explicit cast.

@@ -5,7 +5,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a typed object within the TopSpeed file.
     /// </summary>
-    public abstract class TpsObject
+    public abstract class TpsObject : IConvertible<bool>
     {
         /// <summary>
         /// Gets the .NET equivalent value of the TopSpeed object.
@@ -21,7 +21,7 @@ namespace TpsParser.Tps.Type
         /// Gets a boolean representation of the value as governed by Clarion logic evaluation rules for the type.
         /// </summary>
         /// <returns></returns>
-        public abstract bool AsBoolean();
+        protected abstract bool AsBoolean();
 
         /// <summary>
         /// Gets the string representation of the value that this object encapsulates.
@@ -49,6 +49,8 @@ namespace TpsParser.Tps.Type
             hashCode = hashCode * -1521134295 + TypeCode.GetHashCode();
             return hashCode;
         }
+
+        bool IConvertible<bool>.AsType() => AsBoolean();
 
         public static bool operator ==(TpsObject left, TpsObject right)
         {

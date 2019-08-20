@@ -65,7 +65,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the string contains more than only whitespace.
         /// </summary>
-        /// <returns></returns>
-        public override bool AsBoolean() => !string.IsNullOrWhiteSpace(Value);
+        protected override bool AsBoolean() => !string.IsNullOrWhiteSpace(Value);
     }
 }

@@ -40,6 +40,8 @@ namespace TpsParser
             FallbackValue = false;
         }
 
+        private bool? AsBoolean(TpsObject sourceObject) => ((IConvertible<bool>)sourceObject)?.AsType();
+
         internal override object InterpretValue(MemberInfo member, TpsObject sourceObject)
         {
             if (member == null)
@@ -64,7 +66,7 @@ namespace TpsParser
                 }
                 else
                 {
-                    return sourceObject?.AsBoolean() ?? FallbackValue;
+                    return AsBoolean(sourceObject) ?? FallbackValue;
                 }
             }
             else if (TrueValue == Behavior.Default && FalseValue != Behavior.Default)
@@ -73,13 +75,13 @@ namespace TpsParser
                 {
                     bool isFalse = string.Equals(tpsString, falseString, StringComparison.OrdinalIgnoreCase);
 
-                    return isFalse ? false : sourceObject?.AsBoolean() ?? FallbackValue;
+                    return isFalse ? false : AsBoolean(sourceObject) ?? FallbackValue;
                 }
                 else
                 {
                     bool isFalse = tpsValue?.Equals(FalseValue) == false;
 
-                    return isFalse ? false : sourceObject?.AsBoolean() ?? FallbackValue;
+                    return isFalse ? false : AsBoolean(sourceObject) ?? FallbackValue;
                 }
             }
             else if (TrueValue != Behavior.Default && FalseValue != Behavior.Default)
@@ -117,7 +119,7 @@ namespace TpsParser
             }
             else
             {
-                return sourceObject?.AsBoolean() ?? FallbackValue;
+                return AsBoolean(sourceObject) ?? FallbackValue;
             }
         }
     }

@@ -6,7 +6,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a signed integer.
     /// </summary>
-    public sealed class TpsLong : TpsObject<int>
+    public sealed class TpsLong : TpsObject<int>, IConvertible<DateTime>, IConvertible<TimeSpan>
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Long;
@@ -40,23 +40,20 @@ namespace TpsParser.Tps.Type
         public static readonly DateTime ClarionEpoch = new DateTime(1800, 12, 28);
 
         /// <summary>
+        /// Returns true if the value is not zero.
+        /// </summary>
+        protected override bool AsBoolean() => Value != 0;
+
+        /// <summary>
         /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClarionEpoch"/>.
         /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
         /// </summary>
-        /// <returns></returns>
-        public DateTime AsDate() => ClarionEpoch.AddDays(Value);
+        DateTime IConvertible<DateTime>.AsType() => ClarionEpoch.AddDays(Value);
 
         /// <summary>
         /// Gets a <see cref="TimeSpan"/> by treating the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight.
         /// For more information about the Clarion Standard Time, see the remarks section of <see cref="TpsTime"/>.
         /// </summary>
-        /// <returns></returns>
-        public TimeSpan AsTime() => new TimeSpan(0, 0, 0, 0, Value * 10);
-
-        /// <summary>
-        /// Returns true if the value is not zero.
-        /// </summary>
-        /// <returns></returns>
-        public override bool AsBoolean() => Value != 0;
+        TimeSpan IConvertible<TimeSpan>.AsType() => new TimeSpan(0, 0, 0, 0, Value * 10);
     }
 }

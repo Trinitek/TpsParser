@@ -8,15 +8,10 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a binary coded decimal.
     /// </summary>
-    public sealed class TpsDecimal : TpsObject<string>
+    public sealed class TpsDecimal : TpsObject<string>, IConvertible<decimal>
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Decimal;
-
-        /// <summary>
-        /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
-        /// </summary>
-        public decimal AsDecimal() => _valueAsDecimal;
 
         private decimal _valueAsDecimal;
 
@@ -78,7 +73,11 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        /// <returns></returns>
-        public override bool AsBoolean() => Value.Where(v => char.IsDigit(v)).Any(v => v != '0');
+        protected override bool AsBoolean() => Value.Where(v => char.IsDigit(v)).Any(v => v != '0');
+
+        /// <summary>
+        /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
+        /// </summary>
+        decimal IConvertible<decimal>.AsType() => _valueAsDecimal;
     }
 }

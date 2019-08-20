@@ -29,7 +29,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the text does not have a length of zero.
         /// </summary>
-        /// <returns></returns>
-        public override bool AsBoolean() => !string.IsNullOrEmpty(Value);
+        protected override bool AsBoolean() => !string.IsNullOrEmpty(Value);
     }
 }

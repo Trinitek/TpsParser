@@ -31,7 +31,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the data size is not zero.
         /// </summary>
-        /// <returns></returns>
-        public override bool AsBoolean() => Value.Count() > 0;
+        protected override bool AsBoolean() => Value.Count() > 0;
     }
 }

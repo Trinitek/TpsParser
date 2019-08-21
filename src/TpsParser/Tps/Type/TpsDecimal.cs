@@ -8,7 +8,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a binary coded decimal.
     /// </summary>
-    public sealed class TpsDecimal : TpsObject<string>, IConvertible<decimal>
+    public sealed class TpsDecimal : TpsObject<string>, IConvertible<decimal>, IConvertible<DateTime>
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Decimal;
@@ -79,5 +79,11 @@ namespace TpsParser.Tps.Type
         /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
         /// </summary>
         decimal IConvertible<decimal>.AsType() => _valueAsDecimal;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.
+        /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
+        /// </summary>
+        DateTime IConvertible<DateTime>.AsType() => TpsDate.ClarionEpoch.AddDays((double)_valueAsDecimal);
     }
 }

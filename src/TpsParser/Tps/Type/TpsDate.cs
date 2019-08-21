@@ -42,6 +42,11 @@ namespace TpsParser.Tps.Type
     /// </remarks>
     public sealed class TpsDate : TpsObject<DateTime?>
     {
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing December 28, 1800, which is the start date of the Clarion Standard Date.
+        /// </summary>
+        public static readonly DateTime ClarionEpoch = new DateTime(1800, 12, 28);
+
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Date;
 

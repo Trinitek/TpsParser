@@ -35,20 +35,15 @@ namespace TpsParser.Tps.Type
         }
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> representing December 28, 1800, which is the start date of the Clarion Standard Date.
-        /// </summary>
-        public static readonly DateTime ClarionEpoch = new DateTime(1800, 12, 28);
-
-        /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
         protected override bool AsBoolean() => Value != 0;
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClarionEpoch"/>.
+        /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.
         /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
         /// </summary>
-        DateTime IConvertible<DateTime>.AsType() => ClarionEpoch.AddDays(Value);
+        DateTime IConvertible<DateTime>.AsType() => TpsDate.ClarionEpoch.AddDays(Value);
 
         /// <summary>
         /// Gets a <see cref="TimeSpan"/> by treating the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight.

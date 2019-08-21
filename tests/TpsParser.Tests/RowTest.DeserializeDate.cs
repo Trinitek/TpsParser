@@ -95,6 +95,30 @@ namespace TpsParser.Tests
 
                 Assert.AreEqual("nothing", deserialized.Date);
             }
+
+            [Test]
+            public void ShouldDeserializeDateFromDecimal()
+            {
+                int clarionStandardDate = 80085;
+
+                var row = BuildRow(1, ("Date", new TpsDecimal(clarionStandardDate.ToString())));
+
+                var deserialized = row.Deserialize<DateModel>();
+
+                Assert.AreEqual(new DateTime(2020, 4, 3), deserialized.Date);
+            }
+
+            [Test]
+            public void ShouldDeserializeNullableDateFromDecimal()
+            {
+                int clarionStandardDate = 80085;
+
+                var row = BuildRow(1, ("Date", new TpsDecimal(clarionStandardDate.ToString())));
+
+                var deserialized = row.Deserialize<NullDateModel>();
+
+                Assert.AreEqual(new DateTime(2020, 4, 3), deserialized.Date);
+            }
         }
     }
 }

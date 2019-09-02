@@ -15,6 +15,9 @@ namespace TpsParser
     /// true and "N" as false.
     /// </para>
     /// <para>
+    /// Where the field is of type STRING, both leading and trailing whitespace is trimmed before comparison.
+    /// </para>
+    /// <para>
     /// The default behavior for value conversions to <see cref="bool"/> are described on the overrides of <see cref="TpsObject.AsBoolean"/>
     /// for each implementing type.
     /// </para>
@@ -62,7 +65,7 @@ namespace TpsParser
             {
                 if (tpsValue is string tpsString && TrueValue is string trueString)
                 {
-                    return string.Equals(tpsString, trueString, StringComparison.OrdinalIgnoreCase);
+                    return string.Equals(tpsString.Trim(), trueString, StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
@@ -73,7 +76,7 @@ namespace TpsParser
             {
                 if (tpsValue is string tpsString && FalseValue is string falseString)
                 {
-                    bool isFalse = string.Equals(tpsString, falseString, StringComparison.OrdinalIgnoreCase);
+                    bool isFalse = string.Equals(tpsString.Trim(), falseString, StringComparison.OrdinalIgnoreCase);
 
                     return isFalse ? false : AsBoolean(sourceObject) ?? FallbackValue;
                 }
@@ -88,11 +91,11 @@ namespace TpsParser
             {
                 if (tpsValue is string tpsString && TrueValue is string trueString && FalseValue is string falseString)
                 {
-                    if (string.Equals(tpsString, trueString, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(tpsString.Trim(), trueString, StringComparison.OrdinalIgnoreCase))
                     {
                         return true;
                     }
-                    else if (string.Equals(tpsString, falseString, StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(tpsString.Trim(), falseString, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }

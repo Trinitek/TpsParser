@@ -50,6 +50,11 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase("?", true)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", true)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", true)]
+            [TestCase(" ? ", true)]
             public void ShouldDeserializeStringAsBooleanTpsFieldAttribute(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));
@@ -66,6 +71,11 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase("?", true)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", true)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", true)]
+            [TestCase(" ? ", true)]
             public void ShouldDeserializeStringAsBooleanTpsBooleanFieldAttribute(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));
@@ -82,6 +92,11 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase("?", false)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", false)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", false)]
+            [TestCase(" ? ", false)]
             public void ShouldDeserializeStringAsBooleanTrueCondition(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));
@@ -98,6 +113,11 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase("?", true)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", false)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", false)]
+            [TestCase(" ? ", true)]
             public void ShouldDeserializeStringAsBooleanFalseCondition(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));
@@ -114,6 +134,11 @@ namespace TpsParser.Tests
             [TestCase("", true)]
             [TestCase(" ", true)]
             [TestCase("?", true)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", false)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", false)]
+            [TestCase(" ? ", true)]
             public void ShouldDeserializeStringAsBooleanFallbackTrue(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));
@@ -130,6 +155,11 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase("?", false)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", false)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", false)]
+            [TestCase(" ? ", false)]
             public void ShouldDeserializeStringAsBooleanFallbackFalse(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));
@@ -146,6 +176,11 @@ namespace TpsParser.Tests
             [TestCase("", false)]
             [TestCase(" ", false)]
             [TestCase("?", false)]
+            [TestCase(" Y ", true)]
+            [TestCase(" N ", false)]
+            [TestCase(" y ", true)]
+            [TestCase(" n ", false)]
+            [TestCase(" ? ", false)]
             public void ShouldDeserializeStringAsBooleanFallbackDefault(string value, bool expected)
             {
                 var row = BuildRow(1, ("Notes", new TpsString(value)));

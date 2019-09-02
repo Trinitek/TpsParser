@@ -15,7 +15,7 @@ namespace TpsParser
     /// true and "N" as false.
     /// </para>
     /// <para>
-    /// Where the field is of type STRING, both leading and trailing whitespace is trimmed before comparison.
+    /// Where the field is of type STRING, PSTRING, or CSTRING, both leading and trailing whitespace is trimmed before comparison.
     /// </para>
     /// <para>
     /// The default behavior for value conversions to <see cref="bool"/> are described on the overrides of <see cref="TpsObject.AsBoolean"/>

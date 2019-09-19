@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TpsParser
 {
@@ -42,6 +44,20 @@ namespace TpsParser
             var targetObjects = Rows.Select(r => r.Deserialize<T>());
 
             return targetObjects;
+        }
+
+        /// <summary>
+        /// Deserializes the table to a collection of the given type.
+        /// </summary>
+        /// <typeparam name="T">The type to represent a deserialized row.</typeparam>
+        /// <returns></returns>
+        public Task<IEnumerable<T>> DeserializeAsync<T>(CancellationToken ct = default) where T : class, new()
+        {
+            var targetClass = typeof(T);
+
+            var targetObjects = Rows.Select(r => r.DeserializeAsync<T>(ct).Result);
+
+            return Task.FromResult(targetObjects);
         }
     }
 }

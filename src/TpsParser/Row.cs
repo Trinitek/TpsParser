@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
@@ -113,6 +115,22 @@ namespace TpsParser
             SetMembers(targetObject);
 
             return targetObject;
+        }
+
+        /// <summary>
+        /// Deserializes the row into the given type. Members on the type should be marked with the appropriate attributes.
+        /// </summary>
+        /// <typeparam name="T">The type to represent the deserialized row.</typeparam>
+        /// <returns></returns>
+        public Task<T> DeserializeAsync<T>(CancellationToken ct = default) where T : class, new()
+        {
+            var targetObject = new T();
+
+            SetMembers(targetObject);
+
+            ct.ThrowIfCancellationRequested();
+
+            return Task.FromResult(targetObject);
         }
 
         private void SetMembers<T>(T targetObject) where T : class

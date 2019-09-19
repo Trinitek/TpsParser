@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using TpsParser.Tps;
 using TpsParser.Tps.Record;
 using TpsParser.Tps.Type;
@@ -138,6 +140,15 @@ namespace TpsParser
         /// <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
         /// <returns></returns>
         public IEnumerable<T> Deserialize<T>(bool ignoreErrors = false) where T : class, new() => BuildTable(ignoreErrors).Deserialize<T>();
+
+        /// <summary>
+        /// Deserializes the first table in the file to a collection of the given type.
+        /// </summary>
+        /// <typeparam name="T">The type to represent a deserialized row.</typeparam>
+        /// <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
+        /// <param name="ct">The cancellation token for the asynchronous operation.</param>
+        /// <returns></returns>
+        public Task<IEnumerable<T>> DeserializeAsync<T>(bool ignoreErrors = false, CancellationToken ct = default) where T : class, new() => BuildTable(ignoreErrors).DeserializeAsync<T>(ct);
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Dispose()

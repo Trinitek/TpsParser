@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using TpsParser.Tests.DeserializerModels;
 
 namespace TpsParser.Tests
@@ -138,6 +140,22 @@ namespace TpsParser.Tests
             using (var parser = new TpsParser("Resources/table-with-memos.tps"))
             {
                 Assert.Throws<TpsParserException>(() => parser.Deserialize<MemosRecordNumberAndFieldAttrOnSameMemberModel>().ToList());
+            }
+        }
+
+        [Test]
+        public void ShouldCancelAsync()
+        {
+            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var cts = new CancellationTokenSource())
+            {
+                cts.Cancel();
+
+                Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                {
+                    var enumerable = await parser.DeserializeAsync<MemosNotesRequiredModel>(ct: cts.Token);
+                    enumerable.ToList();
+                });
             }
         }
     }

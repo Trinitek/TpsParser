@@ -7,26 +7,10 @@ namespace TpsParser
 {
     internal sealed class DeserializerContext
     {
-        private Dictionary<Type, ModelMember[]> TypeCache { get; }
-
         public DeserializerContext()
-        {
-            TypeCache = new Dictionary<Type, ModelMember[]>();
-        }
+        { }
 
         public IEnumerable<ModelMember> GetModelMembers<T>(T targetObject) where T : class
-        {
-            if (TypeCache.TryGetValue(typeof(T), out var members))
-            {
-                return members;
-            }
-            else
-            {
-                return Add(targetObject);
-            }
-        }
-
-        private IEnumerable<ModelMember> Add<T>(T targetObject) where T : class
         {
             if (targetObject is null)
             {
@@ -37,10 +21,7 @@ namespace TpsParser
 
             var modelMembers = members
                 .Select(m => ModelMember.BuildModelMember(m))
-                .Where(m => m != null)
-                .ToArray();
-
-            TypeCache.Add(typeof(T), modelMembers);
+                .Where(m => m != null);
 
             return modelMembers;
         }

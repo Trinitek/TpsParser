@@ -107,7 +107,7 @@ namespace TpsParser.Tps.Record
             return sb.ToString();
         }
 
-        public IEnumerable<TpsObject> Parse(byte[] record)
+        public IReadOnlyList<TpsObject> Parse(byte[] record)
         {
             if (record == null)
             {
@@ -134,7 +134,7 @@ namespace TpsParser.Tps.Record
                 }
             }
 
-            return values;
+            return values.AsReadOnly();
         }
 
         public TpsObject ParseField(TpsTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)

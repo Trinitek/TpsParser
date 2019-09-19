@@ -75,14 +75,14 @@ namespace TpsParser
             TpsFile = new TpsFile(Stream, new Key(password));
         }
 
-        private IEnumerable<(int recordNumber, IReadOnlyDictionary<string, TpsObject> nameValuePairs)> GatherDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
             var dataRecords = TpsFile.GetDataRecords(table, tableDefinition: tableDefinitionRecord, ignoreErrors);
 
-            return dataRecords.Select(r => (r.RecordNumber, r.GetFieldValuePairs()));
+            return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
         }
 
-        private IEnumerable<(int recordNumber, IReadOnlyDictionary<string, TpsObject> nameValuePairs)> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
             return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
                 .SelectMany(index =>
@@ -93,10 +93,10 @@ namespace TpsParser
                     return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name, value: record.GetValue(definition)));
                 })
                 .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
-                .Select(groupedPair => (
-                    groupedPair.Key,
-                    (IReadOnlyDictionary<string, TpsObject>)groupedPair
-                        .ToDictionary(pair => pair.name, pair => pair.value)));
+                .ToDictionary(
+                    groupedPair => groupedPair.Key,
+                    groupedPair => (IReadOnlyDictionary<string, TpsObject>)groupedPair
+                        .ToDictionary(pair => pair.name, pair => pair.value));
         }
 
         /// <summary>
@@ -115,15 +115,26 @@ namespace TpsParser
             var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
             var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
 
-            IEnumerable<(int recordNumber, IReadOnlyDictionary<string, TpsObject> nameValuePairs)> unifiedRecords = Enumerable.Concat(dataRecords, memoRecords)
-                .GroupBy(numberNVPairs => numberNVPairs.recordNumber)
-                .Select(groupedNumberNVPairs => (
-                    recordNumber: groupedNumberNVPairs.Key,
-                    nameValuePairs: (IReadOnlyDictionary<string, TpsObject>)groupedNumberNVPairs
-                        .SelectMany(pair => pair.nameValuePairs)
-                        .ToDictionary(kv => kv.Key, kv => kv.Value)));
+            var unifiedRecords = new Dictionary<int, Dictionary<string, TpsObject>>();
 
-            var rows = unifiedRecords.Select(r => new Row(DeserializerContext, r.recordNumber, r.nameValuePairs));
+            foreach (var dataKvp in dataRecords)
+            {
+                unifiedRecords.Add(dataKvp.Key, dataKvp.Value.ToDictionary(pair => pair.Key, pair => pair.Value));
+            }
+
+            foreach (var memoKvp in memoRecords)
+            {
+                int key = memoKvp.Key;
+
+                var dataKvp = dataRecords[memoKvp.Key];
+
+                foreach (var memoNameValue in memoKvp.Value)
+                {
+                    unifiedRecords[key].Add(memoNameValue.Key, memoNameValue.Value);
+                }
+            }
+
+            var rows = unifiedRecords.Select(r => new Row(DeserializerContext, r.Key, r.Value));
 
             string tableName = tableNameDefinitions
                 .First(n => n.TableNumber == firstTableDefinition.Key).Header.Name;

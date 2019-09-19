@@ -11,7 +11,7 @@ namespace TpsParser.Tps.Record
     {
         private DataHeader Header { get; }
         public TableDefinitionRecord TableDefinition { get; }
-        public IEnumerable<TpsObject> Values { get; }
+        public IReadOnlyList<TpsObject> Values { get; }
         public TpsRecord Record { get; }
 
         public int RecordNumber => Header.RecordNumber;

@@ -9,7 +9,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Copyright>Copyright © 2019 Blake Burgess</Copyright>
     <Description>Reads and deserializes encrypted and unencrypted Clarion TopSpeed (TPS) files.</Description>
-    <Version>4.0.1</Version>
+    <Version>4.1.0</Version>
     <PackageTags>clarion tps topspeed softvelocity</PackageTags>
   </PropertyGroup>
 

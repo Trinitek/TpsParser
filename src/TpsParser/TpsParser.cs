@@ -20,11 +20,19 @@ namespace TpsParser
 
         private Stream Stream { get; }
 
+        private DeserializerContext DeserializerContext { get; }
+
+        private TpsParser()
+        {
+            DeserializerContext = new DeserializerContext();
+        }
+
         /// <summary>
         /// Instantiates a new parser.
         /// </summary>
         /// <param name="stream">The stream from which to read the TopSpeed file.</param>
         public TpsParser(Stream stream)
+            : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
             TpsFile = new TpsFile(Stream);
@@ -36,6 +44,7 @@ namespace TpsParser
         /// <param name="stream">The stream from which to read the TopSpeed file.</param>
         /// <param name="password">The password or "owner" to use to decrypt the file.</param>
         public TpsParser(Stream stream, string password)
+            : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
             TpsFile = new TpsFile(Stream, new Key(password));
@@ -46,6 +55,7 @@ namespace TpsParser
         /// </summary>
         /// <param name="filename">The filename of the TopSpeed file.</param>
         public TpsParser(string filename)
+            : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
             TpsFile = new TpsFile(Stream);
@@ -57,6 +67,7 @@ namespace TpsParser
         /// <param name="filename">The filename of the TopSpeed file.</param>
         /// <param name="password">The password or "owner" to use to decrypt the file.</param>
         public TpsParser(string filename, string password)
+            : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
             TpsFile = new TpsFile(Stream, new Key(password));
@@ -110,7 +121,7 @@ namespace TpsParser
                         .SelectMany(pair => pair.nameValuePairs)
                         .ToDictionary(kv => kv.Key, kv => kv.Value)));
 
-            var rows = unifiedRecords.Select(r => new Row(r.recordNumber, r.nameValuePairs));
+            var rows = unifiedRecords.Select(r => new Row(DeserializerContext, r.recordNumber, r.nameValuePairs));
 
             string tableName = tableNameDefinitions
                 .First(n => n.TableNumber == firstTableDefinition.Key).Header.Name;

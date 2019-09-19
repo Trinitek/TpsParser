@@ -27,13 +27,27 @@ namespace TpsParser
         /// </summary>
         public IReadOnlyDictionary<string, TpsObject> Values { get; }
 
+        private DeserializerContext DeserializerContext { get; }
+
         /// <summary>
         /// Instantiates a new row.
         /// </summary>
         /// <param name="recordNumber">The record number of the row.</param>
         /// <param name="values">The values in the row, keyed by their column names.</param>
+        [Obsolete]
         public Row(int recordNumber, IReadOnlyDictionary<string, TpsObject> values)
+            : this(new DeserializerContext(), recordNumber, values)
+        { }
+
+        /// <summary>
+        /// Instantiates a new row.
+        /// </summary>
+        /// <param name="deserializerContext">The deserializer context.</param>
+        /// <param name="recordNumber">The record number of the row.</param>
+        /// <param name="values">The values in the row, keyed by their column names.</param>
+        internal Row(DeserializerContext deserializerContext, int recordNumber, IReadOnlyDictionary<string, TpsObject> values)
         {
+            DeserializerContext = deserializerContext ?? throw new ArgumentNullException(nameof(deserializerContext));
             Id = recordNumber;
             Values = values ?? throw new ArgumentNullException(nameof(values));
         }
@@ -101,56 +115,31 @@ namespace TpsParser
             return targetObject;
         }
 
-        private void SetMembers<T>(T targetObject)
+        private void SetMembers<T>(T targetObject) where T : class
         {
-            var members = typeof(T).GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var members = DeserializerContext.GetModelMembers(targetObject);
 
             foreach (var member in members)
             {
-                var tpsFieldAttr = member.GetCustomAttribute<TpsFieldAttribute>();
-                var tpsRecordNumberAttr = member.GetCustomAttribute<TpsRecordNumberAttribute>();
-
-                if (tpsFieldAttr != null && tpsRecordNumberAttr != null)
+                if (member.IsRecordNumber)
                 {
-                    throw new TpsParserException($"Members cannot be marked with both {nameof(TpsFieldAttribute)} and {nameof(TpsRecordNumberAttribute)}. Property name '{member.Name}'.");
+                    member.SetMember(targetObject, Id);
                 }
-
-                if (tpsFieldAttr != null)
+                else
                 {
-                    string tpsFieldName = tpsFieldAttr.FieldName;
-                    TpsObject tpsFieldValue = GetRowValue(tpsFieldName, tpsFieldAttr.IsRequired);
-                    object tpsValue = tpsFieldAttr.InterpretValue(member, tpsFieldValue);
+                    string tpsFieldName = member.FieldAttribute.FieldName;
+                    TpsObject tpsFieldValue = GetRowValue(tpsFieldName, member.FieldAttribute.IsRequired);
+                    object tpsValue = member.FieldAttribute.InterpretValue(member.MemberInfo, tpsFieldValue);
 
                     try
                     {
-                        SetMember(member, targetObject, tpsValue);
+                        member.SetMember(targetObject, tpsValue);
                     }
                     catch (Exception ex) when (ex.GetType() != typeof(TpsParserException))
                     {
                         throw new TpsParserException($"Cannot set member [{member}] to value '{tpsValue}' of type '{tpsValue.GetType()}' (Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). See the inner exception for details.", ex);
                     }
                 }
-                if (tpsRecordNumberAttr != null)
-                {
-                    SetMember(member, targetObject, Id);
-                }
-            }
-        }
-
-        private static void SetMember(MemberInfo member, object target, object value)
-        {
-            if (member is PropertyInfo prop)
-            {
-                if (!prop.CanWrite)
-                {
-                    throw new TpsParserException($"The property '{member.Name}' must have a setter.");
-                }
-
-                prop.SetValue(target, value);
-            }
-            else if (member is FieldInfo field)
-            {
-                field.SetValue(target, value);
             }
         }
 

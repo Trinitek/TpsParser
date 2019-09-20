@@ -90,7 +90,7 @@ namespace TpsParser
                     var definition = tableDefinitionRecord.Memos[index];
                     var memoRecordsForIndex = TpsFile.GetMemoRecords(table, index, ignoreErrors);
 
-                    return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name, value: record.GetValue(definition)));
+                    return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name.ToUpperInvariant(), value: record.GetValue(definition)));
                 })
                 .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
                 .ToDictionary(
@@ -150,7 +150,8 @@ namespace TpsParser
         /// <typeparam name="T">The type to represent a deserialized row.</typeparam>
         /// <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
         /// <returns></returns>
-        public IEnumerable<T> Deserialize<T>(bool ignoreErrors = false) where T : class, new() => BuildTable(ignoreErrors).Deserialize<T>();
+        public IEnumerable<T> Deserialize<T>(bool ignoreErrors = false) where T : class, new() =>
+            DeserializeInternal<T>(ignoreErrors, ct: default);
 
         /// <summary>
         /// Deserializes the first table in the file to a collection of the given type.
@@ -159,7 +160,76 @@ namespace TpsParser
         /// <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
         /// <param name="ct">The cancellation token for the asynchronous operation.</param>
         /// <returns></returns>
-        public Task<IEnumerable<T>> DeserializeAsync<T>(bool ignoreErrors = false, CancellationToken ct = default) where T : class, new() => BuildTable(ignoreErrors).DeserializeAsync<T>(ct);
+        public Task<IEnumerable<T>> DeserializeAsync<T>(bool ignoreErrors = false, CancellationToken ct = default) where T : class, new() =>
+            Task.FromResult(DeserializeInternal<T>(ignoreErrors, ct));
+
+        internal IEnumerable<T> DeserializeInternal<T>(bool ignoreErrors, CancellationToken ct) where T : class, new()
+        {
+            var firstTableDefinition = TpsFile.GetTableDefinitions(ignoreErrors).First();
+
+            var dataRecords = TpsFile.GetDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors)
+                .ToDictionary(r => r.RecordNumber, r => r.Values);
+
+            var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
+
+            var columns = BuildColumnLookup(firstTableDefinition.Value.Fields.Select(f => f.Name.ToUpperInvariant()));
+
+            foreach (var dataRecord in dataRecords)
+            {
+                int recordNumber = dataRecord.Key;
+                var values = dataRecord.Value;
+
+                T target = new T();
+
+                var members = DeserializerContext.GetModelMembers<T>(target);
+
+                foreach (var member in members)
+                {
+                    if (member.IsRecordNumber)
+                    {
+                        member.SetMember(target, recordNumber);
+                    }
+                    else
+                    {
+                        string requestedField = member.FieldAttribute.FieldName.ToUpperInvariant();
+
+                        if (columns.TryGetValue(requestedField, out int index))
+                        {
+                            member.SetMember(target, dataRecord.Value[index].Value);
+                        }
+                        else if (memoRecords[recordNumber].TryGetValue(requestedField, out TpsObject value))
+                        {
+                            member.SetMember(target, value.Value);
+                        }
+                        else if (member.FieldAttribute.IsRequired)
+                        {
+                            throw new TpsParserException($"Could not find required field '{requestedField}' in record {recordNumber}.");
+                        }
+                    }
+
+                    ct.ThrowIfCancellationRequested();
+                }
+
+                yield return target;
+
+                ct.ThrowIfCancellationRequested();
+            }
+        }
+
+        private IReadOnlyDictionary<string, int> BuildColumnLookup(IEnumerable<string> columns)
+        {
+            var lookup = new Dictionary<string, int>();
+
+            int i = 0;
+
+            foreach (var column in columns)
+            {
+                lookup.Add(column, i);
+                i++;
+            }
+
+            return lookup;
+        }
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Dispose()

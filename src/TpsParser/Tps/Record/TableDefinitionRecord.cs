@@ -10,35 +10,44 @@ namespace TpsParser.Tps.Record
     /// <summary>
     /// Represents a file structure that encapsulates a table's schema.
     /// </summary>
-    public sealed class TableDefinitionRecord
+    public interface ITableDefinitionRecord
     {
-        public int DriverVersion { get; }
-        public int RecordLength { get; }
-
         /// <summary>
-        /// Gets the number of fields in the table.  For MEMOs and BLOBs, see <see cref="MemoCount"/>.
+        /// Gets the field definitions for this table.  For MEMOs and BLOBs, see <see cref="Memos"/>.
         /// </summary>
-        private int FieldCount { get; }
-
-        /// <summary>
-        /// Gets the number of MEMO or BLOB fields in the table.
-        /// </summary>
-        private int MemoCount { get; }
-
-        /// <summary>
-        /// Gets the number of indexes in the table.
-        /// </summary>
-        private int IndexCount { get; }
-
-        public IReadOnlyList<FieldDefinitionRecord> Fields => _fields;
-        private readonly List<FieldDefinitionRecord> _fields;
+        IReadOnlyList<IFieldDefinitionRecord> Fields { get; }
 
         /// <summary>
         /// Gets the memo definitions for this table.  The index of each definition corresponds to <see cref="Header.MemoHeader.MemoIndex"/>.
         /// </summary>
-        public IReadOnlyList<MemoDefinitionRecord> Memos => _memos;
+        IReadOnlyList<IMemoDefinitionRecord> Memos { get; }
+
+        /// <summary>
+        /// Gets the index definitions for this table.
+        /// </summary>
+        IReadOnlyList<IIndexDefinitionRecord> Indexes { get; }
+
+        IReadOnlyList<TpsObject> Parse(byte[] record);
+    }
+
+    /// <summary>
+    /// Represents a file structure that encapsulates a table's schema.
+    /// </summary>
+    public sealed class TableDefinitionRecord : ITableDefinitionRecord
+    {
+        public int DriverVersion { get; }
+        public int RecordLength { get; }
+
+        /// <inheritdoc/>
+        public IReadOnlyList<IFieldDefinitionRecord> Fields => _fields;
+        private readonly List<FieldDefinitionRecord> _fields;
+
+        /// <inheritdoc/>
+        public IReadOnlyList<IMemoDefinitionRecord> Memos => _memos;
         private readonly List<MemoDefinitionRecord> _memos;
-        public IReadOnlyList<IndexDefinitionRecord> Indexes => _indexes;
+
+        /// <inheritdoc/>
+        public IReadOnlyList<IIndexDefinitionRecord> Indexes => _indexes;
         private readonly List<IndexDefinitionRecord> _indexes;
 
         private Encoding Encoding { get; }
@@ -54,9 +63,9 @@ namespace TpsParser.Tps.Record
 
             DriverVersion = rx.ShortLE();
             RecordLength = rx.ShortLE();
-            FieldCount = rx.ShortLE();
-            MemoCount = rx.ShortLE();
-            IndexCount = rx.ShortLE();
+            int fieldCount = rx.ShortLE();
+            int memoCount = rx.ShortLE();
+            int indexCount = rx.ShortLE();
 
             _fields = new List<FieldDefinitionRecord>();
             _memos = new List<MemoDefinitionRecord>();
@@ -64,15 +73,15 @@ namespace TpsParser.Tps.Record
 
             try
             {
-                for (int i = 0; i < FieldCount; i++)
+                for (int i = 0; i < fieldCount; i++)
                 {
                     _fields.Add(new FieldDefinitionRecord(rx));
                 }
-                for (int i = 0; i < MemoCount; i++)
+                for (int i = 0; i < memoCount; i++)
                 {
                     _memos.Add(new MemoDefinitionRecord(rx));
                 }
-                for (int i = 0; i < IndexCount; i++)
+                for (int i = 0; i < indexCount; i++)
                 {
                     _indexes.Add(new IndexDefinitionRecord(rx));
                 }
@@ -83,11 +92,13 @@ namespace TpsParser.Tps.Record
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine($"TableDefinition({DriverVersion},{RecordLength},{FieldCount},{MemoCount},{IndexCount}");
+            sb.AppendLine($"TableDefinition({DriverVersion},{RecordLength},{Fields.Count},{Memos.Count},{Indexes.Count}");
 
             foreach (var field in Fields)
             {
@@ -137,7 +148,7 @@ namespace TpsParser.Tps.Record
             return values.AsReadOnly();
         }
 
-        public TpsObject ParseField(TpsTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
+        private TpsObject ParseField(TpsTypeCode type, int length, IFieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
         {
             if (fieldDefinitionRecord == null)
             {

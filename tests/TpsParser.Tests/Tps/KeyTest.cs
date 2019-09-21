@@ -73,8 +73,8 @@ namespace TpsParser.Tests.Tps
             using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
             using (var fsUnencrypted = new FileStream("Resources/not-encrypted.tps", FileMode.Open))
             {
-                var encryptedFile = new TpsFile(fsEncrypted, new Key("a"));
-                var decryptedFile = new TpsFile(fsUnencrypted);
+                var encryptedFile = new RandomAccessTpsFile(fsEncrypted, new Key("a"));
+                var decryptedFile = new RandomAccessTpsFile(fsUnencrypted);
 
                 var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
                 var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
@@ -101,7 +101,7 @@ namespace TpsParser.Tests.Tps
         {
             using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
             {
-                var encryptedFile = new TpsFile(fsEncrypted);
+                var encryptedFile = new RandomAccessTpsFile(fsEncrypted);
 
                 Assert.Throws<NotATopSpeedFileException>(() => encryptedFile.GetHeader());
             }

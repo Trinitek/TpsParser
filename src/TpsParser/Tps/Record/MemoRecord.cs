@@ -32,7 +32,7 @@ namespace TpsParser.Tps.Record
         public IEnumerable<byte> GetDataAsBlob() =>
             Data.ReadBytes(Data.LongLE());
 
-        public TpsObject GetValue(MemoDefinitionRecord memoDefinitionRecord)
+        public TpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord)
         {
             if (memoDefinitionRecord == null)
             {

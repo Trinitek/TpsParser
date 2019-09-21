@@ -19,16 +19,27 @@ namespace TpsParser.Tps
         /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
         /// </summary>
         public string MagicNumber { get; }
+
         public int Zeroes { get; }
+
+        /// <summary>
+        /// Gets the last issued row number in the file.
+        /// </summary>
         public int LastIssuedRow { get; }
+
         public int Changes { get; }
+
         public int ManagementPageReference { get; }
 
         public IReadOnlyList<int> PageStart { get; }
+
         public IReadOnlyList<int> PageEnd { get; }
 
         private RandomAccess Data { get; }
 
+        /// <summary>
+        /// Returns true if the header represents a valid TopSpeed file.
+        /// </summary>
         public bool IsTopSpeedFile => MagicNumber == "tOpS";
 
         public TpsHeader(RandomAccess rx)
@@ -58,7 +69,9 @@ namespace TpsParser.Tps
             PageEnd = header.ToFileOffset(header.LongArrayLE((0x200 - 0x110) / 4));
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var sb = new StringBuilder();
 

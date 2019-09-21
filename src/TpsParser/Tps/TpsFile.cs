@@ -9,13 +9,8 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps
 {
-    /// <summary>
-    /// Represents a TopSpeed file and provides access to low level file and record structures.
-    /// </summary>
-    public sealed class TpsFile
+    public abstract class TpsFile
     {
-        private RandomAccess Data { get; }
-
         /// <summary>
         /// Gets or sets the encoding to use when reading strings in the TPS file.
         /// The default is ISO-8859-1.
@@ -25,10 +20,38 @@ namespace TpsParser.Tps
             get => _encoding;
             set => _encoding = value ?? throw new ArgumentNullException(nameof(value));
         }
-        private Encoding _encoding;
 
-        public TpsFile(Stream stream)
-            : this()
+        private Encoding _encoding = Encoding.GetEncoding("ISO-8859-1");
+
+        public abstract TpsHeader GetHeader();
+
+        public abstract IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors);
+
+        public abstract IEnumerable<DataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors);
+
+        public abstract IEnumerable<TableNameRecord> GetTableNameRecords();
+
+        public abstract IEnumerable<IndexRecord> GetIndexes(int table, int index);
+
+        public abstract IEnumerable<TpsRecord> GetMetadata(int table);
+
+        public abstract IEnumerable<TpsRecord> GetAllRecords();
+
+        public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors);
+
+        public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
+
+        public abstract IReadOnlyDictionary<int, ITableDefinitionRecord> GetTableDefinitions(bool ignoreErrors);
+    }
+
+    /// <summary>
+    /// Represents a TopSpeed file and provides access to low level file and record structures.
+    /// </summary>
+    internal sealed class RandomAccessTpsFile : TpsFile
+    {
+        private RandomAccess Data { get; }
+
+        public RandomAccessTpsFile(Stream stream)
         {
             if (stream == null)
             {
@@ -46,7 +69,7 @@ namespace TpsParser.Tps
             Data = new RandomAccess(fileData);
         }
 
-        public TpsFile(Stream stream, Key key) 
+        public RandomAccessTpsFile(Stream stream, Key key)
             : this(stream)
         {
             if (key == null)
@@ -57,13 +80,12 @@ namespace TpsParser.Tps
             Decrypt(key);
         }
 
-        public TpsFile(RandomAccess rx)
-            : this()
+        public RandomAccessTpsFile(RandomAccess rx)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
 
-        public TpsFile(RandomAccess rx, Key key)
+        public RandomAccessTpsFile(RandomAccess rx, Key key)
             : this(rx)
         {
             if (key == null)
@@ -72,11 +94,6 @@ namespace TpsParser.Tps
             }
 
             Decrypt(key);
-        }
-
-        private TpsFile()
-        {
-            Encoding = Encoding.GetEncoding("ISO-8859-1");
         }
 
         private void Decrypt(Key key)
@@ -97,7 +114,7 @@ namespace TpsParser.Tps
             }
         }
 
-        public TpsHeader GetHeader()
+        public override TpsHeader GetHeader()
         {
             Data.JumpAbsolute(0);
 
@@ -111,7 +128,7 @@ namespace TpsParser.Tps
             return header;
         }
 
-        public IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors)
+        public override IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors)
         {
             var header = GetHeader();
 
@@ -151,7 +168,7 @@ namespace TpsParser.Tps
         /// <param name="tableDefinition"></param>
         /// <param name="ignoreErrors"></param>
         /// <returns></returns>
-        public IEnumerable<DataRecord> GetDataRecords(int table, TableDefinitionRecord tableDefinition, bool ignoreErrors)
+        public override IEnumerable<DataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinition, bool ignoreErrors)
         {
             return VisitRecords(ignoreErrors)
                 .Where(record => record.Header is DataHeader && record.Header.TableNumber == table)
@@ -162,14 +179,14 @@ namespace TpsParser.Tps
         /// Gets a list of table name records that describe the name of the tables included in the file.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<TableNameRecord> GetTableNameRecords()
+        public override IEnumerable<TableNameRecord> GetTableNameRecords()
         {
             return VisitRecords()
-                .Where(record => record.Header is TableNameHeader)
+                .Where(record => record.Header is ITableNameHeader)
                 .Select(record => new TableNameRecord(record));
         }
 
-        public IEnumerable<IndexRecord> GetIndexes(int table, int index)
+        public override IEnumerable<IndexRecord> GetIndexes(int table, int index)
         {
             return VisitRecords()
                 .Where(record =>
@@ -184,13 +201,13 @@ namespace TpsParser.Tps
         /// </summary>
         /// <param name="table"></param>
         /// <returns></returns>
-        public IEnumerable<TpsRecord> GetMetadata(int table)
+        public override IEnumerable<TpsRecord> GetMetadata(int table)
         {
             return VisitRecords()
                 .Where(record => record.Header is MetadataHeader header && header.TableNumber == table);
         }
 
-        public IEnumerable<TpsRecord> GetAllRecords()
+        public override IEnumerable<TpsRecord> GetAllRecords()
         {
             return VisitRecords();
         }
@@ -214,11 +231,11 @@ namespace TpsParser.Tps
             // Sequence numbers are zero-based.
             var filteredByCompleteSequences = groupedByOwnerAndIndex
                 .Where(group => group.Count() - 1 == ((MemoHeader)group.First().Header).SequenceNumber);
-            
+
             // Merge memo sequences into a single memo record.
             var resultingMemoRecords = filteredByCompleteSequences
                 .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
-            
+
             return resultingMemoRecords;
         }
 
@@ -228,7 +245,7 @@ namespace TpsParser.Tps
         /// <param name="table">The table number that owns the memos.</param>
         /// <param name="ignoreErrors"></param>
         /// <returns></returns>
-        public IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
+        public override IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)
                 .Where(record =>
@@ -245,7 +262,7 @@ namespace TpsParser.Tps
         /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
         /// <param name="ignoreErrors"></param>
         /// <returns></returns>
-        public IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
+        public override IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)
                 .Where(record =>
@@ -261,7 +278,7 @@ namespace TpsParser.Tps
         /// </summary>
         /// <param name="ignoreErrors"></param>
         /// <returns></returns>
-        public IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
+        public override IReadOnlyDictionary<int, ITableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
         {
             return VisitRecords(ignoreErrors)
                 .Where(record => record.Header is TableDefinitionHeader)
@@ -277,7 +294,7 @@ namespace TpsParser.Tps
 
                 .ToDictionary(
                 keySelector: group => group.Key,
-                elementSelector: group => new TableDefinitionRecord(Merge(group), Encoding));
+                elementSelector: group => (ITableDefinitionRecord)new TableDefinitionRecord(Merge(group), Encoding));
         }
 
         private RandomAccess Merge(IEnumerable<TpsRecord> records) =>

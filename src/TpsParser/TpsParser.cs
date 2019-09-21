@@ -29,6 +29,11 @@ namespace TpsParser
             DeserializerContext = new DeserializerContext();
         }
 
+        internal TpsParser(TpsFile tpsFile)
+        {
+            TpsFile = tpsFile ?? throw new ArgumentNullException(nameof(tpsFile));
+        }
+
         /// <summary>
         /// Instantiates a new parser.
         /// </summary>
@@ -37,7 +42,7 @@ namespace TpsParser
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            TpsFile = new TpsFile(Stream);
+            TpsFile = new RandomAccessTpsFile(Stream);
         }
 
         /// <summary>
@@ -49,7 +54,7 @@ namespace TpsParser
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            TpsFile = new TpsFile(Stream, new Key(password));
+            TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
         }
 
         /// <summary>
@@ -60,7 +65,7 @@ namespace TpsParser
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
-            TpsFile = new TpsFile(Stream);
+            TpsFile = new RandomAccessTpsFile(Stream);
         }
 
         /// <summary>
@@ -72,17 +77,17 @@ namespace TpsParser
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
-            TpsFile = new TpsFile(Stream, new Key(password));
+            TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
         }
 
-        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
-            var dataRecords = TpsFile.GetDataRecords(table, tableDefinition: tableDefinitionRecord, ignoreErrors);
+            var dataRecords = TpsFile.GetDataRecords(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
 
             return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
         }
 
-        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
             return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
                 .SelectMany(index =>
@@ -236,7 +241,7 @@ namespace TpsParser
         public void Dispose()
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
-            Stream.Dispose();
+            Stream?.Dispose();
         }
     }
 }

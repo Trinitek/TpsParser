@@ -16,7 +16,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             using (var stream = new FileStream("Resources/table-with-time.tps", FileMode.Open))
             {
-                var file = new TpsFile(stream);
+                var file = new RandomAccessTpsFile(stream);
 
                 var tableDef = file.GetTableDefinitions(false).First().Value;
                 var record = file.GetDataRecords(1, tableDef, false).First();

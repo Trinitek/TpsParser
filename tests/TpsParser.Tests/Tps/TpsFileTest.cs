@@ -13,7 +13,7 @@ namespace TpsParser.Tests.Tps
         {
             using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
             {
-                return new TpsFile(stream);
+                return new RandomAccessTpsFile(stream);
             }
         }
 
@@ -21,7 +21,7 @@ namespace TpsParser.Tests.Tps
         {
             using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
             {
-                return new TpsFile(stream);
+                return new RandomAccessTpsFile(stream);
             }
         }
 

@@ -6,12 +6,16 @@ using TpsParser.Tps.Type;
 namespace TpsParser.Tps.Record
 {
     /// <summary>
-    /// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="MemoDefinitionRecord"/>.
+    /// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="IMemoDefinitionRecord"/>.
     /// </summary>
-    public sealed class FieldDefinitionRecord
+    public interface IFieldDefinitionRecord
     {
-        public TpsTypeCode Type { get; }
-        public int Offset { get; }
+        /// <summary>
+        /// Gets the type code of the value contained within the field.
+        /// </summary>
+        TpsTypeCode Type { get; }
+
+        int Offset { get; }
 
         /// <summary>
         /// <para>
@@ -23,7 +27,7 @@ namespace TpsParser.Tps.Record
         /// When present, it is rarely the same as the table name, if the table has a name at all.
         /// </para>
         /// </summary>
-        public string FullName { get; }
+        string FullName { get; }
 
         /// <summary>
         /// <para>
@@ -31,19 +35,67 @@ namespace TpsParser.Tps.Record
         /// Use <see cref="FullName"/> for the fully qualified field name.
         /// </para>
         /// </summary>
+        string Name { get; }
+
+        int ElementCount { get; }
+
+        int Length { get; }
+
+        int Index { get; }
+
+        int StringLength { get; }
+
+        string StringMask { get; }
+
+        int BcdDigitsAfterDecimalPoint { get; }
+
+        int BcdElementLength { get; }
+
+        bool IsArray { get; }
+    }
+
+    /// <summary>
+    /// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="MemoDefinitionRecord"/>.
+    /// </summary>
+    public sealed class FieldDefinitionRecord : IFieldDefinitionRecord
+    {
+        /// <inheritdoc/>
+        public TpsTypeCode Type { get; }
+
+        /// <inheritdoc/>
+        public int Offset { get; }
+
+        /// <inheritdoc/>
+        public string FullName { get; }
+
+        /// <inheritdoc/>
         public string Name => FullName.Split(':').Last();
 
+        /// <inheritdoc/>
         public int ElementCount { get; }
+
+        /// <inheritdoc/>
         public int Length { get; }
+
+        /// <inheritdoc/>
         public int Flags { get; }
+
+        /// <inheritdoc/>
         public int Index { get; }
 
+        /// <inheritdoc/>
         public int StringLength { get; }
+
+        /// <inheritdoc/>
         public string StringMask { get; }
 
+        /// <inheritdoc/>
         public int BcdDigitsAfterDecimalPoint { get; }
+
+        /// <inheritdoc/>
         public int BcdElementLength { get; }
 
+        /// <inheritdoc/>
         public bool IsArray => ElementCount > 1;
 
         public FieldDefinitionRecord(RandomAccess rx)
@@ -89,7 +141,9 @@ namespace TpsParser.Tps.Record
             (group.Offset <= Offset)
             && ((group.Offset + group.Length) >= (Offset + Length));
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString() =>
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             $"Field(#{Index},T:{Type},OFS:{Offset},LEN:{Length},{FullName},{ElementCount},{Flags})";
     }
 }

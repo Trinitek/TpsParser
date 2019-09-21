@@ -90,7 +90,7 @@ namespace TpsParser
                     var definition = tableDefinitionRecord.Memos[index];
                     var memoRecordsForIndex = TpsFile.GetMemoRecords(table, index, ignoreErrors);
 
-                    return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name.ToUpperInvariant(), value: record.GetValue(definition)));
+                    return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name, value: record.GetValue(definition)));
                 })
                 .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
                 .ToDictionary(
@@ -122,15 +122,15 @@ namespace TpsParser
                 unifiedRecords.Add(dataKvp.Key, dataKvp.Value.ToDictionary(pair => pair.Key, pair => pair.Value));
             }
 
-            foreach (var memoKvp in memoRecords)
+            foreach (var memoRecord in memoRecords)
             {
-                int key = memoKvp.Key;
+                int recordNumber = memoRecord.Key;
 
-                var dataKvp = dataRecords[memoKvp.Key];
+                var dataNameValues = dataRecords[recordNumber];
 
-                foreach (var memoNameValue in memoKvp.Value)
+                foreach (var memoNameValue in memoRecord.Value)
                 {
-                    unifiedRecords[key].Add(memoNameValue.Key, memoNameValue.Value);
+                    unifiedRecords[recordNumber].Add(memoNameValue.Key, memoNameValue.Value);
                 }
             }
 
@@ -195,15 +195,16 @@ namespace TpsParser
 
                         if (columns.TryGetValue(requestedField, out int index))
                         {
-                            member.SetMember(target, dataRecord.Value[index].Value);
+                            member.SetMember(target, values[index].Value);
                         }
-                        else if (memoRecords[recordNumber].TryGetValue(requestedField, out TpsObject value))
+                        else if (memoRecords.TryGetValue(recordNumber, out var fieldValueDictionary)
+                            && fieldValueDictionary.ToDictionary(fv => fv.Key.ToUpperInvariant(), fv => fv.Value).TryGetValue(requestedField, out TpsObject value))
                         {
                             member.SetMember(target, value.Value);
                         }
                         else if (member.FieldAttribute.IsRequired)
                         {
-                            throw new TpsParserException($"Could not find required field '{requestedField}' in record {recordNumber}.");
+                            throw new TpsParserException($"The required field '{requestedField}' could not be found in record {recordNumber}.");
                         }
                     }
 

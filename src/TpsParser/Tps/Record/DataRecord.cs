@@ -7,15 +7,60 @@ using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
-    public sealed class DataRecord
+    /// <summary>
+    /// Encapsulates field values that belong to a particular row.
+    /// </summary>
+    public interface IDataRecord
+    {
+        /// <summary>
+        /// Gets the table definition for the table that owns the record.
+        /// </summary>
+        ITableDefinitionRecord TableDefinition { get; }
+
+        /// <summary>
+        /// Gets the values for the record. The order of the values matches the order of <see cref="ITableDefinitionRecord.Fields"/>.
+        /// </summary>
+        IReadOnlyList<TpsObject> Values { get; }
+
+        /// <summary>
+        /// Gets the low level representation of the record in the file.
+        /// </summary>
+        TpsRecord Record { get; }
+
+        /// <summary>
+        /// Gets the record number.
+        /// </summary>
+        int RecordNumber { get; }
+
+        /// <summary>
+        /// Gets a dictionary of field names and their associated values.
+        /// </summary>
+        /// <returns></returns>
+        IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs();
+    }
+
+    /// <inheritdoc/>
+    internal sealed class DataRecord : IDataRecord
     {
         private DataHeader Header { get; }
+
+        /// <inheritdoc/>
         public ITableDefinitionRecord TableDefinition { get; }
+
+        /// <inheritdoc/>
         public IReadOnlyList<TpsObject> Values { get; }
+
+        /// <inheritdoc/>
         public TpsRecord Record { get; }
 
+        /// <inheritdoc/>
         public int RecordNumber => Header.RecordNumber;
 
+        /// <summary>
+        /// Instantiates a new data record.
+        /// </summary>
+        /// <param name="tpsRecord">The underlying record that contains the low-level file information.</param>
+        /// <param name="tableDefinition">The table definition for the table to which the record belongs.</param>
         public DataRecord(TpsRecord tpsRecord, ITableDefinitionRecord tableDefinition)
         {
             Record = tpsRecord ?? throw new ArgumentNullException(nameof(tpsRecord));
@@ -24,6 +69,7 @@ namespace TpsParser.Tps.Record
             Values = TableDefinition.Parse(tpsRecord.Data.GetRemainder());
         }
 
+        /// <inheritdoc/>
         public IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs() =>
             TableDefinition.Fields
                 .Zip(Values, (field, value) => (field, value))

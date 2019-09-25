@@ -9,6 +9,9 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps
 {
+    /// <summary>
+    /// Represents a TopSpeed file and provides access to low level file and record structures.
+    /// </summary>
     public abstract class TpsFile
     {
         /// <summary>
@@ -23,30 +26,70 @@ namespace TpsParser.Tps
 
         private Encoding _encoding = Encoding.GetEncoding("ISO-8859-1");
 
+        /// <summary>
+        /// Gets the file header.
+        /// </summary>
+        /// <returns></returns>
         public abstract TpsHeader GetHeader();
 
         public abstract IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors);
 
-        public abstract IEnumerable<DataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors);
+        /// <summary>
+        /// Gets a list of data records for the associated table and its table definition.
+        /// </summary>
+        /// <param name="table">The table from which to get the records.</param>
+        /// <param name="tableDefinitionRecord">The table definition that describes the table schema.</param>
+        /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+        /// <returns></returns>
+        public abstract IEnumerable<IDataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors);
 
+        /// <summary>
+        /// Gets a list of table name records that describe the name of the tables included in the file.
+        /// </summary>
+        /// <returns></returns>
         public abstract IEnumerable<TableNameRecord> GetTableNameRecords();
 
         public abstract IEnumerable<IndexRecord> GetIndexes(int table, int index);
 
+        /// <summary>
+        /// Gets a list of metadata that is included for the associated table.
+        /// </summary>
+        /// <param name="table">The table for which to get the metadata.</param>
+        /// <returns></returns>
         public abstract IEnumerable<TpsRecord> GetMetadata(int table);
 
+        /// <summary>
+        /// Gets all of the records in the file.
+        /// </summary>
+        /// <returns></returns>
         public abstract IEnumerable<TpsRecord> GetAllRecords();
 
-        public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors);
+        /// <summary>
+        /// Gets a dictionary of memo and blob records for the associated table.
+        /// </summary>
+        /// <param name="table">The table number that owns the memos.</param>
+        /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+        /// <returns></returns>
+        public abstract IEnumerable<IMemoRecord> GetMemoRecords(int table, bool ignoreErrors);
 
-        public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
+        /// <summary>
+        /// Gets a dictionary of memo and blob records for the associated table.
+        /// </summary>
+        /// <param name="table">The table number that owns the memo.</param>
+        /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
+        /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+        /// <returns></returns>
+        public abstract IEnumerable<IMemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
 
+        /// <summary>
+        /// Gets a dictionary of table definitions and their associated table numbers.
+        /// </summary>
+        /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+        /// <returns></returns>
         public abstract IReadOnlyDictionary<int, ITableDefinitionRecord> GetTableDefinitions(bool ignoreErrors);
     }
 
-    /// <summary>
-    /// Represents a TopSpeed file and provides access to low level file and record structures.
-    /// </summary>
+    /// <inheritdoc/>
     internal sealed class RandomAccessTpsFile : TpsFile
     {
         private RandomAccess Data { get; }
@@ -161,24 +204,13 @@ namespace TpsParser.Tps
             }
         }
 
-        /// <summary>
-        /// Gets a list of data records for the associated table and its table definition.
-        /// </summary>
-        /// <param name="table"></param>
-        /// <param name="tableDefinition"></param>
-        /// <param name="ignoreErrors"></param>
-        /// <returns></returns>
-        public override IEnumerable<DataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinition, bool ignoreErrors)
+        public override IEnumerable<IDataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinition, bool ignoreErrors)
         {
             return VisitRecords(ignoreErrors)
                 .Where(record => record.Header is DataHeader && record.Header.TableNumber == table)
                 .Select(record => new DataRecord(record, tableDefinition));
         }
 
-        /// <summary>
-        /// Gets a list of table name records that describe the name of the tables included in the file.
-        /// </summary>
-        /// <returns></returns>
         public override IEnumerable<TableNameRecord> GetTableNameRecords()
         {
             return VisitRecords()
@@ -196,11 +228,6 @@ namespace TpsParser.Tps
                 .Select(record => new IndexRecord(record));
         }
 
-        /// <summary>
-        /// Gets a list of metadata that is included for the associated table.
-        /// </summary>
-        /// <param name="table"></param>
-        /// <returns></returns>
         public override IEnumerable<TpsRecord> GetMetadata(int table)
         {
             return VisitRecords()
@@ -212,72 +239,54 @@ namespace TpsParser.Tps
             return VisitRecords();
         }
 
-        private IEnumerable<MemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
+        private IEnumerable<IMemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
         {
             // Records must be merged in order according to the memo's sequence number, so we order them.
             // Large memos are spread across multiple structures and must be joined later.
             var orderedBySequenceNumber = memoRecords
-                .OrderBy(record => ((MemoHeader)record.Header).SequenceNumber);
+                .OrderBy(record => ((IMemoHeader)record.Header).SequenceNumber);
 
             // Group the records by their owner and index.
             var groupedByOwnerAndIndex = orderedBySequenceNumber
                 .GroupBy(record =>
                 {
-                    var header = (MemoHeader)record.Header;
+                    var header = (IMemoHeader)record.Header;
                     return (owner: header.OwningRecord, index: header.MemoIndex);
                 });
 
             // Drop memos that have skipped sequence numbers, as this means the memo is missing a chunk of data.
             // Sequence numbers are zero-based.
             var filteredByCompleteSequences = groupedByOwnerAndIndex
-                .Where(group => group.Count() - 1 == ((MemoHeader)group.First().Header).SequenceNumber);
+                .Where(group => group.Count() - 1 == ((IMemoHeader)group.First().Header).SequenceNumber);
 
             // Merge memo sequences into a single memo record.
             var resultingMemoRecords = filteredByCompleteSequences
-                .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
+                .Select(group => new MemoRecord((IMemoHeader)group.First().Header, Merge(group)));
 
             return resultingMemoRecords;
         }
 
-        /// <summary>
-        /// Gets a dictionary of memo and blob records for the associated table.
-        /// </summary>
-        /// <param name="table">The table number that owns the memos.</param>
-        /// <param name="ignoreErrors"></param>
-        /// <returns></returns>
-        public override IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
+        public override IEnumerable<IMemoRecord> GetMemoRecords(int table, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)
                 .Where(record =>
-                    record.Header is MemoHeader header
+                    record.Header is IMemoHeader header
                     && header.TableNumber == table);
 
             return OrderAndGroupMemos(memoRecords);
         }
 
-        /// <summary>
-        /// Gets a dictionary of memo and blob records for the associated table.
-        /// </summary>
-        /// <param name="table">The table number that owns the memo.</param>
-        /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
-        /// <param name="ignoreErrors"></param>
-        /// <returns></returns>
-        public override IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
+        public override IEnumerable<IMemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
         {
             var memoRecords = VisitRecords(ignoreErrors)
                 .Where(record =>
-                    record.Header is MemoHeader header
+                    record.Header is IMemoHeader header
                     && header.TableNumber == table
                     && header.MemoIndex == memoIndex);
 
             return OrderAndGroupMemos(memoRecords);
         }
 
-        /// <summary>
-        /// Gets a list of table definitions for tables found in this file.
-        /// </summary>
-        /// <param name="ignoreErrors"></param>
-        /// <returns></returns>
         public override IReadOnlyDictionary<int, ITableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
         {
             return VisitRecords(ignoreErrors)

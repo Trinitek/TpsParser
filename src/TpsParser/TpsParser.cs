@@ -30,6 +30,7 @@ namespace TpsParser
         }
 
         internal TpsParser(TpsFile tpsFile)
+            : this()
         {
             TpsFile = tpsFile ?? throw new ArgumentNullException(nameof(tpsFile));
         }

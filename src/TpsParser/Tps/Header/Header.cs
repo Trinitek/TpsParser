@@ -3,16 +3,41 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps.Header
 {
-    public abstract class Header
+    /// <summary>
+    /// Encapsulates information that describes a record.
+    /// </summary>
+    public interface IHeader
     {
+        /// <summary>
+        /// Gets the table number to which the header belongs.
+        /// </summary>
+        int TableNumber { get; }
+    }
+
+    /// <inheritdoc/>
+    public abstract class Header : IHeader
+    {
+        /// <inheritdoc/>
         public int TableNumber { get; }
 
+        /// <summary>
+        /// Gets the type code that represents the type of table.
+        /// </summary>
         protected int TableType { get; }
 
+        /// <summary>
+        /// Instantiates a new header.
+        /// </summary>
+        /// <param name="rx"></param>
         public Header(RandomAccess rx)
             : this(rx, true)
         { }
 
+        /// <summary>
+        /// Instantiates a new header.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <param name="readTable"></param>
         public Header(RandomAccess rx, bool readTable)
         {
             if (rx == null)

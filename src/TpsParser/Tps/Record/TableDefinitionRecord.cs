@@ -18,7 +18,7 @@ namespace TpsParser.Tps.Record
         IReadOnlyList<IFieldDefinitionRecord> Fields { get; }
 
         /// <summary>
-        /// Gets the memo definitions for this table.  The index of each definition corresponds to <see cref="Header.MemoHeader.MemoIndex"/>.
+        /// Gets the memo definitions for this table.  The index of each definition corresponds to <see cref="Header.IMemoHeader.MemoIndex"/>.
         /// </summary>
         IReadOnlyList<IMemoDefinitionRecord> Memos { get; }
 
@@ -27,13 +27,18 @@ namespace TpsParser.Tps.Record
         /// </summary>
         IReadOnlyList<IIndexDefinitionRecord> Indexes { get; }
 
+        /// <summary>
+        /// Gets a list of field values by parsing the given byte stream.
+        /// </summary>
+        /// <param name="record"></param>
+        /// <returns></returns>
         IReadOnlyList<TpsObject> Parse(byte[] record);
     }
 
     /// <summary>
     /// Represents a file structure that encapsulates a table's schema.
     /// </summary>
-    public sealed class TableDefinitionRecord : ITableDefinitionRecord
+    internal sealed class TableDefinitionRecord : ITableDefinitionRecord
     {
         public int DriverVersion { get; }
         public int RecordLength { get; }

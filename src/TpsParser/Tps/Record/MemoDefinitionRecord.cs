@@ -42,28 +42,20 @@ namespace TpsParser.Tps.Record
         bool IsBlob { get; }
     }
 
-    /// <summary>
-    /// Represents the schema for a particular MEMO or BLOB field.
-    /// </summary>
-    public sealed class MemoDefinitionRecord : IMemoDefinitionRecord
+    internal sealed class MemoDefinitionRecord : IMemoDefinitionRecord
     {
         private string ExternalFile { get; }
 
-        /// <inheritdoc/>
         public string FullName { get; }
 
-        /// <inheritdoc/>
         public string Name => FullName.Split(':').Last();
 
         private int Length { get; }
 
-        /// <inheritdoc/>
         public int Flags { get; }
 
-        /// <inheritdoc/>
         public bool IsMemo => (Flags & 0x04) == 0;
 
-        /// <inheritdoc/>
         public bool IsBlob => !IsMemo;
 
         public MemoDefinitionRecord(RandomAccess rx)
@@ -90,9 +82,7 @@ namespace TpsParser.Tps.Record
             Flags = rx.ShortLE();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return $"MemoDefinition({ExternalFile},{FullName},{Length},{Flags})";
         }

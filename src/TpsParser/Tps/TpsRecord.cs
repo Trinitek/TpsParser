@@ -12,7 +12,7 @@ namespace TpsParser.Tps
         public int RecordLength { get; }
         public int HeaderLength { get; }
         public RandomAccess Data { get; }
-        public Header.Header Header { get; private set; }
+        public IHeader Header { get; private set; }
 
         /// <summary>
         /// Creates a new <see cref="TpsRecord"/>. This is typically done on the first of a list.

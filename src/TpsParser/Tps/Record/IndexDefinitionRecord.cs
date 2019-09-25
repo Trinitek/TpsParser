@@ -22,17 +22,15 @@ namespace TpsParser.Tps.Record
     /// <summary>
     /// Represents the schema for a particular index.
     /// </summary>
-    public sealed class IndexDefinitionRecord : IIndexDefinitionRecord
+    internal sealed class IndexDefinitionRecord : IIndexDefinitionRecord
     {
         private string ExternalFile { get; }
         private int[] KeyField { get; }
         private int[] KeyFieldFlag { get; }
         private int Flags { get; }
 
-        /// <inheritdoc/>
         public string Name { get; }
 
-        /// <inheritdoc/>
         public int FieldsInKey { get; }
 
         public IndexDefinitionRecord(RandomAccess rx)
@@ -68,9 +66,7 @@ namespace TpsParser.Tps.Record
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString() =>
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             $"IndexDefinition({ExternalFile},{Name},{Flags},{FieldsInKey})";
     }
 }

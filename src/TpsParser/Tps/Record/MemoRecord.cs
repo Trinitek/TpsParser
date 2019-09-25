@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using TpsParser.Binary;
 using TpsParser.Tps.Header;
@@ -7,31 +6,45 @@ using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
-    public sealed class MemoRecord
+    /// <summary>
+    /// Encapsulates memo data. The data may be contained within a single record or segmented across multiple records.
+    /// See <see cref="IMemoHeader.SequenceNumber"/> when the memo is segmented.
+    /// </summary>
+    public interface IMemoRecord
     {
-        public MemoHeader Header { get; }
+        /// <summary>
+        /// Gets the header for this particular record.
+        /// </summary>
+        IMemoHeader Header { get; }
+
+        /// <summary>
+        /// Gets the value of the memo using the given definition record.
+        /// </summary>
+        /// <param name="memoDefinitionRecord"></param>
+        /// <returns></returns>
+        TpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord);
+    }
+
+    /// <inheritdoc/>
+    internal sealed class MemoRecord : IMemoRecord
+    {
+        /// <inheritdoc/>
+        public IMemoHeader Header { get; }
+
         private RandomAccess Data { get; }
 
-        public MemoRecord(MemoHeader header, RandomAccess rx)
+        /// <summary>
+        /// Instantiates a new record.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <param name="rx"></param>
+        public MemoRecord(IMemoHeader header, RandomAccess rx)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
 
-        /// <summary>
-        /// Returns the memo data as an ISO-8859-1 encoded string.
-        /// </summary>
-        /// <returns></returns>
-        public string GetDataAsMemo() =>
-            Encoding.GetEncoding("ISO-8859-1").GetString(Data.GetData());
-
-        /// <summary>
-        /// Returns the memo data as a raw byte array.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<byte> GetDataAsBlob() =>
-            Data.ReadBytes(Data.LongLE());
-
+        /// <inheritdoc/>
         public TpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord)
         {
             if (memoDefinitionRecord == null)

@@ -2,8 +2,10 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TpsParser.Tests.DeserializerModels;
 using TpsParser.Tps;
+using TpsParser.Tps.Header;
 using TpsParser.Tps.Record;
 using TpsParser.Tps.Type;
 
@@ -25,11 +27,12 @@ namespace TpsParser.Tests
                 return mock.Object;
             }
 
-            private static IFieldDefinitionRecord BuildFieldDefinitionRecord(string name)
+            private static IFieldDefinitionRecord BuildFieldDefinitionRecord(string name, TpsTypeCode typeCode)
             {
                 var mock = new Mock<IFieldDefinitionRecord>();
 
                 mock.Setup(m => m.Name).Returns(name);
+                mock.Setup(m => m.Type).Returns(typeCode);
 
                 return mock.Object;
             }
@@ -44,16 +47,48 @@ namespace TpsParser.Tests
                 return mock.Object;
             }
 
-            private static TpsFile BuildTpsFile(Func<IEnumerable<DataRecord>> dataRecordFunc, Func<IEnumerable<MemoRecord>> memoRecordFunc)
+            private static IMemoRecord BuildMemoRecord(int owningRecord, string name, TpsCString value)
             {
-                if (dataRecordFunc is null)
+                var mock = new Mock<IMemoRecord>();
+
+                var memoDefinitionRecordMock = new Mock<IMemoDefinitionRecord>();
+                memoDefinitionRecordMock.Setup(m => m.Name).Returns(name);
+
+                var memoHeaderMock = new Mock<IMemoHeader>();
+
+                memoHeaderMock.Setup(m => m.TableNumber).Returns(1);
+                memoHeaderMock.Setup(m => m.OwningRecord).Returns(owningRecord);
+
+                mock.Setup(m => m.Header).Returns(memoHeaderMock.Object);
+                mock.Setup(m => m.GetValue(It.IsAny<IMemoDefinitionRecord>())).Returns(value);
+
+                return mock.Object;
+            }
+
+            private static IDataRecord BuildDataRecord(int recordNumber, ITableDefinitionRecord tableDefinitionRecord, IEnumerable<TpsObject> values)
+            {
+                var mock = new Mock<IDataRecord>();
+
+                mock.Setup(m => m.RecordNumber).Returns(recordNumber);
+                mock.Setup(m => m.TableDefinition).Returns(tableDefinitionRecord);
+                mock.Setup(m => m.Values).Returns(values.ToList());
+
+                return mock.Object;
+            }
+
+            private static TpsFile BuildTpsFile(
+                ITableDefinitionRecord tableDefinitionRecord,
+                IEnumerable<IDataRecord> dataRecords,
+                IEnumerable<IMemoRecord> memoRecords)
+            {
+                if (dataRecords is null)
                 {
-                    throw new ArgumentNullException(nameof(dataRecordFunc));
+                    throw new ArgumentNullException(nameof(dataRecords));
                 }
 
-                if (memoRecordFunc is null)
+                if (memoRecords is null)
                 {
-                    throw new ArgumentNullException(nameof(memoRecordFunc));
+                    throw new ArgumentNullException(nameof(memoRecords));
                 }
 
                 var mock = new Mock<TpsFile>();
@@ -61,16 +96,33 @@ namespace TpsParser.Tests
                 mock.Setup(m => m.GetTableDefinitions(It.IsAny<bool>()))
                     .Returns(new Dictionary<int, ITableDefinitionRecord>()
                     {
-                        { 1, BuildTableDefinitionRecord() }
+                        { 1, tableDefinitionRecord }
                     });
 
                 mock.Setup(m => m.GetDataRecords(It.IsAny<int>(), It.IsAny<ITableDefinitionRecord>(), It.IsAny<bool>()))
-                    .Returns(dataRecordFunc);
+                    .Returns(dataRecords);
 
                 mock.Setup(m => m.GetMemoRecords(It.IsAny<int>(), It.IsAny<bool>()))
-                    .Returns(memoRecordFunc);
+                    .Returns(memoRecords);
 
                 return mock.Object;
+            }
+
+            private static ITableDefinitionRecord BuildTableDefinitionRecord(IEnumerable<(string name, TpsTypeCode typeCode)> fields, IEnumerable<string> memoNames) =>
+                BuildTableDefinitionRecord(
+                    fields.Select(tuple => BuildFieldDefinitionRecord(tuple.name, tuple.typeCode)).ToList(),
+                    memoNames.Select(name => BuildMemoDefinitionRecord(name)).ToList());
+
+            private static TpsFile BuildTpsFile((string name, TpsObject value)[] fieldValues, (string name, TpsCString value)[] memoValues)
+            {
+                var tableDefinitionRecord = BuildTableDefinitionRecord(
+                    fieldValues.Select(value => (value.name, value.value.TypeCode)).ToList(),
+                    memoValues.Select(value => value.name).ToList());
+
+                var dataRecords = new IDataRecord[] { BuildDataRecord(1, tableDefinitionRecord, fieldValues.Select(value => value.value)) };
+                var memoRecords = memoValues.Select(value => BuildMemoRecord(1, value.name, value.value));
+
+                return BuildTpsFile(tableDefinitionRecord, dataRecords, memoRecords);
             }
 
             [Test]
@@ -78,23 +130,29 @@ namespace TpsParser.Tests
             {
                 string expected = " Hello world!     ";
 
-                using (var parser = new TpsParser())
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
-                var row = BuildRow(1, ("Notes", new TpsCString(expected)));
+                using (var parser = new TpsParser(file))
+                {
+                    var deserialized = parser.Deserialize<StringModel>().First();
 
-                var deserialized = row.Deserialize<StringModel>();
-
-                Assert.AreEqual(expected, deserialized.Notes);
+                    Assert.AreEqual(expected, deserialized.Notes);
+                }
             }
 
             [Test]
             public void ShouldDeserializeAndTrimString()
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(" Hello world!     ")));
+                string expected = " Hello world!     ";
 
-                var deserialized = row.Deserialize<StringTrimmingEnabledModel>();
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
-                Assert.AreEqual(" Hello world!", deserialized.Notes);
+                using (var parser = new TpsParser(file))
+                {
+                    var deserialized = parser.Deserialize<StringTrimmingEnabledModel>().First();
+
+                    Assert.AreEqual(" Hello world!", deserialized.Notes);
+                }
             }
 
             [Test]
@@ -102,11 +160,14 @@ namespace TpsParser.Tests
             {
                 string expected = " Hello world!     ";
 
-                var row = BuildRow(1, ("Notes", new TpsCString(expected)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
-                var deserialized = row.Deserialize<StringTrimmingDisabledModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var deserialized = parser.Deserialize<StringTrimmingDisabledModel>().First();
 
-                Assert.AreEqual(expected, deserialized.Notes);
+                    Assert.AreEqual(expected, deserialized.Notes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -118,11 +179,14 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanTpsFieldAttribute(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanTpsFieldAttributeModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanTpsFieldAttributeModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -134,11 +198,14 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanTpsBooleanFieldAttribute(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -150,11 +217,14 @@ namespace TpsParser.Tests
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanTrueCondition(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanTrueModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanTrueModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -166,11 +236,14 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFalseCondition(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanFalseModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanFalseModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -182,11 +255,14 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFallbackTrue(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanTrueFalseFallbackTrueModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanTrueFalseFallbackTrueModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -198,11 +274,14 @@ namespace TpsParser.Tests
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanFallbackFalse(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanTrueFalseFallbackFalseModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanTrueFalseFallbackFalseModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
 
             [TestCase("Y", true)]
@@ -214,11 +293,14 @@ namespace TpsParser.Tests
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanFallbackDefault(string value, bool expected)
             {
-                var row = BuildRow(1, ("Notes", new TpsCString(value)));
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                var des = row.Deserialize<StringBooleanTrueFalseModel>();
+                using (var parser = new TpsParser(file))
+                {
+                    var des = parser.Deserialize<StringBooleanTrueFalseModel>().First();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                    Assert.AreEqual(expected, des.HasNotes);
+                }
             }
         }
     }

@@ -41,61 +41,70 @@ namespace TpsParser.Tps.Record
 
         int Length { get; }
 
+        /// <summary>
+        /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
+        /// </summary>
         int Index { get; }
 
+        /// <summary>
+        /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the number of bytes in the string.
+        /// </summary>
         int StringLength { get; }
 
+        /// <summary>
+        /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the string mask.
+        /// </summary>
         string StringMask { get; }
 
+        /// <summary>
+        /// If the field contains a <see cref="TpsDecimal"/>, gets the number of places after the decimal point.
+        /// </summary>
         int BcdDigitsAfterDecimalPoint { get; }
 
+        /// <summary>
+        /// If the field contains a <see cref="TpsDecimal"/>, gets the number of decimal places.
+        /// </summary>
         int BcdElementLength { get; }
 
+        /// <summary>
+        /// True if the field contains an array of values.
+        /// </summary>
         bool IsArray { get; }
+
+        /// <summary>
+        /// Checks to see if this field fits in the given group field.
+        /// </summary>
+        /// <param name="fieldDefinitionRecord">The group field to check.</param>
+        /// <returns></returns>
+        bool IsInGroup(IFieldDefinitionRecord fieldDefinitionRecord);
     }
 
-    /// <summary>
-    /// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="MemoDefinitionRecord"/>.
-    /// </summary>
-    public sealed class FieldDefinitionRecord : IFieldDefinitionRecord
+    internal sealed class FieldDefinitionRecord : IFieldDefinitionRecord
     {
-        /// <inheritdoc/>
         public TpsTypeCode Type { get; }
 
-        /// <inheritdoc/>
         public int Offset { get; }
 
-        /// <inheritdoc/>
         public string FullName { get; }
 
-        /// <inheritdoc/>
         public string Name => FullName.Split(':').Last();
 
-        /// <inheritdoc/>
         public int ElementCount { get; }
 
-        /// <inheritdoc/>
         public int Length { get; }
 
-        /// <inheritdoc/>
         public int Flags { get; }
 
-        /// <inheritdoc/>
         public int Index { get; }
 
-        /// <inheritdoc/>
         public int StringLength { get; }
 
-        /// <inheritdoc/>
         public string StringMask { get; }
 
-        /// <inheritdoc/>
         public int BcdDigitsAfterDecimalPoint { get; }
 
-        /// <inheritdoc/>
         public int BcdElementLength { get; }
 
-        /// <inheritdoc/>
         public bool IsArray => ElementCount > 1;
 
         public FieldDefinitionRecord(RandomAccess rx)
@@ -131,19 +140,12 @@ namespace TpsParser.Tps.Record
                     break;
             }
         }
-
-        /// <summary>
-        /// Checks to see if this field fits in the given group field.
-        /// </summary>
-        /// <param name="group">The group field to check.</param>
-        /// <returns></returns>
-        public bool IsInGroup(FieldDefinitionRecord group) =>
+        
+        public bool IsInGroup(IFieldDefinitionRecord group) =>
             (group.Offset <= Offset)
             && ((group.Offset + group.Length) >= (Offset + Length));
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString() =>
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             $"Field(#{Index},T:{Type},OFS:{Offset},LEN:{Length},{FullName},{ElementCount},{Flags})";
     }
 }

@@ -201,12 +201,14 @@ namespace TpsParser
 
                         if (columns.TryGetValue(requestedField, out int index))
                         {
-                            member.SetMember(target, values[index].Value);
+                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberInfo, values[index]);
+                            member.SetMember(target, interpretedValue);
                         }
                         else if (memoRecords.TryGetValue(recordNumber, out var fieldValueDictionary)
                             && fieldValueDictionary.ToDictionary(fv => fv.Key.ToUpperInvariant(), fv => fv.Value).TryGetValue(requestedField, out TpsObject value))
                         {
-                            member.SetMember(target, value.Value);
+                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberInfo, value);
+                            member.SetMember(target, interpretedValue);
                         }
                         else if (member.FieldAttribute.IsRequired)
                         {

@@ -46,7 +46,13 @@ namespace TpsParser
         {
             FieldName = fieldName;
         }
-        internal static Type GetMemberType(MemberInfo info)
+
+        /// <summary>
+        /// Gets the type of the member on which the attribute is marked.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        protected static Type GetMemberType(MemberInfo info)
         {
             if (info == null)
             {

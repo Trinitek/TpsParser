@@ -12,9 +12,9 @@ This library is a C# port of the Java library [tps-parse](https://github.com/ctr
 
 Unlike the original library, this version does not include a CSV exporter, and thus does not function as a standalone program.
 
-Included in the port is a set of classes that is able to recover encrypted files where the password is not known.  Compute intensive portions of this section have been parallelized and make use of asynchronous Tasks.
+Included in the port is a set of classes that are able to recover encrypted files where the password is not known.  Compute intensive portions of this section have been parallelized and make use of asynchronous Tasks.
 
-Other miscellaneous performance improvmements have also been made.
+Other miscellaneous performance improvements have also been made.
 
 ## Clean Table Objects
 
@@ -30,8 +30,10 @@ using (var parser = new TpsParser("contacts.tps"))
 
     // Look up values by case-insensitive column names
     string firstName = firstContactRow.GetValueCaseInsensitive("fname");
+    
     // Throws an exception if the field is not present in the row
     string lastName = firstContactRow.GetValueCaseInsensitive("lname", isRequired: true);
+    
     // MEMO fields are mapped, too
     string notes = firstContactRow.GetValueCaseInsensitive("notes");
 }
@@ -53,7 +55,7 @@ class Contact
     public string FirstName { get; set; }
 
     // Throw an exception if the field is not present in all rows.
-    [TpsString("lname", IsRequired = true)]
+    [TpsStringField("lname", IsRequired = true)]
     public string LastName { get; set; }
 
     // Column names are case-insensitive.

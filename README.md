@@ -32,7 +32,7 @@ using (var parser = new TpsParser("contacts.tps"))
     string firstName = firstContactRow.GetValueCaseInsensitive("fname");
     
     // Throws an exception if the field is not present in the row
-    string lastName = firstContactRow.GetValueCaseInsensitive("lname", isRequired: true);
+    string lastName = firstContactRow.GetValueCaseInsensitive("lname", IsRequired = true);
     
     // MEMO fields are mapped, too
     string notes = firstContactRow.GetValueCaseInsensitive("notes");

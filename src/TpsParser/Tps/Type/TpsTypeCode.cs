@@ -3,8 +3,15 @@
     /// <summary>
     /// Represents a code point in a TopSpeed file that represents a particular data type.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The identifier names reflect the type names found in the Clarion language.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1028:Enum Storage should be Int32", Justification = "The corresponding data type in the TopSpeed file format is a byte.")]
     public enum TpsTypeCode : byte
     {
+        /// <summary>
+        /// Represents a code point that is not defined in the file format.
+        /// </summary>
+        None    = 0x00,
+
         /// <summary>
         /// 1-byte unsigned integer
         /// </summary>
@@ -73,16 +80,6 @@
         /// <summary>
         /// Compound data structure
         /// </summary>
-        Group   = 0x16,
-
-        /// <summary>
-        /// Variable-length binary large object
-        /// </summary>
-        Blob    = 0xFF,
-
-        /// <summary>
-        /// Fixed length string
-        /// </summary>
-        Memo    = 0xFF
+        Group   = 0x16
     }
 }

@@ -50,6 +50,7 @@ namespace TpsParser.Tps.Type
             return hashCode;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "This must remain explicitly implemented because derivative classes may add their own IConvertible implementations for different types.")]
         bool IConvertible<bool>.AsType() => AsBoolean();
 
         public static bool operator ==(TpsObject left, TpsObject right)

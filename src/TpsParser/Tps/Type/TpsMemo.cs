@@ -10,7 +10,7 @@ namespace TpsParser.Tps.Type
     public sealed class TpsMemo : TpsObject<string>
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.Memo;
+        public override TpsTypeCode TypeCode => TpsTypeCode.None;
 
         /// <summary>
         /// Instantiates a new MEMO.

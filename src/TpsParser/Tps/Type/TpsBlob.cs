@@ -11,7 +11,7 @@ namespace TpsParser.Tps.Type
     public sealed class TpsBlob : TpsObject<IEnumerable<byte>>
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.Blob;
+        public override TpsTypeCode TypeCode => TpsTypeCode.None;
 
         /// <summary>
         /// Instantiates a new BLOB.
@@ -30,6 +30,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the size of the blob is not zero.
         /// </summary>
-        protected override bool AsBoolean() => Value.Count() > 0;
+        protected override bool AsBoolean() => Value.Any();
     }
 }

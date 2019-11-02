@@ -39,7 +39,7 @@ namespace TpsParser.Binary
             : this(
                   data: data,
                   baseOffset: 0,
-                  length: data.Length)
+                  length: data?.Length ?? throw new ArgumentNullException(nameof(data)))
         { }
 
         public RandomAccess(byte[] data, int baseOffset, int length)
@@ -54,7 +54,7 @@ namespace TpsParser.Binary
 
         public RandomAccess(RandomAccess existing, int additiveOffset, int length)
             : this(
-                  data: existing.Data,
+                  data: existing?.Data ?? throw new ArgumentNullException(nameof(existing)),
                   baseOffset: existing.BaseOffset + additiveOffset,
                   length: length)
         { }

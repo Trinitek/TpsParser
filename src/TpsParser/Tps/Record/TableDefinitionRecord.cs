@@ -131,18 +131,21 @@ namespace TpsParser.Tps.Record
             }
 
             var rx = new RandomAccess(record);
-            var values = new List<TpsObject>(Fields.Count());
+            var values = new List<TpsObject>(Fields.Count);
 
             foreach (var field in Fields)
             {
                 if (field.IsArray)
                 {
                     int fieldSize = RecordLength / field.ElementCount;
+                    var arrayValues = new List<TpsObject>();
 
                     for (int i = 0; i < field.ElementCount; i++)
                     {
-                        values.Add(ParseField(field.Type, fieldSize, field, rx));
+                        arrayValues.Add(ParseField(field.Type, fieldSize, field, rx));
                     }
+
+                    values.Add(new TpsArray(arrayValues));
                 }
                 else
                 {

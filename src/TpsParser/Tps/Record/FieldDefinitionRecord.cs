@@ -37,8 +37,14 @@ namespace TpsParser.Tps.Record
         /// </summary>
         string Name { get; }
 
+        /// <summary>
+        /// If the field is an array, gets the number of elements in the array. See <see cref="IsArray"/>.
+        /// </summary>
         int ElementCount { get; }
 
+        /// <summary>
+        /// Gets the size of the field in bytes.
+        /// </summary>
         int Length { get; }
 
         /// <summary>

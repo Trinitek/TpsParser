@@ -168,29 +168,29 @@ namespace TpsParser.Tps.Record
             switch (type)
             {
                 case TpsTypeCode.Byte:
-                    AssertEqual(1, length);
+                    AssertExpectedLength(1, length);
                     return new TpsByte(rx);
                 case TpsTypeCode.Short:
-                    AssertEqual(2, length);
+                    AssertExpectedLength(2, length);
                     return new TpsShort(rx);
                 case TpsTypeCode.UShort:
-                    AssertEqual(2, length);
+                    AssertExpectedLength(2, length);
                     return new TpsUnsignedShort(rx);
                 case TpsTypeCode.Date:
                     return new TpsDate(rx);
                 case TpsTypeCode.Time:
                     return new TpsTime(rx);
                 case TpsTypeCode.Long:
-                    AssertEqual(4, length);
+                    AssertExpectedLength(4, length);
                     return new TpsLong(rx);
                 case TpsTypeCode.ULong:
-                    AssertEqual(4, length);
+                    AssertExpectedLength(4, length);
                     return new TpsUnsignedLong(rx);
                 case TpsTypeCode.SReal:
-                    AssertEqual(4, length);
+                    AssertExpectedLength(4, length);
                     return new TpsFloat(rx);
                 case TpsTypeCode.Real:
-                    AssertEqual(8, length);
+                    AssertExpectedLength(8, length);
                     return new TpsDouble(rx);
                 case TpsTypeCode.Decimal:
                     return new TpsDecimal(rx, length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
@@ -207,11 +207,11 @@ namespace TpsParser.Tps.Record
             }
         }
 
-        private void AssertEqual(int reference, int value)
+        private void AssertExpectedLength(int expected, int actual)
         {
-            if (reference != value)
+            if (expected != actual)
             {
-                throw new ArgumentException($"{reference} != {value}");
+                throw new ArgumentException($"Expected length of {expected} but was {actual}.");
             }
         }
     }

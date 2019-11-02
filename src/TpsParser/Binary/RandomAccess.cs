@@ -25,8 +25,14 @@ namespace TpsParser.Binary
         /// </summary>
         public int Length { get; }
 
+        /// <summary>
+        /// Returns true if there is one byte available at <see cref="Position"/>.
+        /// </summary>
         public bool IsOneByteLeft => Position > Length - 1;
 
+        /// <summary>
+        /// Returns true if no more data is available at <see cref="Position"/>.
+        /// </summary>
         public bool IsAtEnd => Position >= Length - 1;
 
         public RandomAccess(byte[] data)
@@ -61,7 +67,7 @@ namespace TpsParser.Binary
         {
             if (Position + numberOfBytes > Length)
             {
-                throw new IndexOutOfRangeException($"Data type of size {numberOfBytes} exceeds the end of the data array at offset {Position}. Array is {Length} bytes long.");
+                throw new IndexOutOfRangeException($"Data type of size {numberOfBytes} exceeds the end of the data array at offset {Position} by {Length - Position + numberOfBytes}. Array is {Length} bytes long.");
             }
             if (Position < 0)
             {
@@ -436,6 +442,23 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             Position += length;
+
+            return Data
+                .Skip(reference)
+                .Take(length)
+                .ToArray();
+        }
+
+        /// <summary>
+        /// Reads an array from the current position.
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public byte[] PeekBytes(int length)
+        {
+            CheckSpace(length);
+
+            int reference = BaseOffset + Position;
 
             return Data
                 .Skip(reference)

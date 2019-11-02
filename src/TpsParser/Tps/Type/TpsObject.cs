@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using TpsParser.Binary;
+using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps.Type
 {
@@ -21,13 +26,86 @@ namespace TpsParser.Tps.Type
         /// Gets a boolean representation of the value as governed by Clarion logic evaluation rules for the type.
         /// </summary>
         /// <returns></returns>
-        protected abstract bool AsBoolean();
+        internal abstract bool AsBoolean();
 
         /// <summary>
         /// Gets the string representation of the value that this object encapsulates.
         /// </summary>
         /// <returns></returns>
         public override string ToString() => Value?.ToString();
+
+        /// <summary>
+        /// Builds a <see cref="TpsObject"/> from the given binary reader and field definition information.
+        /// </summary>
+        /// <param name="rx">The binary reader.</param>
+        /// <param name="encoding">The text encoding to use when reading string values.</param>
+        /// <param name="length">The length of the field value in bytes.</param>
+        /// <param name="remainingFieldDefinitions">A collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.</param>
+        /// 
+        /// <returns></returns>
+        public static TpsObject ParseField(RandomAccess rx, Encoding encoding, int length, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions)
+        {
+            if (remainingFieldDefinitions is null)
+            {
+                throw new ArgumentNullException(nameof(remainingFieldDefinitions));
+            }
+
+            var currentFieldDefinition = remainingFieldDefinitions.First();
+
+            if (rx == null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            switch (currentFieldDefinition.Type)
+            {
+                case TpsTypeCode.Byte:
+                    AssertExpectedLength(1, length);
+                    return new TpsByte(rx);
+                case TpsTypeCode.Short:
+                    AssertExpectedLength(2, length);
+                    return new TpsShort(rx);
+                case TpsTypeCode.UShort:
+                    AssertExpectedLength(2, length);
+                    return new TpsUnsignedShort(rx);
+                case TpsTypeCode.Date:
+                    return new TpsDate(rx);
+                case TpsTypeCode.Time:
+                    return new TpsTime(rx);
+                case TpsTypeCode.Long:
+                    AssertExpectedLength(4, length);
+                    return new TpsLong(rx);
+                case TpsTypeCode.ULong:
+                    AssertExpectedLength(4, length);
+                    return new TpsUnsignedLong(rx);
+                case TpsTypeCode.SReal:
+                    AssertExpectedLength(4, length);
+                    return new TpsFloat(rx);
+                case TpsTypeCode.Real:
+                    AssertExpectedLength(8, length);
+                    return new TpsDouble(rx);
+                case TpsTypeCode.Decimal:
+                    return new TpsDecimal(rx, length, currentFieldDefinition.BcdDigitsAfterDecimalPoint);
+                case TpsTypeCode.String:
+                    return new TpsString(rx, length, encoding);
+                case TpsTypeCode.CString:
+                    return new TpsCString(rx, encoding);
+                case TpsTypeCode.PString:
+                    return new TpsPString(rx, encoding);
+                case TpsTypeCode.Group:
+                    return TpsGroup.BuildFromFieldDefinitions(rx, encoding, remainingFieldDefinitions);
+                default:
+                    throw new ArgumentException($"Unsupported type {currentFieldDefinition.Type} ({length})", nameof(remainingFieldDefinitions));
+            }
+        }
+
+        private static void AssertExpectedLength(int expected, int actual)
+        {
+            if (expected != actual)
+            {
+                throw new ArgumentException($"Expected length of {expected} but was {actual}.");
+            }
+        }
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override bool Equals(object obj)

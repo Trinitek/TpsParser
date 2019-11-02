@@ -32,6 +32,6 @@ namespace TpsParser.Tps.Type
         public int Count => Value.Count;
 
         /// <inheritdoc/>
-        protected override bool AsBoolean() => Value.Any();
+        internal override bool AsBoolean() => Value.Any();
     }
 }

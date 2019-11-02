@@ -37,7 +37,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        protected override bool AsBoolean() => Value != 0;
+        internal override bool AsBoolean() => Value != 0;
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.

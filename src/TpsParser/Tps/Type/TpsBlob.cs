@@ -30,6 +30,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the size of the blob is not zero.
         /// </summary>
-        protected override bool AsBoolean() => Value.Any();
+        internal override bool AsBoolean() => Value.Any();
     }
 }

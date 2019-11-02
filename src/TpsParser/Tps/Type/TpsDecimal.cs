@@ -73,7 +73,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        protected override bool AsBoolean() => Value.Where(v => char.IsDigit(v)).Any(v => v != '0');
+        internal override bool AsBoolean() => Value.Where(v => char.IsDigit(v)).Any(v => v != '0');
 
         /// <summary>
         /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.

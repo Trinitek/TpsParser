@@ -44,6 +44,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the string length is not zero.
         /// </summary>
-        protected override bool AsBoolean() => Value.Length > 0;
+        internal override bool AsBoolean() => Value.Length > 0;
     }
 }

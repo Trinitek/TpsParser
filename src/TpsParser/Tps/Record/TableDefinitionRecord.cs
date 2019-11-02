@@ -133,8 +133,11 @@ namespace TpsParser.Tps.Record
             var rx = new RandomAccess(record);
             var values = new List<TpsObject>(Fields.Count);
 
-            foreach (var field in Fields)
+            for (int fieldIndex = 0; fieldIndex < Fields.Count; fieldIndex++)
             {
+                var field = Fields[fieldIndex];
+                var remainingFields = Fields.Skip(fieldIndex);
+
                 if (field.IsArray)
                 {
                     int fieldSize = RecordLength / field.ElementCount;
@@ -142,80 +145,18 @@ namespace TpsParser.Tps.Record
 
                     for (int i = 0; i < field.ElementCount; i++)
                     {
-                        arrayValues.Add(ParseField(field.Type, fieldSize, field, rx));
+                        arrayValues.Add(TpsObject.ParseField(rx, Encoding, fieldSize, remainingFields));
                     }
 
                     values.Add(new TpsArray(arrayValues));
                 }
                 else
                 {
-                    values.Add(ParseField(field.Type, field.Length, field, rx));
+                    values.Add(TpsObject.ParseField(rx, Encoding, field.Length, remainingFields));
                 }
             }
 
             return values.AsReadOnly();
-        }
-
-        private TpsObject ParseField(TpsTypeCode type, int length, IFieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
-        {
-            if (fieldDefinitionRecord == null)
-            {
-                throw new ArgumentNullException(nameof(fieldDefinitionRecord));
-            }
-
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            switch (type)
-            {
-                case TpsTypeCode.Byte:
-                    AssertExpectedLength(1, length);
-                    return new TpsByte(rx);
-                case TpsTypeCode.Short:
-                    AssertExpectedLength(2, length);
-                    return new TpsShort(rx);
-                case TpsTypeCode.UShort:
-                    AssertExpectedLength(2, length);
-                    return new TpsUnsignedShort(rx);
-                case TpsTypeCode.Date:
-                    return new TpsDate(rx);
-                case TpsTypeCode.Time:
-                    return new TpsTime(rx);
-                case TpsTypeCode.Long:
-                    AssertExpectedLength(4, length);
-                    return new TpsLong(rx);
-                case TpsTypeCode.ULong:
-                    AssertExpectedLength(4, length);
-                    return new TpsUnsignedLong(rx);
-                case TpsTypeCode.SReal:
-                    AssertExpectedLength(4, length);
-                    return new TpsFloat(rx);
-                case TpsTypeCode.Real:
-                    AssertExpectedLength(8, length);
-                    return new TpsDouble(rx);
-                case TpsTypeCode.Decimal:
-                    return new TpsDecimal(rx, length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
-                case TpsTypeCode.String:
-                    return new TpsString(rx, length, Encoding);
-                case TpsTypeCode.CString:
-                    return new TpsCString(rx, Encoding);
-                case TpsTypeCode.PString:
-                    return new TpsPString(rx, Encoding);
-                case TpsTypeCode.Group:
-                    return new TpsGroup(rx, length);
-                default:
-                    throw new ArgumentException($"Unsupported type {type} ({length})", nameof(type));
-            }
-        }
-
-        private void AssertExpectedLength(int expected, int actual)
-        {
-            if (expected != actual)
-            {
-                throw new ArgumentException($"Expected length of {expected} but was {actual}.");
-            }
         }
     }
 }

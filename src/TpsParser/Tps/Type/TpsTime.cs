@@ -100,6 +100,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not equal to <see cref="TimeSpan.Zero"/>.
         /// </summary>
-        protected override bool AsBoolean() => Value != TimeSpan.Zero;
+        internal override bool AsBoolean() => Value != TimeSpan.Zero;
     }
 }

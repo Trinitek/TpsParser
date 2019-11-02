@@ -28,6 +28,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        protected override bool AsBoolean() => Value != 0.0;
+        internal override bool AsBoolean() => Value != 0.0;
     }
 }

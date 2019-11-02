@@ -25,7 +25,7 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Value = rx.ReadBytes(length);
+            Value = rx.PeekBytes(length);
         }
 
         /// <summary>

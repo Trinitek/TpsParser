@@ -140,7 +140,7 @@ namespace TpsParser.Tps.Record
 
                 if (field.IsArray)
                 {
-                    int fieldSize = RecordLength / field.ElementCount;
+                    int fieldSize = field.Length / field.ElementCount;
                     var arrayValues = new List<TpsObject>();
 
                     for (int i = 0; i < field.ElementCount; i++)

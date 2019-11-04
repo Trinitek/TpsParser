@@ -147,7 +147,7 @@ namespace TpsParser.Tps.Type
     /// Represents a typed object within the TopSpeed file.
     /// </summary>
     /// <typeparam name="T">The .NET equivalent type of the value this object encapsulates.</typeparam>
-    public abstract class TpsObject<T> : TpsObject
+    public abstract class TpsObject<T> : TpsObject, IConvertible<T>
     {
         /// <inheritdoc/>
         public new T Value
@@ -160,5 +160,8 @@ namespace TpsParser.Tps.Type
             }
         }
         private T _typedValue;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "Child types should use the Value property instead.")]
+        T IConvertible<T>.AsType() => Value;
     }
 }

@@ -84,47 +84,90 @@ namespace TpsParser
             return CoerceFallback(interpretedValue);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Not applicable when not converting strings.")]
+        private static object ConvertOrDefault<TTarget>(Type memberType, object value) => value is null ? default(TTarget) : Convert.ChangeType(value, memberType);
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Not applicable when not converting strings.")]
         private static object InterpretValuePrivate(Type memberType, TpsObject sourceObject)
         {
-            if (memberType == typeof(DateTime) || memberType == typeof(DateTime?))
+            if (memberType == typeof(DateTime?))
             {
-                if (sourceObject is IConvertible<DateTime> dateTimeConvertible)
+                switch (sourceObject)
                 {
-                    return dateTimeConvertible.AsType();
-                }
-                else
-                {
-                    return sourceObject?.Value;
+                    case IConvertible<DateTime> dateTimeConvertible:
+                        return dateTimeConvertible.AsType();
+                    case IConvertible<DateTime?> nullableDateTimeConvertible:
+                        return nullableDateTimeConvertible.AsType();
+                    default:
+                        return ConvertOrDefault<DateTime?>(memberType, sourceObject);
                 }
             }
-            else if (memberType == typeof(TimeSpan) || memberType == typeof(TimeSpan?))
+            else if (memberType == typeof(DateTime))
             {
-                if (sourceObject is IConvertible<TimeSpan> timeSpanConvertible)
+                switch (sourceObject)
                 {
-                    return timeSpanConvertible.AsType();
+                    case IConvertible<DateTime> dateTimeConvertible:
+                        return dateTimeConvertible.AsType();
+                    case IConvertible<DateTime?> nullableDateTimeConvertible:
+                        return nullableDateTimeConvertible.AsType() ?? default;
+                    default:
+                        return ConvertOrDefault<DateTime>(memberType, sourceObject);
                 }
-                else
+            }
+            else if (memberType == typeof(TimeSpan?))
+            {
+                switch (sourceObject)
                 {
-                    return sourceObject?.Value;
+                    case IConvertible<TimeSpan> timeSpanConvertible:
+                        return timeSpanConvertible.AsType();
+                    case IConvertible<TimeSpan?> nullableTimeSpanConvertible:
+                        return nullableTimeSpanConvertible.AsType() ?? default;
+                    default:
+                        return ConvertOrDefault<TimeSpan?>(memberType, sourceObject);
+                }
+            }
+            else if (memberType == typeof(TimeSpan))
+            {
+                switch (sourceObject)
+                {
+                    case IConvertible<TimeSpan> timeSpanConvertible:
+                        return timeSpanConvertible.AsType();
+                    case IConvertible<TimeSpan?> nullableTimeSpanConvertible:
+                        return nullableTimeSpanConvertible.AsType() ?? default;
+                    default:
+                        return ConvertOrDefault<TimeSpan>(memberType, sourceObject);
                 }
             }
             else if (memberType == typeof(bool) || memberType == typeof(bool?))
             {
-                return ((IConvertible<bool>)sourceObject)?.AsType();
+                return ((IConvertible<bool>)sourceObject)?.AsType() ?? default;
             }
             else if (memberType == typeof(string))
             {
                 return sourceObject?.ToString();
             }
-            else if (memberType == typeof(decimal) || memberType == typeof(decimal?))
+            else if (memberType == typeof(decimal?))
             {
-                if (sourceObject is IConvertible<decimal> decimalConvertible)
+                switch (sourceObject)
                 {
-                    return decimalConvertible.AsType();
+                    case IConvertible<decimal> decimalConvertible:
+                        return decimalConvertible.AsType();
+                    case IConvertible<decimal?> nullableDecimalConvertible:
+                        return nullableDecimalConvertible.AsType();
+                    default:
+                        return ConvertOrDefault<decimal?>(memberType, sourceObject);
                 }
-                else
+            }
+            else if (memberType == typeof(decimal))
+            {
+                switch (sourceObject)
                 {
-                    return sourceObject?.Value;
+                    case IConvertible<decimal> decimalConvertible:
+                        return decimalConvertible.AsType();
+                    case IConvertible<decimal?> nullableDecimalConvertible:
+                        return nullableDecimalConvertible.AsType() ?? default;
+                    default:
+                        return ConvertOrDefault<decimal>(memberType, sourceObject);
                 }
             }
             else if (memberType == typeof(int) || memberType == typeof(int?)
@@ -132,9 +175,9 @@ namespace TpsParser
                 || memberType == typeof(long) || memberType == typeof(long?)
                 || memberType == typeof(sbyte) || memberType == typeof(sbyte?))
             {
-                if (sourceObject is TpsDecimal decimalSource)
+                if (sourceObject is IConvertible<decimal> decimalSource)
                 {
-                    decimal sourceValue = ((IConvertible<decimal>)decimalSource).AsType();
+                    decimal sourceValue = decimalSource.AsType();
                     Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
 
                     // Convert will round to the nearest whole value, so we floor/ceiling the value to emulate behavior of an explicit cast.

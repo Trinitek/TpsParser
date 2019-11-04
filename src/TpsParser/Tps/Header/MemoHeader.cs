@@ -9,7 +9,7 @@ namespace TpsParser.Tps.Header
     public interface IMemoHeader : IHeader
     {
         /// <summary>
-        /// Gets the number of the <see cref="Record.IDataRecord"/> that owns this memo.
+        /// Gets the number of the <see cref="IDataRecord"/> that owns this memo.
         /// </summary>
         int OwningRecord { get; }
 
@@ -19,7 +19,7 @@ namespace TpsParser.Tps.Header
         int SequenceNumber { get; }
 
         /// <summary>
-        /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="Record.ITableDefinitionRecord.Memos"/>.
+        /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="ITableDefinitionRecord.Memos"/>.
         /// </summary>
         int MemoIndex { get; }
     }

@@ -52,7 +52,6 @@ namespace TpsParser.Tps.Type
                 var field = fieldDefinitionRecords.Skip(fieldIndex).First();
                 var remainingFieldDefinitions = fieldDefinitionRecords.Skip(2);
 
-
                 sumOfFollowingLengths += field.Length;
                 
                 if (sumOfFollowingLengths > expectedGroupLength)

@@ -90,7 +90,7 @@ namespace TpsParser
 
         private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
-            return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
+            return Enumerable.Range(0, tableDefinitionRecord.Memos.Count)
                 .SelectMany(index =>
                 {
                     var definition = tableDefinitionRecord.Memos[index];
@@ -187,7 +187,7 @@ namespace TpsParser
 
                 T target = new T();
 
-                var members = DeserializerContext.GetModelMembers<T>(target);
+                var members = DeserializerContext.GetModelMembers(target);
 
                 foreach (var member in members)
                 {
@@ -225,7 +225,7 @@ namespace TpsParser
             }
         }
 
-        private IReadOnlyDictionary<string, int> BuildColumnLookup(IEnumerable<string> columns)
+        private static IReadOnlyDictionary<string, int> BuildColumnLookup(IEnumerable<string> columns)
         {
             var lookup = new Dictionary<string, int>();
 

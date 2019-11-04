@@ -65,7 +65,7 @@ namespace TpsParser.Tps.Type
         {
             Value = newValue;
 
-            decimal.TryParse(Value, out decimal decValue);
+            _ = decimal.TryParse(Value, out decimal decValue);
 
             _valueAsDecimal = decValue;
         }

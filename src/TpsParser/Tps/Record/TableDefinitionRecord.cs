@@ -12,6 +12,18 @@ namespace TpsParser.Tps.Record
     /// </summary>
     public interface ITableDefinitionRecord
     {
+        int DriverVersion { get; }
+
+        /// <summary>
+        /// Gets the total number of bytes in a table record.  This is equivalent to the sum of the field lengths in <see cref="Fields"/>.
+        /// This does not count MEMO or BLOB sizes as those are stored in a separate file structure.
+        /// </summary>
+        /// <remarks>
+        /// The length property on GROUP fields count the total length of all of its child fields.
+        /// When a GROUP field is present, the length is only counted once to reflect the number of bytes actually reserved for storage in the record.
+        /// </remarks>
+        int RecordLength { get; }
+
         /// <summary>
         /// Gets the field definitions for this table.  For MEMOs and BLOBs, see <see cref="Memos"/>.
         /// </summary>
@@ -43,15 +55,12 @@ namespace TpsParser.Tps.Record
         public int DriverVersion { get; }
         public int RecordLength { get; }
 
-        /// <inheritdoc/>
         public IReadOnlyList<IFieldDefinitionRecord> Fields => _fields;
         private readonly List<FieldDefinitionRecord> _fields;
 
-        /// <inheritdoc/>
         public IReadOnlyList<IMemoDefinitionRecord> Memos => _memos;
         private readonly List<MemoDefinitionRecord> _memos;
 
-        /// <inheritdoc/>
         public IReadOnlyList<IIndexDefinitionRecord> Indexes => _indexes;
         private readonly List<IndexDefinitionRecord> _indexes;
 
@@ -99,7 +108,6 @@ namespace TpsParser.Tps.Record
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var sb = new StringBuilder();
 
@@ -122,6 +130,7 @@ namespace TpsParser.Tps.Record
 
             return sb.ToString();
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         public IReadOnlyList<TpsObject> Parse(byte[] record)
         {

@@ -39,21 +39,16 @@ namespace TpsParser.Tps.Record
         IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs();
     }
 
-    /// <inheritdoc/>
     internal sealed class DataRecord : IDataRecord
     {
         private DataHeader Header { get; }
 
-        /// <inheritdoc/>
         public ITableDefinitionRecord TableDefinition { get; }
 
-        /// <inheritdoc/>
         public IReadOnlyList<TpsObject> Values { get; }
 
-        /// <inheritdoc/>
         public TpsRecord Record { get; }
 
-        /// <inheritdoc/>
         public int RecordNumber => Header.RecordNumber;
 
         /// <summary>
@@ -69,7 +64,6 @@ namespace TpsParser.Tps.Record
             Values = TableDefinition.Parse(tpsRecord.Data.GetRemainder());
         }
 
-        /// <inheritdoc/>
         public IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs() =>
             TableDefinition.Fields
                 .Zip(Values, (field, value) => (field, value))
@@ -77,7 +71,6 @@ namespace TpsParser.Tps.Record
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var sb = new StringBuilder();
 
@@ -90,5 +83,6 @@ namespace TpsParser.Tps.Record
 
             return sb.ToString();
         }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

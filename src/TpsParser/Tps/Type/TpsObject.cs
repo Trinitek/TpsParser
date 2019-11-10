@@ -39,12 +39,20 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="rx">The binary reader.</param>
         /// <param name="encoding">The text encoding to use when reading string values.</param>
-        /// <param name="length">The length of the field value in bytes.</param>
         /// <param name="remainingFieldDefinitions">A collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.</param>
-        /// 
         /// <returns></returns>
-        public static TpsObject ParseField(RandomAccess rx, Encoding encoding, int length, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions)
+        public static TpsObject ParseField(RandomAccess rx, Encoding encoding, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions)
         {
+            if (rx == null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            if (encoding is null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
             if (remainingFieldDefinitions is null)
             {
                 throw new ArgumentNullException(nameof(remainingFieldDefinitions));
@@ -52,10 +60,49 @@ namespace TpsParser.Tps.Type
 
             var currentFieldDefinition = remainingFieldDefinitions.First();
 
-            if (rx == null)
+            if (currentFieldDefinition.IsArray)
+            {
+                int fieldSize = currentFieldDefinition.Length / currentFieldDefinition.ElementCount;
+                var arrayValues = new List<TpsObject>();
+
+                for (int i = 0; i < currentFieldDefinition.ElementCount; i++)
+                {
+                    arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, remainingFieldDefinitions));
+                }
+
+                return new TpsArray(arrayValues);
+            }
+            else
+            {
+                return ParseNonArrayField(rx, encoding, remainingFieldDefinitions);
+            }
+        }
+
+        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions) =>
+            ParseNonArrayField(
+                rx: rx,
+                encoding: encoding,
+                length: remainingFieldDefinitions?.First()?.Length ?? throw new ArgumentNullException(nameof(remainingFieldDefinitions)),
+                remainingFieldDefinitions: remainingFieldDefinitions);
+
+        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions)
+        {
+            if (rx is null)
             {
                 throw new ArgumentNullException(nameof(rx));
             }
+
+            if (encoding is null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            if (remainingFieldDefinitions is null)
+            {
+                throw new ArgumentNullException(nameof(remainingFieldDefinitions));
+            }
+
+            var currentFieldDefinition = remainingFieldDefinitions.First();
 
             switch (currentFieldDefinition.Type)
             {

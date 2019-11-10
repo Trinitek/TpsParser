@@ -78,6 +78,11 @@ namespace TpsParser.Tps.Record
         bool IsArray { get; }
 
         /// <summary>
+        /// Gets the group to which the field belongs, if any.
+        /// </summary>
+        IFieldDefinitionRecord OwnerGroup { get; }
+
+        /// <summary>
         /// Checks to see if this field fits in the given group field.
         /// </summary>
         /// <param name="fieldDefinitionRecord">The group field to check.</param>
@@ -113,12 +118,16 @@ namespace TpsParser.Tps.Record
 
         public bool IsArray => ElementCount > 1;
 
-        public FieldDefinitionRecord(RandomAccess rx)
+        public IFieldDefinitionRecord OwnerGroup { get; }
+
+        public FieldDefinitionRecord(RandomAccess rx, IFieldDefinitionRecord ownerGroup)
         {
             if (rx == null)
             {
                 throw new ArgumentNullException(nameof(rx));
             }
+
+            OwnerGroup = ownerGroup;
 
             Type = (TpsTypeCode)rx.Byte();
             Offset = rx.ShortLE();

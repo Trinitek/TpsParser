@@ -49,17 +49,16 @@ namespace TpsParser.Tps.Type
 
             for (int fieldIndex = 1; fieldIndex < fieldDefinitionRecords.Count(); fieldIndex++)
             {
-                var field = fieldDefinitionRecords.Skip(fieldIndex).First();
-                var remainingFieldDefinitions = fieldDefinitionRecords.Skip(2);
+                var remainingFields = fieldDefinitionRecords.Skip(fieldIndex);
 
-                sumOfFollowingLengths += field.Length;
+                sumOfFollowingLengths += remainingFields.First().Length;
                 
                 if (sumOfFollowingLengths > expectedGroupLength)
                 {
                     throw new TpsParserException($"The expected length of the group ({expectedGroupLength}) and the following fields ({sumOfFollowingLengths}) do not match.");
                 }
 
-                values.Add(ParseField(rx, encoding, field.Length, remainingFieldDefinitions));
+                values.Add(ParseField(rx, encoding, remainingFields));
 
                 if (sumOfFollowingLengths == expectedGroupLength)
                 {

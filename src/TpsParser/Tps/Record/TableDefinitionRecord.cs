@@ -85,11 +85,32 @@ namespace TpsParser.Tps.Record
             _memos = new List<MemoDefinitionRecord>();
             _indexes = new List<IndexDefinitionRecord>();
 
+            var groups = new Stack<FieldDefinitionRecord>();
+
             try
             {
                 for (int i = 0; i < fieldCount; i++)
                 {
-                    _fields.Add(new FieldDefinitionRecord(rx));
+                    if (groups.Any() && _fields.Any())
+                    {
+                        var lastGroup = groups.Peek();
+                        var lastField = _fields.Last();
+
+                        if (lastGroup.Offset + lastGroup.Length <= lastField.Offset + lastField.Length
+                            && lastGroup != lastField)
+                        {
+                            groups.Pop();
+                        }
+                    }
+
+                    var field = new FieldDefinitionRecord(rx, groups.FirstOrDefault());
+
+                    if (field.Type == TpsTypeCode.Group)
+                    {
+                        groups.Push(field);
+                    }
+
+                    _fields.Add(field);
                 }
                 for (int i = 0; i < memoCount; i++)
                 {
@@ -144,25 +165,15 @@ namespace TpsParser.Tps.Record
 
             for (int fieldIndex = 0; fieldIndex < Fields.Count; fieldIndex++)
             {
-                var field = Fields[fieldIndex];
                 var remainingFields = Fields.Skip(fieldIndex);
 
-                if (field.IsArray)
+                // Group children are parsed together with the group
+                if (remainingFields.First().OwnerGroup != null)
                 {
-                    int fieldSize = field.Length / field.ElementCount;
-                    var arrayValues = new List<TpsObject>();
-
-                    for (int i = 0; i < field.ElementCount; i++)
-                    {
-                        arrayValues.Add(TpsObject.ParseField(rx, Encoding, fieldSize, remainingFields));
-                    }
-
-                    values.Add(new TpsArray(arrayValues));
+                    continue;
                 }
-                else
-                {
-                    values.Add(TpsObject.ParseField(rx, Encoding, field.Length, remainingFields));
-                }
+
+                values.Add(TpsObject.ParseField(rx, Encoding, remainingFields));
             }
 
             return values.AsReadOnly();

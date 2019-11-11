@@ -163,17 +163,14 @@ namespace TpsParser.Tps.Record
             var rx = new RandomAccess(record);
             var values = new List<TpsObject>(Fields.Count);
 
-            for (int fieldIndex = 0; fieldIndex < Fields.Count; fieldIndex++)
+            using (var fieldEnumerator = new FieldDefinitionEnumerator(Fields))
             {
-                var remainingFields = Fields.Skip(fieldIndex);
-
-                // Group children are parsed together with the group
-                if (remainingFields.First().OwnerGroup != null)
+                while (fieldEnumerator.MoveNext())
                 {
-                    continue;
-                }
+                    Console.WriteLine(fieldEnumerator.Current);
 
-                values.Add(TpsObject.ParseField(rx, Encoding, remainingFields));
+                    values.Add(TpsObject.ParseField(rx, Encoding, fieldEnumerator));
+                }
             }
 
             return values.AsReadOnly();

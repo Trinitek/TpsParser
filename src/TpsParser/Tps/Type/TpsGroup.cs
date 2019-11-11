@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,37 +29,40 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="rx">The binary reader.</param>
         /// <param name="encoding">The text encoding to use when parsing strings.</param>
-        /// <param name="fieldDefinitionRecords">A collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.</param>
+        /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
+        /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
         /// <returns></returns>
-        public static TpsGroup BuildFromFieldDefinitions(RandomAccess rx, Encoding encoding, IEnumerable<IFieldDefinitionRecord> fieldDefinitionRecords)
+        internal static TpsGroup BuildFromFieldDefinitions(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            if (fieldDefinitionRecords is null)
+            if (enumerator is null)
             {
-                throw new ArgumentNullException(nameof(fieldDefinitionRecords));
+                throw new ArgumentNullException(nameof(enumerator));
             }
 
             var values = new List<TpsObject>();
 
-            int expectedGroupLength = fieldDefinitionRecords.First().Length;
+            var groupDefinition = enumerator.Current;
+            //int expectedGroupLength = fieldDefinitionRecords.Current.Length;
+            int expectedGroupLength = groupDefinition.Length / groupDefinition.ElementCount;
             int sumOfFollowingLengths = 0;
 
-            for (int fieldIndex = 1; fieldIndex < fieldDefinitionRecords.Count(); fieldIndex++)
+            while (enumerator.MoveNext())
             {
-                var remainingFields = fieldDefinitionRecords.Skip(fieldIndex);
+                Console.WriteLine(enumerator.Current);
 
-                sumOfFollowingLengths += remainingFields.First().Length;
-                
+                sumOfFollowingLengths += enumerator.Current.Length;
+
                 if (sumOfFollowingLengths > expectedGroupLength)
                 {
                     throw new TpsParserException($"The expected length of the group ({expectedGroupLength}) and the following fields ({sumOfFollowingLengths}) do not match.");
                 }
 
-                values.Add(ParseField(rx, encoding, remainingFields));
+                values.Add(ParseField(rx, encoding, enumerator));
 
                 if (sumOfFollowingLengths == expectedGroupLength)
                 {

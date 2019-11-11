@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,9 +40,10 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="rx">The binary reader.</param>
         /// <param name="encoding">The text encoding to use when reading string values.</param>
-        /// <param name="remainingFieldDefinitions">A collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.</param>
+        /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
+        /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
         /// <returns></returns>
-        public static TpsObject ParseField(RandomAccess rx, Encoding encoding, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions)
+        internal static TpsObject ParseField(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
         {
             if (rx == null)
             {
@@ -53,39 +55,44 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (remainingFieldDefinitions is null)
+            if (enumerator is null)
             {
-                throw new ArgumentNullException(nameof(remainingFieldDefinitions));
+                throw new ArgumentNullException(nameof(enumerator));
             }
 
-            var currentFieldDefinition = remainingFieldDefinitions.First();
+            var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
-            if (currentFieldDefinition.IsArray)
+            if (current.IsArray)
             {
-                int fieldSize = currentFieldDefinition.Length / currentFieldDefinition.ElementCount;
+                int fieldSize = current.Length / current.ElementCount;
                 var arrayValues = new List<TpsObject>();
 
-                for (int i = 0; i < currentFieldDefinition.ElementCount; i++)
+                // Very important for GROUP arrays! Clusters of fields are repeated, so we need to reset our field definition position for each group item.
+                int nextEnumeratorPosition = enumerator.NextPosition;
+
+                for (int i = 0; i < current.ElementCount; i++)
                 {
-                    arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, remainingFieldDefinitions));
+                    arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, enumerator));
+
+                    enumerator.NextPosition = nextEnumeratorPosition;
                 }
 
                 return new TpsArray(arrayValues);
             }
             else
             {
-                return ParseNonArrayField(rx, encoding, remainingFieldDefinitions);
+                return ParseNonArrayField(rx, encoding, enumerator);
             }
         }
 
-        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions) =>
+        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
             ParseNonArrayField(
                 rx: rx,
                 encoding: encoding,
-                length: remainingFieldDefinitions?.First()?.Length ?? throw new ArgumentNullException(nameof(remainingFieldDefinitions)),
-                remainingFieldDefinitions: remainingFieldDefinitions);
+                length: enumerator?.Current?.Length ?? throw new ArgumentNullException(nameof(enumerator)),
+                enumerator: enumerator);
 
-        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, IEnumerable<IFieldDefinitionRecord> remainingFieldDefinitions)
+        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {
@@ -97,14 +104,14 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (remainingFieldDefinitions is null)
+            if (enumerator is null)
             {
-                throw new ArgumentNullException(nameof(remainingFieldDefinitions));
+                throw new ArgumentNullException(nameof(enumerator));
             }
 
-            var currentFieldDefinition = remainingFieldDefinitions.First();
+            var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
-            switch (currentFieldDefinition.Type)
+            switch (current.Type)
             {
                 case TpsTypeCode.Byte:
                     AssertExpectedLength(1, length);
@@ -132,7 +139,7 @@ namespace TpsParser.Tps.Type
                     AssertExpectedLength(8, length);
                     return new TpsDouble(rx);
                 case TpsTypeCode.Decimal:
-                    return new TpsDecimal(rx, length, currentFieldDefinition.BcdDigitsAfterDecimalPoint);
+                    return new TpsDecimal(rx, length, current.BcdDigitsAfterDecimalPoint);
                 case TpsTypeCode.String:
                     return new TpsString(rx, length, encoding);
                 case TpsTypeCode.CString:
@@ -140,9 +147,9 @@ namespace TpsParser.Tps.Type
                 case TpsTypeCode.PString:
                     return new TpsPString(rx, encoding);
                 case TpsTypeCode.Group:
-                    return TpsGroup.BuildFromFieldDefinitions(rx, encoding, remainingFieldDefinitions);
+                    return TpsGroup.BuildFromFieldDefinitions(rx, encoding, enumerator);
                 default:
-                    throw new ArgumentException($"Unsupported type {currentFieldDefinition.Type} ({length})", nameof(remainingFieldDefinitions));
+                    throw new ArgumentException($"Unsupported type {current.Type} ({length})", nameof(enumerator));
             }
         }
 

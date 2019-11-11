@@ -4,22 +4,14 @@ using System.Linq;
 using TpsParser.Tps;
 using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests.Tps
+namespace TpsParser.Tests.TpsFileIntegrations
 {
     [TestFixture]
-    public class TpsFileTest
+    public class Table
     {
         private TpsFile GetTableFile()
         {
             using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
-            {
-                return new RandomAccessTpsFile(stream);
-            }
-        }
-
-        private TpsFile GetTableWithMemosFile()
-        {
-            using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
             {
                 return new RandomAccessTpsFile(stream);
             }
@@ -101,17 +93,6 @@ namespace TpsParser.Tests.Tps
 
             Assert.AreEqual(1, indexes2.Count());
             Assert.AreEqual(2, indexes2[0].RecordNumber);
-        }
-
-        [Test]
-        public void ShouldParseMemos()
-        {
-            var file = GetTableWithMemosFile();
-
-            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-            var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
-
-            Assert.AreEqual(5, memos.Count());
         }
     }
 }

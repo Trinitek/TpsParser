@@ -17,6 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Resources\array-of-groups.TPS">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\bad-header.dat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

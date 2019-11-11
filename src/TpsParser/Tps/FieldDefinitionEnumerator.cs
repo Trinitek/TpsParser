@@ -5,13 +5,16 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps
 {
-    internal class FieldDefinitionEnumerator : IEnumerator<IFieldDefinitionRecord>
+    internal struct FieldDefinitionEnumerator : IEnumerator<IFieldDefinitionRecord>
     {
         private IReadOnlyList<IFieldDefinitionRecord> Records { get; }
 
         public FieldDefinitionEnumerator(IReadOnlyList<IFieldDefinitionRecord> records)
         {
             Records = records ?? throw new ArgumentNullException(nameof(records));
+
+            _position = default;
+            Current = default;
         }
 
         public IFieldDefinitionRecord Current { get; private set; }
@@ -33,14 +36,18 @@ namespace TpsParser.Tps
                 }
             }
         }
-        private int _position = 0;
+        private int _position;
 
         public void Dispose()
         { }
 
         public bool MoveNext()
         {
-            if (NextPosition >= Records.Count)
+            if (Records is null)
+            {
+                throw new InvalidOperationException("The backing collection is null.");
+            }
+            else if (NextPosition >= Records.Count)
             {
                 return false;
             }

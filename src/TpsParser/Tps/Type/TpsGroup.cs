@@ -39,10 +39,10 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            if (enumerator is null)
-            {
-                throw new ArgumentNullException(nameof(enumerator));
-            }
+            //if (enumerator is null)
+            //{
+            //    throw new ArgumentNullException(nameof(enumerator));
+            //}
 
             var values = new List<TpsObject>();
 

@@ -55,10 +55,10 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (enumerator is null)
-            {
-                throw new ArgumentNullException(nameof(enumerator));
-            }
+            //if (enumerator is null)
+            //{
+            //    throw new ArgumentNullException(nameof(enumerator));
+            //}
 
             var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
@@ -72,9 +72,8 @@ namespace TpsParser.Tps.Type
 
                 for (int i = 0; i < current.ElementCount; i++)
                 {
-                    arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, enumerator));
-
                     enumerator.NextPosition = nextEnumeratorPosition;
+                    arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, enumerator));
                 }
 
                 return new TpsArray(arrayValues);
@@ -89,7 +88,7 @@ namespace TpsParser.Tps.Type
             ParseNonArrayField(
                 rx: rx,
                 encoding: encoding,
-                length: enumerator?.Current?.Length ?? throw new ArgumentNullException(nameof(enumerator)),
+                length: enumerator.Current?.Length ?? throw new ArgumentException("The current element is null.", nameof(enumerator)),
                 enumerator: enumerator);
 
         private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
@@ -104,10 +103,10 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (enumerator is null)
-            {
-                throw new ArgumentNullException(nameof(enumerator));
-            }
+            //if (enumerator is null)
+            //{
+            //    throw new ArgumentNullException(nameof(enumerator));
+            //}
 
             var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 

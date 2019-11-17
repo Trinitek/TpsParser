@@ -178,7 +178,9 @@ namespace TpsParser
 
             var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
 
-            var columns = BuildColumnLookup(firstTableDefinition.Value.Fields.Select(f => f.Name.ToUpperInvariant()));
+            var columns = BuildColumnLookup(firstTableDefinition.Value.Fields
+                .Where(f => f.OwnerGroup is null)
+                .Select(f => f.Name.ToUpperInvariant()));
 
             foreach (var dataRecord in dataRecords)
             {

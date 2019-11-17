@@ -51,8 +51,6 @@ namespace TpsParser.Tps.Type
 
             while (enumerator.MoveNext())
             {
-                Console.WriteLine(enumerator.Current);
-
                 sumOfFollowingLengths += enumerator.Current.Length;
 
                 if (sumOfFollowingLengths > expectedGroupLength)

@@ -167,8 +167,6 @@ namespace TpsParser.Tps.Record
             {
                 while (fieldEnumerator.MoveNext())
                 {
-                    Console.WriteLine(fieldEnumerator.Current);
-
                     values.Add(TpsObject.ParseField(rx, Encoding, fieldEnumerator));
                 }
             }

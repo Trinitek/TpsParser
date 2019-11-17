@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using TpsParser.Binary;
-using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps.Type
 {
@@ -55,10 +53,10 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            //if (enumerator is null)
-            //{
-            //    throw new ArgumentNullException(nameof(enumerator));
-            //}
+            if (enumerator is null)
+            {
+                throw new ArgumentNullException(nameof(enumerator));
+            }
 
             var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
@@ -68,11 +66,11 @@ namespace TpsParser.Tps.Type
                 var arrayValues = new List<TpsObject>();
 
                 // Very important for GROUP arrays! Clusters of fields are repeated, so we need to reset our field definition position for each group item.
-                int nextEnumeratorPosition = enumerator.NextPosition;
+                int nextEnumeratorPosition = enumerator.Position;
 
                 for (int i = 0; i < current.ElementCount; i++)
                 {
-                    enumerator.NextPosition = nextEnumeratorPosition;
+                    enumerator.Position = nextEnumeratorPosition;
                     arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, enumerator));
                 }
 
@@ -103,10 +101,10 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            //if (enumerator is null)
-            //{
-            //    throw new ArgumentNullException(nameof(enumerator));
-            //}
+            if (enumerator is null)
+            {
+                throw new ArgumentNullException(nameof(enumerator));
+            }
 
             var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 

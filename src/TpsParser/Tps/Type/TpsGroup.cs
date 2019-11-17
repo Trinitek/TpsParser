@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TpsParser.Binary;
-using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps.Type
 {
@@ -39,15 +38,14 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            //if (enumerator is null)
-            //{
-            //    throw new ArgumentNullException(nameof(enumerator));
-            //}
+            if (enumerator is null)
+            {
+                throw new ArgumentNullException(nameof(enumerator));
+            }
 
             var values = new List<TpsObject>();
 
             var groupDefinition = enumerator.Current;
-            //int expectedGroupLength = fieldDefinitionRecords.Current.Length;
             int expectedGroupLength = groupDefinition.Length / groupDefinition.ElementCount;
             int sumOfFollowingLengths = 0;
 

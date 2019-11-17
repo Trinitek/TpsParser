@@ -5,7 +5,7 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps
 {
-    internal struct FieldDefinitionEnumerator : IEnumerator<IFieldDefinitionRecord>
+    internal sealed class FieldDefinitionEnumerator : IEnumerator<IFieldDefinitionRecord>
     {
         private IReadOnlyList<IFieldDefinitionRecord> Records { get; }
 
@@ -13,27 +13,28 @@ namespace TpsParser.Tps
         {
             Records = records ?? throw new ArgumentNullException(nameof(records));
 
-            _position = default;
-            Current = default;
+            _position = -1;
         }
 
         public IFieldDefinitionRecord Current { get; private set; }
 
         object IEnumerator.Current => Current;
 
-        public int NextPosition
+        public int Position
         {
             get => _position;
             set
             {
-                if (value < 0)
+                if (value < 0 || value >= Records.Count)
                 {
-                    throw new ArgumentException("The position must be zero or greater.", nameof(value));
+                    Current = null;
                 }
-                else
+                else if (_position != value)
                 {
-                    _position = value;
+                    Current = Records[value];
                 }
+
+                _position = value;
             }
         }
         private int _position;
@@ -47,13 +48,12 @@ namespace TpsParser.Tps
             {
                 throw new InvalidOperationException("The backing collection is null.");
             }
-            else if (NextPosition >= Records.Count)
+            else if (Position >= Records.Count - 1)
             {
                 return false;
             }
 
-            Current = Records[NextPosition];
-            NextPosition++;
+            Position++;
 
             return true;
         }

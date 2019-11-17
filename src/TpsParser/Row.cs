@@ -33,16 +33,6 @@ namespace TpsParser
         /// <summary>
         /// Instantiates a new row.
         /// </summary>
-        /// <param name="recordNumber">The record number of the row.</param>
-        /// <param name="values">The values in the row, keyed by their column names.</param>
-        [Obsolete]
-        public Row(int recordNumber, IReadOnlyDictionary<string, TpsObject> values)
-            : this(new DeserializerContext(), recordNumber, values)
-        { }
-
-        /// <summary>
-        /// Instantiates a new row.
-        /// </summary>
         /// <param name="deserializerContext">The deserializer context.</param>
         /// <param name="recordNumber">The record number of the row.</param>
         /// <param name="values">The values in the row, keyed by their column names.</param>

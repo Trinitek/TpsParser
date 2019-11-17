@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using TpsParser.Tests.DeserializerModels;
 
-namespace TpsParser.Tests
+namespace TpsParser.Tests.ParserIntegrations
 {
     [TestFixture]
-    public partial class TpsParserTest
+    public class TableWithMemos
     {
         [Test]
         public void ShouldBuildTableWithMemos()
@@ -83,7 +84,7 @@ namespace TpsParser.Tests
                 Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Date);
                 Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Notes);
                 Assert.AreEqual("She doesn't like sushi as much as Joe.", rows[1].AdditionalNotes);
-                
+
                 Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Name);
                 Assert.AreEqual(new DateTime(2019, 10, 7), rows[2].Date);
                 Assert.IsNull(rows[2].Notes);

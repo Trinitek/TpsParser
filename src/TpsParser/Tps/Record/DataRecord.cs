@@ -66,6 +66,7 @@ namespace TpsParser.Tps.Record
 
         public IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs() =>
             TableDefinition.Fields
+                .Where(f => f.OwnerGroup is null)
                 .Zip(Values, (field, value) => (field, value))
                 .ToDictionary(pair => pair.field.Name, pair => pair.value);
 

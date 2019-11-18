@@ -62,19 +62,7 @@ namespace TpsParser.Tps.Type
 
             if (current.IsArray)
             {
-                int fieldSize = current.Length / current.ElementCount;
-                var arrayValues = new List<TpsObject>();
-
-                // Very important for GROUP arrays! Clusters of fields are repeated, so we need to reset our field definition position for each group item.
-                int nextEnumeratorPosition = enumerator.Position;
-
-                for (int i = 0; i < current.ElementCount; i++)
-                {
-                    enumerator.Position = nextEnumeratorPosition;
-                    arrayValues.Add(ParseNonArrayField(rx, encoding, fieldSize, enumerator));
-                }
-
-                return new TpsArray(arrayValues);
+                return TpsArrayExtensions.Parse(rx, encoding, enumerator);
             }
             else
             {
@@ -89,7 +77,7 @@ namespace TpsParser.Tps.Type
                 length: enumerator.Current?.Length ?? throw new ArgumentException("The current element is null.", nameof(enumerator)),
                 enumerator: enumerator);
 
-        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
+        internal static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {

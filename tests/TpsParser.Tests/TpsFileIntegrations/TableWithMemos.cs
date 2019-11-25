@@ -12,7 +12,7 @@ namespace TpsParser.Tests.TpsFileIntegrations
         {
             using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
             {
-                return new RandomAccessTpsFile(stream);
+                return new RandomAccessTpsFile(stream, TpsParser.DefaultEncoding);
             }
         }
 

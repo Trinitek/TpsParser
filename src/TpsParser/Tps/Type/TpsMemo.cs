@@ -23,7 +23,7 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Value = Encoding.GetEncoding("ISO-8859-1").GetString(rx.GetData());
+            Value = TpsParser.DefaultEncoding.GetString(rx.GetData());
         }
 
         /// <summary>

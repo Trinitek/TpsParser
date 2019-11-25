@@ -282,7 +282,7 @@ namespace TpsParser.Binary
         /// </summary>
         /// <param name="length">The length of the string to read.</param>
         /// <returns></returns>
-        public string FixedLengthString(int length) => FixedLengthString(length, Encoding.GetEncoding("ISO-8859-1"));
+        public string FixedLengthString(int length) => FixedLengthString(length, TpsParser.DefaultEncoding);
 
         /// <summary>
         /// Reads a fixed length string.
@@ -311,7 +311,7 @@ namespace TpsParser.Binary
         /// Reads a zero-terminated string.
         /// </summary>
         /// <returns></returns>
-        public string ZeroTerminatedString() => ZeroTerminatedString(Encoding.GetEncoding("ISO-8859-1"));
+        public string ZeroTerminatedString() => ZeroTerminatedString(TpsParser.DefaultEncoding);
 
         /// <summary>
         /// Reads a zero-terminated string.
@@ -342,12 +342,6 @@ namespace TpsParser.Binary
 
             return encoding.GetString(bytes.ToArray());
         }
-
-        /// <summary>
-        /// Reads a Pascal string. Pascal strings have their length encoded in the first byte.
-        /// </summary>
-        /// <returns></returns>
-        public string PascalString() => PascalString(Encoding.GetEncoding("ISO-8859-1"));
 
         /// <summary>
         /// Reads a Pascal string. Pascal strings have their length encoded in the first byte.

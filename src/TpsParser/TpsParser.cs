@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TpsParser.Tps;
@@ -15,6 +16,11 @@ namespace TpsParser
     /// </summary>
     public sealed class TpsParser : IDisposable
     {
+        /// <summary>
+        /// Gets the default encoding, ISO-8859-1.
+        /// </summary>
+        public static Encoding DefaultEncoding { get; } = Encoding.GetEncoding("iso-8859-1");
+
         /// <summary>
         /// Gets the low level representation of the TopSpeed file and its data structures.
         /// </summary>
@@ -39,11 +45,12 @@ namespace TpsParser
         /// Instantiates a new parser.
         /// </summary>
         /// <param name="stream">The stream from which to read the TopSpeed file.</param>
-        public TpsParser(Stream stream)
+        /// <param name="encoding">The encoding to use when reading string fields.</param>
+        public TpsParser(Stream stream, Encoding encoding = null)
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            TpsFile = new RandomAccessTpsFile(Stream);
+            TpsFile = new RandomAccessTpsFile(Stream, encoding ?? DefaultEncoding);
         }
 
         /// <summary>
@@ -51,22 +58,24 @@ namespace TpsParser
         /// </summary>
         /// <param name="stream">The stream from which to read the TopSpeed file.</param>
         /// <param name="password">The password or "owner" to use to decrypt the file.</param>
-        public TpsParser(Stream stream, string password)
+        /// <param name="encoding">The encoding to use when reading string fields.</param>
+        public TpsParser(Stream stream, string password, Encoding encoding = null)
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
+            TpsFile = new RandomAccessTpsFile(Stream, new Key(password), encoding ?? DefaultEncoding);
         }
 
         /// <summary>
         /// Instantiates a new parser.
         /// </summary>
         /// <param name="filename">The filename of the TopSpeed file.</param>
-        public TpsParser(string filename)
+        /// <param name="encoding">The encoding to use when reading string fields.</param>
+        public TpsParser(string filename, Encoding encoding = null)
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
-            TpsFile = new RandomAccessTpsFile(Stream);
+            TpsFile = new RandomAccessTpsFile(Stream, encoding ?? DefaultEncoding);
         }
 
         /// <summary>
@@ -74,11 +83,12 @@ namespace TpsParser
         /// </summary>
         /// <param name="filename">The filename of the TopSpeed file.</param>
         /// <param name="password">The password or "owner" to use to decrypt the file.</param>
-        public TpsParser(string filename, string password)
+        /// <param name="encoding">The encoding to use when reading string fields.</param>
+        public TpsParser(string filename, string password, Encoding encoding = null)
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
-            TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
+            TpsFile = new RandomAccessTpsFile(Stream, new Key(password), encoding ?? DefaultEncoding);
         }
 
         private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)

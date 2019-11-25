@@ -23,8 +23,16 @@ namespace TpsParser.Tps
             get => _encoding;
             set => _encoding = value ?? throw new ArgumentNullException(nameof(value));
         }
+        private Encoding _encoding;
 
-        private Encoding _encoding = Encoding.GetEncoding("ISO-8859-1");
+        /// <summary>
+        /// Instantiates a new TpsFile.
+        /// </summary>
+        /// <param name="encoding">The encoding to use when reading string fields.</param>
+        public TpsFile(Encoding encoding)
+        {
+            Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+        }
 
         /// <summary>
         /// Gets the file header.
@@ -32,6 +40,11 @@ namespace TpsParser.Tps
         /// <returns></returns>
         public abstract TpsHeader GetHeader();
 
+        /// <summary>
+        /// Gets a list of blocks in the file.
+        /// </summary>
+        /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+        /// <returns></returns>
         public abstract IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors);
 
         /// <summary>
@@ -49,6 +62,12 @@ namespace TpsParser.Tps
         /// <returns></returns>
         public abstract IEnumerable<TableNameRecord> GetTableNameRecords();
 
+        /// <summary>
+        /// Gets a list of index records.
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public abstract IEnumerable<IndexRecord> GetIndexes(int table, int index);
 
         /// <summary>
@@ -94,7 +113,8 @@ namespace TpsParser.Tps
     {
         private RandomAccess Data { get; }
 
-        public RandomAccessTpsFile(Stream stream)
+        public RandomAccessTpsFile(Stream stream, Encoding encoding)
+            : base(encoding)
         {
             if (stream == null)
             {
@@ -112,8 +132,8 @@ namespace TpsParser.Tps
             Data = new RandomAccess(fileData);
         }
 
-        public RandomAccessTpsFile(Stream stream, Key key)
-            : this(stream)
+        public RandomAccessTpsFile(Stream stream, Key key, Encoding encoding)
+            : this(stream, encoding)
         {
             if (key == null)
             {
@@ -123,13 +143,14 @@ namespace TpsParser.Tps
             Decrypt(key);
         }
 
-        public RandomAccessTpsFile(RandomAccess rx)
+        public RandomAccessTpsFile(RandomAccess rx, Encoding encoding)
+            : base(encoding)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
 
-        public RandomAccessTpsFile(RandomAccess rx, Key key)
-            : this(rx)
+        public RandomAccessTpsFile(RandomAccess rx, Key key, Encoding encoding)
+            : this(rx, encoding)
         {
             if (key == null)
             {

@@ -91,7 +91,7 @@ namespace TpsParser.Tests
                     throw new ArgumentNullException(nameof(memoRecords));
                 }
 
-                var mock = new Mock<TpsFile>();
+                var mock = new Mock<TpsFile>(TpsParser.DefaultEncoding);
 
                 mock.Setup(m => m.GetTableDefinitions(It.IsAny<bool>()))
                     .Returns(new Dictionary<int, ITableDefinitionRecord>()

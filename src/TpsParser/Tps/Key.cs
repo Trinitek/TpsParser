@@ -17,7 +17,8 @@ namespace TpsParser.Tps
         /// <param name="password">The password or "owner" of the file.</param>
         public Key(string password)
         {
-            var encoding = CodePagesEncodingProvider.Instance.GetEncoding("Windows-1258");
+            //var encoding = CodePagesEncodingProvider.Instance.GetEncoding("Windows-1258");
+            var encoding = TpsParser.DefaultEncoding;
             var passwordBytes = encoding.GetBytes(password);
 
             var keyBytes = new byte[passwordBytes.Length + 1];
@@ -74,7 +75,7 @@ namespace TpsParser.Tps
             }
         }
 
-        public int GetWord(int word)
+        internal int GetWord(int word)
         {
             Data.JumpAbsolute(word * 4);
             return Data.LongLE();
@@ -202,7 +203,9 @@ namespace TpsParser.Tps
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString() =>
             Data.ToHexString(step: 64, ascii: false);
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

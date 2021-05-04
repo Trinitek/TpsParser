@@ -14,12 +14,11 @@
 
             AssertIsType(0xFA);
 
-            Block = rx.ShortLE();
+            Block = rx.ReadShortLE();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString() =>
             $"TableDef({TableNumber}, {Block})";
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

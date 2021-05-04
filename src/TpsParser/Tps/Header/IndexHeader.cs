@@ -10,6 +10,7 @@
             IndexNumber = TableType;
         }
 
+        /// <inheritdoc/>
         public override string ToString() =>
             $"IndexHeader({IndexNumber})";
     }

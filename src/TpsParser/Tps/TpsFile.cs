@@ -322,8 +322,8 @@ namespace TpsParser.Tps
                 .Where(group => group.Count() == ((TableDefinitionHeader)group.Last().Header).Block + 1)
 
                 .ToDictionary(
-                keySelector: group => group.Key,
-                elementSelector: group => (ITableDefinitionRecord)new TableDefinitionRecord(Merge(group), Encoding));
+                    keySelector: group => group.Key,
+                    elementSelector: group => (ITableDefinitionRecord)new TableDefinitionRecord(Merge(group), Encoding));
         }
 
         private TpsReader Merge(IEnumerable<TpsRecord> records) =>

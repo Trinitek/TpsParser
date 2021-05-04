@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TpsParser.Tps.Type
+﻿namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a byte.
@@ -11,22 +9,14 @@ namespace TpsParser.Tps.Type
         public override TpsTypeCode TypeCode => TpsTypeCode.Byte;
 
         /// <summary>
-        /// Instantiates a new BYTE from the given binary reader.
+        /// Instantiates a new BYTE.
         /// </summary>
-        /// <param name="rx"></param>
-        public TpsByte(TpsReader rx)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            Value = rx.Byte();
-        }
+        /// <param name="value"></param>
+        public TpsByte(byte value) => Value = value;
 
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        internal override bool AsBoolean() => Value != 0;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0);
     }
 }

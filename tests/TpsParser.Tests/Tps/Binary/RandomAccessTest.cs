@@ -12,7 +12,7 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldParseByte(byte value, byte[] data)
         {
             var rx = new TpsReader(data);
-            byte parsed = rx.Byte();
+            byte parsed = rx.ReadByte();
 
             Assert.AreEqual(value, parsed);
         }
@@ -22,7 +22,7 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldParseShortBigEndian(short value, byte[] data)
         {
             var rx = new TpsReader(data);
-            short parsed = rx.ShortBE();
+            short parsed = rx.ReadShortBE();
 
             Assert.AreEqual(value, parsed);
         }
@@ -32,7 +32,7 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldParseShortLittleEndian(short value, byte[] data)
         {
             var rx = new TpsReader(data);
-            short parsed = rx.ShortLE();
+            short parsed = rx.ReadShortLE();
 
             Assert.AreEqual(value, parsed);
         }
@@ -42,7 +42,7 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldParseLongBigEndian(int value, byte[] data)
         {
             var rx = new TpsReader(data);
-            var parsed = rx.LongBE();
+            var parsed = rx.ReadLongBE();
 
             Assert.AreEqual(value, parsed);
         }
@@ -52,7 +52,7 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldParseLongLittleEndian(int value, byte[] data)
         {
             var rx = new TpsReader(data);
-            var parsed = rx.LongLE();
+            var parsed = rx.ReadLongLE();
 
             Assert.AreEqual(value, parsed);
         }
@@ -68,7 +68,7 @@ namespace TpsParser.Tests.Tps.Binary
         {
             var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
 
-            Assert.AreEqual("é!", new TpsReader(new byte[] { 0x82, 0x21, 0x22 }).FixedLengthString(2, codepage850));
+            Assert.AreEqual("é!", new TpsReader(new byte[] { 0x82, 0x21, 0x22 }).ReadFixedLengthString(2, codepage850));
         }
         
         [Test]
@@ -86,19 +86,19 @@ namespace TpsParser.Tests.Tps.Binary
         [Test]
         public void ShouldFloat()
         {
-            Assert.AreEqual(0.0f, new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00 }).FloatLE(), delta: 0.0);
-            Assert.IsTrue(float.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x80, 0x7F }).FloatLE()));
-            Assert.IsTrue(float.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x80, 0xFF }).FloatLE()));
-            Assert.AreEqual(0.1f, new TpsReader(new byte[] { 0xCD, 0xCC, 0xCC, 0x3D }).FloatLE());
+            Assert.AreEqual(0.0f, new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ReadFloatLE(), delta: 0.0);
+            Assert.IsTrue(float.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x80, 0x7F }).ReadFloatLE()));
+            Assert.IsTrue(float.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x80, 0xFF }).ReadFloatLE()));
+            Assert.AreEqual(0.1f, new TpsReader(new byte[] { 0xCD, 0xCC, 0xCC, 0x3D }).ReadFloatLE());
         }
 
         [Test]
         public void ShouldDouble()
         {
-            Assert.AreEqual(0.0d, new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).DoubleLE(), delta: 0.0);
-            Assert.IsTrue(double.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F }).DoubleLE()));
-            Assert.IsTrue(double.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF }).DoubleLE()));
-            Assert.AreEqual(0.1d, new TpsReader(new byte[] { 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F }).DoubleLE(), delta: 0.0);
+            Assert.AreEqual(0.0d, new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).ReadDoubleLE(), delta: 0.0);
+            Assert.IsTrue(double.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F }).ReadDoubleLE()));
+            Assert.IsTrue(double.IsInfinity(new TpsReader(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF }).ReadDoubleLE()));
+            Assert.AreEqual(0.1d, new TpsReader(new byte[] { 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F }).ReadDoubleLE(), delta: 0.0);
         }
 
         [TestCase("0", 2, 0, new byte[] { 0x00, 0x00 })]
@@ -114,7 +114,7 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldParseBCD(string value, int bcdLength, int bcdDigitsAfterDecimal, byte[] data)
         {
             var rx = new TpsReader(data);
-            var bcd = rx.BinaryCodedDecimal(bcdLength, bcdDigitsAfterDecimal);
+            var bcd = rx.ReadBinaryCodedDecimal(bcdLength, bcdDigitsAfterDecimal);
 
             Assert.AreEqual(value, bcd);
         }
@@ -123,11 +123,11 @@ namespace TpsParser.Tests.Tps.Binary
         public void LEReadWriteTest()
         {
             var ra = new TpsReader(new byte[] { 1, 2, 3, 4 });
-            int value = ra.LongLE();
+            int value = ra.ReadLongLE();
             ra.JumpAbsolute(0);
             ra.WriteLongLE(value);
             ra.JumpAbsolute(0);
-            int value2 = ra.LongLE();
+            int value2 = ra.ReadLongLE();
 
             Assert.AreEqual(value, value2);
         }
@@ -136,20 +136,20 @@ namespace TpsParser.Tests.Tps.Binary
         public void ShouldReuseBuffer()
         {
             var ra = new TpsReader(new byte[] { 1, 2, 3, 4 });
-            ra.Byte();
+            ra.ReadByte();
             var read = ra.Read(3);
 
             Assert.AreEqual(3, read.Length);
             Assert.AreEqual(0, read.Position);
-            Assert.AreEqual(2, read.Byte());
-            Assert.AreEqual(3, read.Byte());
-            Assert.AreEqual(4, read.Byte());
+            Assert.AreEqual(2, read.ReadByte());
+            Assert.AreEqual(3, read.ReadByte());
+            Assert.AreEqual(4, read.ReadByte());
 
             read.JumpAbsolute(0);
-            Assert.AreEqual(2, read.Byte());
+            Assert.AreEqual(2, read.ReadByte());
 
             read.JumpRelative(1);
-            Assert.AreEqual(4, read.Byte());
+            Assert.AreEqual(4, read.ReadByte());
 
             read.JumpAbsolute(1);
 
@@ -157,29 +157,29 @@ namespace TpsParser.Tests.Tps.Binary
 
             Assert.AreEqual(2, read2.Length);
             Assert.AreEqual(0, read2.Position);
-            Assert.AreEqual(3, read2.Byte());
-            Assert.AreEqual(4, read2.Byte());
+            Assert.AreEqual(3, read2.ReadByte());
+            Assert.AreEqual(4, read2.ReadByte());
         }
 
         [Test]
         public void ShouldFailBeyondBuffer()
         {
             var ra = new TpsReader(new byte[] { 1, 2, 3, 4 });
-            ra.Byte();
+            ra.ReadByte();
             var read = ra.Read(3);
 
-            Assert.Throws<IndexOutOfRangeException>(() => read.LongLE());
+            Assert.Throws<IndexOutOfRangeException>(() => read.ReadLongLE());
         }
 
         [Test]
         public void ShouldFailBeforeBuffer()
         {
             var ra = new TpsReader(new byte[] { 1, 2, 3, 4 });
-            ra.Byte();
+            ra.ReadByte();
             var read = ra.Read(3);
             read.JumpAbsolute(-1);
 
-            Assert.Throws<IndexOutOfRangeException>(() => read.Byte());
+            Assert.Throws<IndexOutOfRangeException>(() => read.ReadByte());
         }
     }
 }

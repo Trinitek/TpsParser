@@ -44,14 +44,13 @@ namespace TpsParser.Tps.Header
         {
             AssertIsType(0xFC);
 
-            OwningRecord = rx.LongBE();
-            MemoIndex = rx.Byte();
-            SequenceNumber = rx.ShortBE();
+            OwningRecord = rx.ReadLongBE();
+            MemoIndex = rx.ReadByte();
+            SequenceNumber = rx.ReadShortBE();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString() =>
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             $"Memo(Table={TableNumber}, Owner={OwningRecord}, Index={MemoIndex}, Sequence={SequenceNumber})";
     }
 }

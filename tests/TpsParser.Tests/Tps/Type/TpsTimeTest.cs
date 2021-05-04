@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 using TpsParser.Tps;
-using TpsParser.Tps.Type;
 
 namespace TpsParser.Tests.Tps.Type
 {
@@ -32,7 +31,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var rx = new TpsReader(new byte[] { 99, 59, 59, 12 });
 
-            var time = new TpsTime(rx);
+            var time = rx.ReadTpsTime();
 
             // 99/100 seconds = 990 milliseconds
 

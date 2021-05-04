@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 
 namespace TpsParser.Tps.Type
 {
@@ -10,26 +9,6 @@ namespace TpsParser.Tps.Type
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.CString;
-
-        /// <summary>
-        /// Instantiates a new null-terminated string.
-        /// </summary>
-        /// <param name="rx">The binary reader containing the raw string data.</param>
-        /// <param name="encoding">The text encoding from which to create a well-formed string.</param>
-        public TpsCString(TpsReader rx, Encoding encoding)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            Value = rx.ZeroTerminatedString(encoding);
-        }
 
         /// <summary>
         /// Instantiates a new CSTRING.
@@ -43,6 +22,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the string's length is greater than zero.
         /// </summary>
-        internal override bool AsBoolean() => Value.Length > 0;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value.Length > 0);
     }
 }

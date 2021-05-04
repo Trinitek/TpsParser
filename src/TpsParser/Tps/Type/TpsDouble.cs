@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TpsParser.Tps.Type
+﻿namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a double-precision floating point number.
@@ -13,20 +11,15 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Instantiates a new REAL.
         /// </summary>
-        /// <param name="rx"></param>
-        public TpsDouble(TpsReader rx)
+        /// <param name="value"></param>
+        public TpsDouble(double value)
         {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            Value = rx.DoubleLE();
+            Value = value;
         }
 
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        internal override bool AsBoolean() => Value != 0.0;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0.0);
     }
 }

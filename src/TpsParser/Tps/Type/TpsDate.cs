@@ -44,50 +44,13 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Gets a <see cref="DateTime"/> representing December 28, 1800, which is the start date of the Clarion Standard Date.
         /// </summary>
-        public static readonly DateTime ClarionEpoch = new DateTime(1800, 12, 28);
+        public static DateTime ClarionEpoch => new DateTime(1800, 12, 28);
 
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.Date;
 
         /// <summary>
-        /// Instantiates a new DATE from the given binary reader.
-        /// </summary>
-        /// <remarks>
-        /// The byte stream is read in the following order:
-        /// <list type="bullet">
-        /// <item>Day</item>
-        /// <item>Month</item>
-        /// <item>Year (low half)</item>
-        /// <item>Year (high half)</item>
-        /// </list>
-        /// </remarks>
-        /// <param name="rx"></param>
-        public TpsDate(TpsReader rx)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            // Date, mask encoded
-
-            long date = rx.UnsignedLongLE();
-
-            if (date != 0)
-            {
-                long years = (date & 0xFFFF0000) >> 16;
-                long months = (date & 0x0000FF00) >> 8;
-                long days = date & 0x000000FF;
-                Value = new DateTime((int)years, (int)months, (int)days);
-            }
-            else
-            {
-                Value = null;
-            }
-        }
-
-        /// <summary>
-        /// Instantiates a new DATE from the given value.
+        /// Instantiates a new DATE.
         /// </summary>
         /// <param name="date"></param>
         public TpsDate(DateTime? date)
@@ -99,6 +62,6 @@ namespace TpsParser.Tps.Type
         /// Returns true if the date value is not null.
         /// </summary>
         /// <returns></returns>
-        internal override bool AsBoolean() => Value != null;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != null);
     }
 }

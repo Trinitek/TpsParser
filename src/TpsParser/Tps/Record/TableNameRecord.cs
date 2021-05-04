@@ -30,12 +30,11 @@ namespace TpsParser.Tps.Record
             }
 
             Header = (ITableNameHeader)record.Header;
-            TableNumber = record.Data.LongBE();
+            TableNumber = record.Data.ReadLongBE();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return $"TableRecord({Header.Name},{TableNumber})";
         }

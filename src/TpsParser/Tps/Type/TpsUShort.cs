@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TpsParser.Tps.Type
+﻿namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents an unsigned short.
@@ -11,22 +9,14 @@ namespace TpsParser.Tps.Type
         public override TpsTypeCode TypeCode => TpsTypeCode.UShort;
 
         /// <summary>
-        /// Instantiates a new SHORT.
+        /// Instantiates a new USHORT.
         /// </summary>
-        /// <param name="rx"></param>
-        public TpsUnsignedShort(TpsReader rx)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            Value = rx.UnsignedShortLE();
-        }
+        /// <param name="value"></param>
+        public TpsUnsignedShort(ushort value) => Value = value;
 
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        internal override bool AsBoolean() => Value != 0;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0);
     }
 }

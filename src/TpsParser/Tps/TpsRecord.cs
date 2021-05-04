@@ -7,8 +7,16 @@ namespace TpsParser.Tps
 {
     public sealed class TpsRecord
     {
-        public int Flags { get; }
+        public byte Flags { get; }
+
+        /// <summary>
+        /// Gets the length of the record in bytes.
+        /// </summary>
         public int RecordLength { get; }
+
+        /// <summary>
+        /// Gets the length of the header in bytes.
+        /// </summary>
         public int HeaderLength { get; }
         public TpsReader Data { get; }
         public IHeader Header { get; private set; }
@@ -24,15 +32,15 @@ namespace TpsParser.Tps
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Flags = rx.Byte();
+            Flags = rx.ReadByte();
 
             if ((Flags & 0xC0) != 0xC0)
             {
-                throw new ArgumentException($"Cannot construct a TpsRecord without record lengths (0x{rx.ToHex2(Flags)})");
+                throw new ArgumentException($"Cannot construct a TpsRecord without record lengths (0x{StringUtils.ToHex2(Flags)})");
             }
 
-            RecordLength = rx.ShortLE();
-            HeaderLength = rx.ShortLE();
+            RecordLength = rx.ReadShortLE();
+            HeaderLength = rx.ReadShortLE();
 
             Data = rx.Read(RecordLength);
 
@@ -56,11 +64,11 @@ namespace TpsParser.Tps
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Flags = rx.Byte();
+            Flags = rx.ReadByte();
 
             if ((Flags & 0x80) != 0)
             {
-                RecordLength = rx.ShortLE();
+                RecordLength = rx.ReadShortLE();
             }
             else
             {
@@ -69,7 +77,7 @@ namespace TpsParser.Tps
 
             if ((Flags & 0x40) != 0)
             {
-                HeaderLength = rx.ShortLE();
+                HeaderLength = rx.ReadShortLE();
             }
             else
             {
@@ -127,9 +135,8 @@ namespace TpsParser.Tps
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString() =>
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             $"TpsRecord(L:{RecordLength},H:{HeaderLength},{Header})";
     }
 }

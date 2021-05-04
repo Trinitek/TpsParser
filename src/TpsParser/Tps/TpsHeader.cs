@@ -45,37 +45,36 @@ namespace TpsParser.Tps
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
 
-            Address = rx.LongLE();
+            Address = rx.ReadLongLE();
 
             if (Address != 0)
             {
                 throw new NotATopSpeedFileException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
             }
 
-            HeaderSize = rx.ShortLE();
+            HeaderSize = rx.ReadShortLE();
 
             var header = rx.Read(HeaderSize - 6);
 
-            FileLength1 = header.LongLE();
-            FileLength2 = header.LongLE();
+            FileLength1 = header.ReadLongLE();
+            FileLength2 = header.ReadLongLE();
             MagicNumber = header.FixedLengthString(4);
-            Zeroes = header.ShortLE();
-            LastIssuedRow = header.LongBE();
-            Changes = header.LongLE();
-            ManagementPageReference = header.ToFileOffset(header.LongLE());
+            Zeroes = header.ReadShortLE();
+            LastIssuedRow = header.ReadLongBE();
+            Changes = header.ReadLongLE();
+            ManagementPageReference = header.ToFileOffset(header.ReadLongLE());
 
             PageStart = header.ToFileOffset(header.LongArrayLE((0x110 - 0x20) / 4));
             PageEnd = header.ToFileOffset(header.LongArrayLE((0x200 - 0x110) / 4));
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine($"TpsHeader({Data.ToHex8(Address)},{Data.ToHex4(HeaderSize)},{Data.ToHex8(FileLength1)},{Data.ToHex8(FileLength2)}," +
-                $"{MagicNumber},{Data.ToHex4(Zeroes)},{Data.ToHex8(LastIssuedRow)},{Data.ToHex8(Changes)},{Data.ToHex8(ManagementPageReference)})");
+            sb.AppendLine($"TpsHeader({StringUtils.ToHex8(Address)},{StringUtils.ToHex4(HeaderSize)},{StringUtils.ToHex8(FileLength1)},{StringUtils.ToHex8(FileLength2)}," +
+                $"{MagicNumber},{StringUtils.ToHex4(Zeroes)},{StringUtils.ToHex8(LastIssuedRow)},{StringUtils.ToHex8(Changes)},{StringUtils.ToHex8(ManagementPageReference)})");
 
             for (int i = 0; i < PageStart.Count; i++)
             {

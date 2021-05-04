@@ -12,7 +12,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var rx = new TpsReader(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
 
-            var date = new TpsDate(rx);
+            var date = rx.ReadTpsDate();
 
             Assert.AreEqual(new DateTime(2019, 7, 16), date.Value);
         }

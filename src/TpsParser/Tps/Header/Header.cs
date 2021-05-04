@@ -46,12 +46,16 @@ namespace TpsParser.Tps.Header
 
             if (readTable)
             {
-                TableNumber = rx.LongBE();
+                TableNumber = rx.ReadLongBE();
             }
 
-            TableType = rx.Byte();
+            TableType = rx.ReadByte();
         }
 
+        /// <summary>
+        /// Throws an exception if the table type is not equal to the type given.
+        /// </summary>
+        /// <param name="expected"></param>
         protected void AssertIsType(int expected)
         {
             if (TableType != expected)

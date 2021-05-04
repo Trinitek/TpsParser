@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TpsParser.Tps.Type
+﻿namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a signed short.
@@ -13,20 +11,12 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Instantiates a new SHORT.
         /// </summary>
-        /// <param name="rx"></param>
-        public TpsShort(TpsReader rx)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            Value = rx.ShortLE();
-        }
+        /// <param name="value"></param>
+        public TpsShort(short value) => Value = value;
 
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        internal override bool AsBoolean() => Value != 0;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0);
     }
 }

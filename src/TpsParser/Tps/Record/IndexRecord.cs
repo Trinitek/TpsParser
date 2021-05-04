@@ -20,12 +20,11 @@ namespace TpsParser.Tps.Record
             var data = tpsRecord.Data;
             data.JumpAbsolute(data.Length - 4);
 
-            RecordNumber = data.LongBE();
+            RecordNumber = data.ReadLongBE();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString() =>
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             $"IndexRecord({Header.TableNumber},{Header.IndexNumber},{RecordNumber})";
     }
 }

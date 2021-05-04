@@ -3,12 +3,34 @@ using System.Collections.Generic;
 
 namespace TpsParser.Tps
 {
+    /// <summary>
+    /// Represents a page of <see cref="TpsRecord"/> objects.
+    /// </summary>
     public sealed class TpsPage
     {
+        /// <summary>
+        /// Gets the position of the page in the file.
+        /// </summary>
         public int Address { get; }
+
+        /// <summary>
+        /// Gets the compressed size of the page in bytes.
+        /// </summary>
         public int Size { get; }
+
+        /// <summary>
+        /// Gets the uncompressed size of the page in bytes.
+        /// </summary>
         public int SizeUncompressed { get; }
+
+        /// <summary>
+        /// Gets the uncompressed size of the page without the header in bytes.
+        /// </summary>
         public int SizeUncompressedWithoutHeader { get; }
+
+        /// <summary>
+        /// Gets the number of records in the page.
+        /// </summary>
         public int RecordCount { get; }
         public int Flags { get; }
 
@@ -28,15 +50,15 @@ namespace TpsParser.Tps
 
             Records = new List<TpsRecord>();
 
-            Address = rx.LongLE();
-            Size = rx.ShortLE();
+            Address = rx.ReadLongLE();
+            Size = rx.ReadShortLE();
 
             var header = rx.Read(Size - 6);
 
-            SizeUncompressed = header.ShortLE();
-            SizeUncompressedWithoutHeader = header.ShortLE();
-            RecordCount = header.ShortLE();
-            Flags = header.Byte();
+            SizeUncompressed = header.ReadShortLE();
+            SizeUncompressedWithoutHeader = header.ReadShortLE();
+            RecordCount = header.ReadShortLE();
+            Flags = header.ReadByte();
 
             CompressedData = header.Read(Size - 13);
         }
@@ -133,6 +155,7 @@ namespace TpsParser.Tps
             return Records;
         }
 
+        /// <inheritdoc/>
         public override string ToString() =>
             $"TpsPage({Address:X8},{Size:X4},{SizeUncompressed:X4},{SizeUncompressedWithoutHeader:X4},{RecordCount:X4},{Flags:X2})";
     }

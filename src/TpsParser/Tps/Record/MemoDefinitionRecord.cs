@@ -68,7 +68,7 @@ namespace TpsParser.Tps.Record
 
             if (ExternalFile.Length == 0)
             {
-                byte memoMarker = rx.Byte();
+                byte memoMarker = rx.ReadByte();
 
                 if (memoMarker != 1)
                 {
@@ -77,8 +77,8 @@ namespace TpsParser.Tps.Record
             }
 
             FullName = rx.ZeroTerminatedString();
-            Length = rx.ShortLE();
-            Flags = rx.ShortLE();
+            Length = rx.ReadShortLE();
+            Flags = rx.ReadShortLE();
         }
 
         public override string ToString()

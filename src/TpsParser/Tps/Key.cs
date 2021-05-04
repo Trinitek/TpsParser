@@ -15,7 +15,6 @@ namespace TpsParser.Tps
         /// <param name="password">The password or "owner" of the file.</param>
         public Key(string password)
         {
-            //var encoding = CodePagesEncodingProvider.Instance.GetEncoding("Windows-1258");
             var encoding = TpsParser.DefaultEncoding;
             var passwordBytes = encoding.GetBytes(password);
 
@@ -39,15 +38,6 @@ namespace TpsParser.Tps
 
             Shuffle();
             Shuffle();
-        }
-
-        /// <summary>
-        /// Instantiates a key with an already initialized data state.
-        /// </summary>
-        /// <param name="rx"></param>
-        public Key(TpsReader rx)
-        {
-            Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
 
         /// <summary>
@@ -76,7 +66,7 @@ namespace TpsParser.Tps
         internal int GetWord(int word)
         {
             Data.JumpAbsolute(word * 4);
-            return Data.LongLE();
+            return Data.ReadLongLE();
         }
 
         private void SetWord(int word, int value)
@@ -107,8 +97,8 @@ namespace TpsParser.Tps
                 int keyA = GetWord(i);
                 int positionB = keyA & 0x0F;
 
-                int data2 = buffer.JumpAbsolute(positionA * 4).LongLE();
-                int data1 = buffer.JumpAbsolute(positionB * 4).LongLE();
+                int data2 = buffer.JumpAbsolute(positionA * 4).ReadLongLE();
+                int data1 = buffer.JumpAbsolute(positionB * 4).ReadLongLE();
 
                 int opAnd1 = keyA & data2;
                 int opNotA = ~keyA;
@@ -149,9 +139,9 @@ namespace TpsParser.Tps
                 int keyA = GetWord(positionA);
                 int positionB = keyA & 0x0F;
 
-                int data1 = buffer.JumpAbsolute(positionA * 4).LongLE();
+                int data1 = buffer.JumpAbsolute(positionA * 4).ReadLongLE();
                 data1 -= keyA;
-                int data2 = buffer.JumpAbsolute(positionB * 4).LongLE();
+                int data2 = buffer.JumpAbsolute(positionB * 4).ReadLongLE();
                 data2 -= keyA;
 
                 int opAnd1 = data1 & keyA;
@@ -201,9 +191,8 @@ namespace TpsParser.Tps
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString() =>
             Data.ToHexString(step: 64, ascii: false);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

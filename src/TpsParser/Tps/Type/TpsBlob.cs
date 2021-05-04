@@ -23,12 +23,12 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Value = rx.ReadBytes(rx.LongLE());
+            Value = rx.ReadBytes(rx.ReadLongLE());
         }
 
         /// <summary>
         /// Returns true if the size of the blob is not zero.
         /// </summary>
-        internal override bool AsBoolean() => Value.Any();
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value.Any());
     }
 }

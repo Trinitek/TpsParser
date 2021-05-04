@@ -8,30 +8,18 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents an array of objects.
     /// </summary>
-    public sealed class TpsArray<TTpsObject, TImplType> :
-        TpsObject<IReadOnlyList<TTpsObject>>,
-        IConvertible<IEnumerable<TTpsObject>>, IConvertible<IReadOnlyList<TTpsObject>>,
-        IHasConverterExtension
+    public sealed class TpsArray<TTpsObject> :
+        TpsObject<IReadOnlyList<TTpsObject>>
         where TTpsObject : TpsObject
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.None;
 
         /// <summary>
-        /// Instantiates a new array of the given objects.
+        /// Instantiates a new array.
         /// </summary>
         /// <param name="items"></param>
-        public TpsArray(IEnumerable<TpsObject> items)
-        {
-            if (items is null)
-            {
-                throw new ArgumentNullException(nameof(items));
-            }
-
-            Value = items.Cast<TTpsObject>().ToList().AsReadOnly();
-        }
-
-        internal TpsArray(IReadOnlyList<TTpsObject> items)
+        public TpsArray(IReadOnlyList<TTpsObject> items)
         {
             if (items is null)
             {
@@ -47,46 +35,10 @@ namespace TpsParser.Tps.Type
         public int Count => Value.Count;
 
         /// <inheritdoc/>
-        internal override bool AsBoolean() => Value.Any();
-
-        IEnumerable<TTpsObject> IConvertible<IEnumerable<TTpsObject>>.AsType() => Value;
-
-        IReadOnlyList<TTpsObject> IConvertible<IReadOnlyList<TTpsObject>>.AsType() => Value;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value.Any());
 
         /// <inheritdoc/>
-        public IConverterExtension ConverterExtension
-        {
-            get
-            {
-                if (_converterExtension is null)
-                {
-                    _converterExtension = new TpsArrayConverterExtension<TImplType>(
-                        enumerableConverter: () => (IEnumerable<TImplType>)Value.Select(v => v.Value),
-                        readOnlyListConverter: () => Value.Select(v => (TImplType)v.Value).ToList());
-                }
-
-                return _converterExtension;
-            }
-        }
-        private IConverterExtension _converterExtension;
-    }
-
-    internal sealed class TpsArrayConverterExtension<TImplType> : IConverterExtension, IConvertible<IEnumerable<TImplType>>, IConvertible<IReadOnlyList<TImplType>>
-    {
-        internal TpsArrayConverterExtension(
-            Func<IEnumerable<TImplType>> enumerableConverter,
-            Func<IReadOnlyList<TImplType>> readOnlyListConverter)
-        {
-            EnumerableConverter = enumerableConverter ?? throw new ArgumentNullException(nameof(enumerableConverter));
-            ReadOnlyListConverter = readOnlyListConverter ?? throw new ArgumentNullException(nameof(readOnlyListConverter));
-        }
-
-        private Func<IEnumerable<TImplType>> EnumerableConverter { get; }
-        private Func<IReadOnlyList<TImplType>> ReadOnlyListConverter { get; }
-
-        IEnumerable<TImplType> IConvertible<IEnumerable<TImplType>>.AsType() => EnumerableConverter.Invoke();
-
-        IReadOnlyList<TImplType> IConvertible<IReadOnlyList<TImplType>>.AsType() => ReadOnlyListConverter.Invoke();
+        public override Maybe<IReadOnlyList<TpsObject>> ToArray() => new Maybe<IReadOnlyList<TpsObject>>(Value);
     }
 
     internal static class TpsArrayExtensions
@@ -96,33 +48,33 @@ namespace TpsParser.Tps.Type
             switch (typeCode)
             {
                 case TpsTypeCode.Byte:
-                    return new TpsArray<TpsByte, byte>((IReadOnlyList<TpsByte>)items);
+                    return new TpsArray<TpsByte>((IReadOnlyList<TpsByte>)items);
                 case TpsTypeCode.Short:
-                    return new TpsArray<TpsShort, short>((IReadOnlyList<TpsShort>)items);
+                    return new TpsArray<TpsShort>((IReadOnlyList<TpsShort>)items);
                 case TpsTypeCode.UShort:
-                    return new TpsArray<TpsUnsignedShort, ushort>((IReadOnlyList<TpsUnsignedShort>)items);
+                    return new TpsArray<TpsUnsignedShort>((IReadOnlyList<TpsUnsignedShort>)items);
                 case TpsTypeCode.Date:
-                    return new TpsArray<TpsDate, DateTime?>((IReadOnlyList<TpsDate>)items);
+                    return new TpsArray<TpsDate>((IReadOnlyList<TpsDate>)items);
                 case TpsTypeCode.Time:
-                    return new TpsArray<TpsTime, TimeSpan>((IReadOnlyList<TpsTime>)items);
+                    return new TpsArray<TpsTime>((IReadOnlyList<TpsTime>)items);
                 case TpsTypeCode.Long:
-                    return new TpsArray<TpsLong, int>((IReadOnlyList<TpsLong>)items);
+                    return new TpsArray<TpsLong>((IReadOnlyList<TpsLong>)items);
                 case TpsTypeCode.ULong:
-                    return new TpsArray<TpsUnsignedLong, uint>((IReadOnlyList<TpsUnsignedLong>)items);
+                    return new TpsArray<TpsUnsignedLong>((IReadOnlyList<TpsUnsignedLong>)items);
                 case TpsTypeCode.SReal:
-                    return new TpsArray<TpsFloat, float>((IReadOnlyList<TpsFloat>)items);
+                    return new TpsArray<TpsFloat>((IReadOnlyList<TpsFloat>)items);
                 case TpsTypeCode.Real:
-                    return new TpsArray<TpsDouble, double>((IReadOnlyList<TpsDouble>)items);
+                    return new TpsArray<TpsDouble>((IReadOnlyList<TpsDouble>)items);
                 case TpsTypeCode.Decimal:
-                    return new TpsArray<TpsDecimal, string>((IReadOnlyList<TpsDecimal>)items);
+                    return new TpsArray<TpsDecimal>((IReadOnlyList<TpsDecimal>)items);
                 case TpsTypeCode.String:
-                    return new TpsArray<TpsString, string>((IReadOnlyList<TpsString>)items);
+                    return new TpsArray<TpsString>((IReadOnlyList<TpsString>)items);
                 case TpsTypeCode.CString:
-                    return new TpsArray<TpsCString, string>((IReadOnlyList<TpsCString>)items);
+                    return new TpsArray<TpsCString>((IReadOnlyList<TpsCString>)items);
                 case TpsTypeCode.PString:
-                    return new TpsArray<TpsPString, string>((IReadOnlyList<TpsPString>)items);
+                    return new TpsArray<TpsPString>((IReadOnlyList<TpsPString>)items);
                 case TpsTypeCode.Group:
-                    return new TpsArray<TpsGroup, IReadOnlyList<TpsObject>>((IReadOnlyList<TpsGroup>)items);
+                    return new TpsArray<TpsGroup>((IReadOnlyList<TpsGroup>)items);
                 default:
                     throw new ArgumentException($"Arrays of type '{typeCode}' are not supported.", nameof(typeCode));
             }

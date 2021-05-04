@@ -11,6 +11,9 @@ namespace TpsParser.Tps.Record
     /// </summary>
     public interface ITableDefinitionRecord
     {
+        /// <summary>
+        /// Gets the version of the driver that created the file.
+        /// </summary>
         int DriverVersion { get; }
 
         /// <summary>
@@ -74,11 +77,11 @@ namespace TpsParser.Tps.Record
 
             Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
 
-            DriverVersion = rx.ShortLE();
-            RecordLength = rx.ShortLE();
-            int fieldCount = rx.ShortLE();
-            int memoCount = rx.ShortLE();
-            int indexCount = rx.ShortLE();
+            DriverVersion = rx.ReadShortLE();
+            RecordLength = rx.ReadShortLE();
+            int fieldCount = rx.ReadShortLE();
+            int memoCount = rx.ReadShortLE();
+            int indexCount = rx.ReadShortLE();
 
             _fields = new List<FieldDefinitionRecord>();
             _memos = new List<MemoDefinitionRecord>();
@@ -126,7 +129,7 @@ namespace TpsParser.Tps.Record
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -150,7 +153,6 @@ namespace TpsParser.Tps.Record
 
             return sb.ToString();
         }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         public IReadOnlyList<TpsObject> Parse(byte[] record)
         {

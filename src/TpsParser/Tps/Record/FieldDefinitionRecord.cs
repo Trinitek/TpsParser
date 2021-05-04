@@ -128,28 +128,28 @@ namespace TpsParser.Tps.Record
 
             OwnerGroup = ownerGroup;
 
-            Type = (TpsTypeCode)rx.Byte();
-            Offset = rx.ShortLE();
+            Type = (TpsTypeCode)rx.ReadByte();
+            Offset = rx.ReadShortLE();
             FullName = rx.ZeroTerminatedString();
-            ElementCount = rx.ShortLE();
-            Length = rx.ShortLE();
-            Flags = rx.ShortLE();
-            Index = rx.ShortLE();
+            ElementCount = rx.ReadShortLE();
+            Length = rx.ReadShortLE();
+            Flags = rx.ReadShortLE();
+            Index = rx.ReadShortLE();
 
             switch (Type)
             {
                 case TpsTypeCode.Decimal:
-                    BcdDigitsAfterDecimalPoint = rx.Byte();
-                    BcdElementLength = rx.Byte();
+                    BcdDigitsAfterDecimalPoint = rx.ReadByte();
+                    BcdElementLength = rx.ReadByte();
                     break;
                 case TpsTypeCode.String:
                 case TpsTypeCode.CString:
                 case TpsTypeCode.PString:
-                    StringLength = rx.ShortLE();
+                    StringLength = rx.ReadShortLE();
                     StringMask = rx.ZeroTerminatedString();
                     if (StringMask.Length == 0)
                     {
-                        rx.Byte();
+                        rx.ReadByte();
                     }
                     break;
             }

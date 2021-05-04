@@ -70,7 +70,7 @@ namespace TpsParser.Tps.Record
                 .Zip(Values, (field, value) => (field, value))
                 .ToDictionary(pair => pair.field.Name, pair => pair.value);
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -84,6 +84,5 @@ namespace TpsParser.Tps.Record
 
             return sb.ToString();
         }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

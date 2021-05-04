@@ -49,45 +49,6 @@ namespace TpsParser.Tps.Type
         public override TpsTypeCode TypeCode => TpsTypeCode.Time;
 
         /// <summary>
-        /// Instantiates a new TIME from the given binary reader.
-        /// </summary>
-        /// <remarks>
-        /// The byte stream is read in the following order:
-        /// <list type="bullet">
-        /// <item>Centiseconds</item>
-        /// <item>Seconds</item>
-        /// <item>Minutes</item>
-        /// <item>Hours</item>
-        /// </list>
-        /// </remarks>
-        /// <param name="rx"></param>
-        public TpsTime(TpsReader rx)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            // Time, mask encoded
-
-            int time = rx.LongLE();
-
-            // Hours 0 - 23
-            int hours = (time & 0x7F000000) >> 24;
-
-            // Minutes 0 - 59
-            int mins = (time & 0x00FF0000) >> 16;
-
-            // Seconds 0 - 59
-            int secs = (time & 0x0000FF00) >> 8;
-
-            // Centiseconds (seconds/100) 0 - 99
-            int centi = time & 0x000000FF;
-
-            Value = new TimeSpan(0, hours, mins, secs, centi * 10);
-        }
-
-        /// <summary>
         /// Instantiates a new TIME from the given value.
         /// </summary>
         /// <param name="time"></param>
@@ -99,6 +60,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not equal to <see cref="TimeSpan.Zero"/>.
         /// </summary>
-        internal override bool AsBoolean() => Value != TimeSpan.Zero;
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != TimeSpan.Zero);
     }
 }

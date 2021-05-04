@@ -9,7 +9,7 @@
         {
             AssertIsType(0xF3);
 
-            RecordNumber = rx.LongBE();
+            RecordNumber = rx.ReadLongBE();
         }
 
         public override string ToString() =>

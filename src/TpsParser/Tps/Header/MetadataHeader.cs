@@ -13,9 +13,10 @@
         {
             AssertIsType(0xF6);
 
-            AboutType = rx.Byte();
+            AboutType = rx.ReadByte();
         }
 
+        /// <inheritdoc/>
         public override string ToString() =>
             $"IndexHeader({(IsAboutData ? "Data" : IsAboutKeyOrIndex ? $"Index({AboutType})" : "??")})";
     }

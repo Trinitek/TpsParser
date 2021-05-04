@@ -8,7 +8,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a typed object within the TopSpeed file.
     /// </summary>
-    public abstract class TpsObject : IConvertible<bool>
+    public abstract class TpsObject
     {
         /// <summary>
         /// Gets the .NET equivalent value of the TopSpeed object.
@@ -21,13 +21,97 @@ namespace TpsParser.Tps.Type
         public abstract TpsTypeCode TypeCode { get; }
 
         /// <summary>
-        /// Gets a boolean representation of the value as governed by Clarion logic evaluation rules for the type.
+        /// Gets a <see cref="bool"/> representation of the value as governed by Clarion logic evaluation rules for the type.
         /// </summary>
         /// <returns></returns>
-        internal abstract bool AsBoolean();
+        public abstract Maybe<bool> ToBoolean();
 
         /// <summary>
-        /// Gets the string representation of the value that this object encapsulates.
+        /// Gets an <see cref="sbyte"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<sbyte> ToSByte() => default;
+        
+        /// <summary>
+        /// Gets a <see cref="byte"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<byte> ToByte() => default;
+
+        /// <summary>
+        /// Gets a <see cref="short"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<short> ToInt16() => default;
+
+        /// <summary>
+        /// Gets a <see cref="uint"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<ushort> ToUInt16() => default;
+
+        /// <summary>
+        /// Gets an <see cref="int"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<int> ToInt32() => default;
+
+        /// <summary>
+        /// Gets a <see cref="uint"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<uint> ToUInt32() => default;
+
+        /// <summary>
+        /// Gets a <see cref="long"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<long> ToInt64() => default;
+
+        /// <summary>
+        /// Gets a <see cref="ulong"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<ulong> ToUInt64() => default;
+
+        /// <summary>
+        /// Gets a <see cref="float"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<float> ToFloat() => default;
+
+        /// <summary>
+        /// Gets a <see cref="double"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<double> ToDouble() => default;
+
+        /// <summary>
+        /// Gets a <see cref="decimal"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<decimal> ToDecimal() => default;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<DateTime?> ToDateTime() => default;
+
+        /// <summary>
+        /// Gets a <see cref="TimeSpan"/> representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<TimeSpan> ToTimeSpan() => default;
+
+        /// <summary>
+        /// Gets an array representation of the value.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Maybe<IReadOnlyList<TpsObject>> ToArray() => default;
+
+        /// <summary>
+        /// Gets the string representation of the value.
         /// </summary>
         /// <returns></returns>
         public override string ToString() => Value?.ToString();
@@ -98,38 +182,31 @@ namespace TpsParser.Tps.Type
             switch (current.Type)
             {
                 case TpsTypeCode.Byte:
-                    AssertExpectedLength(1, length);
-                    return new TpsByte(rx);
+                    return rx.ReadTpsByte();
                 case TpsTypeCode.Short:
-                    AssertExpectedLength(2, length);
-                    return new TpsShort(rx);
+                    return rx.ReadTpsShort();
                 case TpsTypeCode.UShort:
-                    AssertExpectedLength(2, length);
-                    return new TpsUnsignedShort(rx);
+                    return rx.ReadTpsUnsignedShort();
                 case TpsTypeCode.Date:
-                    return new TpsDate(rx);
+                    return rx.ReadTpsDate();
                 case TpsTypeCode.Time:
-                    return new TpsTime(rx);
+                    return rx.ReadTpsTime();
                 case TpsTypeCode.Long:
-                    AssertExpectedLength(4, length);
-                    return new TpsLong(rx);
+                    return rx.ReadTpsLong();
                 case TpsTypeCode.ULong:
-                    AssertExpectedLength(4, length);
-                    return new TpsUnsignedLong(rx);
+                    return rx.ReadTpsUnsignedLong();
                 case TpsTypeCode.SReal:
-                    AssertExpectedLength(4, length);
-                    return new TpsFloat(rx);
+                    return rx.ReadTpsFloat();
                 case TpsTypeCode.Real:
-                    AssertExpectedLength(8, length);
-                    return new TpsDouble(rx);
+                    return rx.ReadTpsDouble();
                 case TpsTypeCode.Decimal:
-                    return new TpsDecimal(rx, length, current.BcdDigitsAfterDecimalPoint);
+                    return rx.ReadTpsDecimal(length, current.BcdDigitsAfterDecimalPoint);
                 case TpsTypeCode.String:
-                    return new TpsString(rx, length, encoding);
+                    return rx.ReadTpsString(encoding, length);
                 case TpsTypeCode.CString:
-                    return new TpsCString(rx, encoding);
+                    return rx.ReadTpsCString(encoding);
                 case TpsTypeCode.PString:
-                    return new TpsPString(rx, encoding);
+                    return rx.ReadTpsPString(encoding);
                 case TpsTypeCode.Group:
                     return TpsGroup.BuildFromFieldDefinitions(rx, encoding, enumerator);
                 default:
@@ -137,15 +214,7 @@ namespace TpsParser.Tps.Type
             }
         }
 
-        private static void AssertExpectedLength(int expected, int actual)
-        {
-            if (expected != actual)
-            {
-                throw new ArgumentException($"Expected length of {expected} but was {actual}.");
-            }
-        }
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             if (obj is TpsObject o)
@@ -158,6 +227,7 @@ namespace TpsParser.Tps.Type
             }
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             var hashCode = -1431579180;
@@ -166,26 +236,24 @@ namespace TpsParser.Tps.Type
             return hashCode;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "This must remain explicitly implemented because derivative classes may add their own IConvertible implementations for different types.")]
-        bool IConvertible<bool>.AsType() => AsBoolean();
-
+        /// <inheritdoc/>
         public static bool operator ==(TpsObject left, TpsObject right)
         {
             return EqualityComparer<TpsObject>.Default.Equals(left, right);
         }
 
+        /// <inheritdoc/>
         public static bool operator !=(TpsObject left, TpsObject right)
         {
             return !(left == right);
         }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 
     /// <summary>
     /// Represents a typed object within the TopSpeed file.
     /// </summary>
     /// <typeparam name="T">The .NET equivalent type of the value this object encapsulates.</typeparam>
-    public abstract class TpsObject<T> : TpsObject, IConvertible<T>
+    public abstract class TpsObject<T> : TpsObject
     {
         /// <inheritdoc/>
         public new T Value
@@ -198,8 +266,5 @@ namespace TpsParser.Tps.Type
             }
         }
         private T _typedValue;
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "Child types should use the Value property instead.")]
-        T IConvertible<T>.AsType() => Value;
     }
 }

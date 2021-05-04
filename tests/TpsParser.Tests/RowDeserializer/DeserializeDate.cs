@@ -36,7 +36,7 @@ namespace TpsParser.Tests.RowDeserializer
         [Test]
         public void ShouldDeserializeNullDate()
         {
-            var row = BuildRow(1, ("Date", new TpsDate(new TpsReader(new byte[] { 0, 0, 0, 0 }))));
+            var row = BuildRow(1, ("Date", new TpsReader(new byte[] { 0, 0, 0, 0 }).ReadTpsDate()));
 
             var deserialized = row.Deserialize<NullDateModel>();
 
@@ -46,7 +46,7 @@ namespace TpsParser.Tests.RowDeserializer
         [Test]
         public void ShouldSetDefaultWhenDeserializingNullDateIntoNonNullableDate()
         {
-            var row = BuildRow(1, ("Date", new TpsDate(new TpsReader(new byte[] { 0, 0, 0, 0 }))));
+            var row = BuildRow(1, ("Date", new TpsReader(new byte[] { 0, 0, 0, 0 }).ReadTpsDate()));
 
             var deserialized = row.Deserialize<DateModel>();
 

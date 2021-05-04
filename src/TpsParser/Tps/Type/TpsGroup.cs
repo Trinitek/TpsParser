@@ -71,6 +71,6 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the data size is not zero.
         /// </summary>
-        internal override bool AsBoolean() => Value.Any(v => v.AsBoolean());
+        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value.Any(v => v.ToBoolean().Value));
     }
 }

@@ -18,7 +18,7 @@ namespace TpsParser
     /// Where the field is of type STRING, PSTRING, or CSTRING, both leading and trailing whitespace is trimmed before comparison.
     /// </para>
     /// <para>
-    /// The default behavior for value conversions to <see cref="bool"/> are described on the overrides of <see cref="TpsObject.AsBoolean"/>
+    /// The default behavior for value conversions to <see cref="bool"/> are described on the overrides of <see cref="TpsObject.ToBoolean"/>
     /// for each implementing type.
     /// </para>
     /// </summary>
@@ -43,7 +43,7 @@ namespace TpsParser
             FallbackValue = false;
         }
 
-        private bool? AsBoolean(TpsObject sourceObject) => ((IConvertible<bool>)sourceObject)?.AsType();
+        private bool? AsBoolean(TpsObject sourceObject) => sourceObject?.ToBoolean().Value;
 
         internal override object InterpretValue(MemberInfo member, TpsObject sourceObject)
         {

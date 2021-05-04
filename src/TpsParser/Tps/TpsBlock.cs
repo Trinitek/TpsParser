@@ -4,8 +4,14 @@ using System.Diagnostics;
 
 namespace TpsParser.Tps
 {
+    /// <summary>
+    /// Represents a block of <see cref="TpsPage"/> objects.
+    /// </summary>
     public sealed class TpsBlock
     {
+        /// <summary>
+        /// Gets the pages that belong to this block.
+        /// </summary>
         public IReadOnlyList<TpsPage> Pages => _pages;
         private readonly List<TpsPage> _pages;
 
@@ -39,7 +45,7 @@ namespace TpsParser.Tps
                         {
                             if (ignorePageErrors)
                             {
-                                Debug.WriteLine($"Ignored RLE error: {ex.ToString()}");
+                                Debug.WriteLine($"Ignored RLE error: {ex}");
                             }
                             else
                             {
@@ -76,7 +82,7 @@ namespace TpsParser.Tps
                 do
                 {
                     Data.PushPosition();
-                    address = Data.LongLE();
+                    address = Data.ReadLongLE();
                     Data.PopPosition();
 
                     // Check if there is really a new page here.
@@ -99,8 +105,8 @@ namespace TpsParser.Tps
 
             try
             {
-                Data.LongLE();
-                pageSize = Data.ShortLE();
+                Data.ReadLongLE();
+                pageSize = Data.ReadShortLE();
             }
             finally
             {
@@ -126,7 +132,7 @@ namespace TpsParser.Tps
 
                         try
                         {
-                            address = Data.LongLE();
+                            address = Data.ReadLongLE();
                         }
                         finally
                         {
@@ -149,7 +155,8 @@ namespace TpsParser.Tps
             return true;
         }
 
+        /// <inheritdoc/>
         public override string ToString() =>
-            $"TpsBlock({Data.ToHex8(Start)},{Data.ToHex8(End)},{Pages.Count})";
+            $"TpsBlock({StringUtils.ToHex8(Start)},{StringUtils.ToHex8(End)},{Pages.Count})";
     }
 }

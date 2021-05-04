@@ -1,5 +1,4 @@
-﻿using TpsParser.Binary;
-using TpsParser.Tps.Record;
+﻿using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps.Header
 {
@@ -40,7 +39,7 @@ namespace TpsParser.Tps.Header
         /// Instantiates a new header.
         /// </summary>
         /// <param name="rx"></param>
-        public MemoHeader(RandomAccess rx)
+        public MemoHeader(TpsReader rx)
             : base(rx)
         {
             AssertIsType(0xFC);

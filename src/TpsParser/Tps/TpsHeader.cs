@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps
 {
@@ -35,14 +34,14 @@ namespace TpsParser.Tps
 
         public IReadOnlyList<int> PageEnd { get; }
 
-        private RandomAccess Data { get; }
+        private TpsReader Data { get; }
 
         /// <summary>
         /// Returns true if the header represents a valid TopSpeed file.
         /// </summary>
         public bool IsTopSpeedFile => MagicNumber == "tOpS";
 
-        public TpsHeader(RandomAccess rx)
+        public TpsHeader(TpsReader rx)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
 

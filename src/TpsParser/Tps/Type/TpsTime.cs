@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -62,7 +61,7 @@ namespace TpsParser.Tps.Type
         /// </list>
         /// </remarks>
         /// <param name="rx"></param>
-        public TpsTime(RandomAccess rx)
+        public TpsTime(TpsReader rx)
         {
             if (rx == null)
             {

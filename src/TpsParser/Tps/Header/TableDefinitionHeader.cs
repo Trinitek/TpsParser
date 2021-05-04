@@ -1,12 +1,10 @@
-﻿using TpsParser.Binary;
-
-namespace TpsParser.Tps.Header
+﻿namespace TpsParser.Tps.Header
 {
     public sealed class TableDefinitionHeader : Header
     {
         public int Block { get; }
 
-        public TableDefinitionHeader(RandomAccess rx)
+        public TableDefinitionHeader(TpsReader rx)
             : base(rx)
         {
             if (rx is null)

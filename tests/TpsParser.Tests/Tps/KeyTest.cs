@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using TpsParser.Binary;
 using TpsParser.Tps;
 
 namespace TpsParser.Tests.Tps
@@ -42,7 +41,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldDecryptBlock()
         {
-            var rx = new RandomAccess(ParseHex(EncryptedHeader));
+            var rx = new TpsReader(ParseHex(EncryptedHeader));
             var key = new Key("a");
 
             key.Decrypt64(rx);
@@ -56,7 +55,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldEncryptBlock()
         {
-            var rx = new RandomAccess(ParseHex(DecryptedHeader));
+            var rx = new TpsReader(ParseHex(DecryptedHeader));
             var key = new Key("a");
 
             key.Encrypt64(rx);

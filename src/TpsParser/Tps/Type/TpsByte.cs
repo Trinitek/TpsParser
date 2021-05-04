@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -15,7 +14,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new BYTE from the given binary reader.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsByte(RandomAccess rx)
+        public TpsByte(TpsReader rx)
         {
             if (rx == null)
             {

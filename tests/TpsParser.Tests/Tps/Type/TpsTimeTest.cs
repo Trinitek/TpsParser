@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using TpsParser.Binary;
 using TpsParser.Tps;
 using TpsParser.Tps.Type;
 
@@ -31,7 +30,7 @@ namespace TpsParser.Tests.Tps.Type
         [Test]
         public void ShouldReadFromRandomAccess()
         {
-            var rx = new RandomAccess(new byte[] { 99, 59, 59, 12 });
+            var rx = new TpsReader(new byte[] { 99, 59, 59, 12 });
 
             var time = new TpsTime(rx);
 

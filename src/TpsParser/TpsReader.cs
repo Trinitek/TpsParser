@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TpsParser.Binary
+namespace TpsParser
 {
-    public sealed class RandomAccess
+    public sealed class TpsReader
     {
         private byte[] Data { get; }
         private Stack<int> PositionStack { get; }
@@ -35,14 +35,14 @@ namespace TpsParser.Binary
         /// </summary>
         public bool IsAtEnd => Position >= Length - 1;
 
-        public RandomAccess(byte[] data)
+        public TpsReader(byte[] data)
             : this(
                   data: data,
                   baseOffset: 0,
                   length: data?.Length ?? throw new ArgumentNullException(nameof(data)))
         { }
 
-        public RandomAccess(byte[] data, int baseOffset, int length)
+        public TpsReader(byte[] data, int baseOffset, int length)
         {
             Position = 0;
             Data = data ?? throw new ArgumentNullException(nameof(data));
@@ -52,7 +52,7 @@ namespace TpsParser.Binary
             PositionStack = new Stack<int>();
         }
 
-        public RandomAccess(RandomAccess existing, int additiveOffset, int length)
+        public TpsReader(TpsReader existing, int additiveOffset, int length)
             : this(
                   data: existing?.Data ?? throw new ArgumentNullException(nameof(existing)),
                   baseOffset: existing.BaseOffset + additiveOffset,
@@ -86,10 +86,10 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             int result =
-                (Data[reference + 0] & 0xFF)
-                | ((Data[reference + 1] & 0xFF) << 8)
-                | ((Data[reference + 2] & 0xFF) << 16)
-                | ((Data[reference + 3] & 0xFF) << 24);
+                Data[reference + 0] & 0xFF
+                | (Data[reference + 1] & 0xFF) << 8
+                | (Data[reference + 2] & 0xFF) << 16
+                | (Data[reference + 3] & 0xFF) << 24;
 
             Position += 4;
             return result;
@@ -106,9 +106,9 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             Data[reference + 0] = (byte)(value & 0xFF);
-            Data[reference + 1] = (byte)((value >> 8) & 0xFF);
-            Data[reference + 2] = (byte)((value >> 16) & 0xFF);
-            Data[reference + 3] = (byte)((value >> 24) & 0xFF);
+            Data[reference + 1] = (byte)(value >> 8 & 0xFF);
+            Data[reference + 2] = (byte)(value >> 16 & 0xFF);
+            Data[reference + 3] = (byte)(value >> 24 & 0xFF);
 
             Position += 4;
         }
@@ -124,10 +124,10 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             uint result =
-                (Data[reference + 0] & 0xFFU)
-                | ((Data[reference + 1] & 0xFFU) << 8)
-                | ((Data[reference + 2] & 0xFFU) << 16)
-                | ((Data[reference + 3] & 0xFFU) << 24);
+                Data[reference + 0] & 0xFFU
+                | (Data[reference + 1] & 0xFFU) << 8
+                | (Data[reference + 2] & 0xFFU) << 16
+                | (Data[reference + 3] & 0xFFU) << 24;
 
             Position += 4;
             return result;
@@ -144,10 +144,10 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             int result =
-                (Data[reference + 3] & 0xFF)
-                | ((Data[reference + 2] & 0xFF) << 8)
-                | ((Data[reference + 1] & 0xFF) << 16)
-                | ((Data[reference + 0] & 0xFF) << 24);
+                Data[reference + 3] & 0xFF
+                | (Data[reference + 2] & 0xFF) << 8
+                | (Data[reference + 1] & 0xFF) << 16
+                | (Data[reference + 0] & 0xFF) << 24;
 
             Position += 4;
             return result;
@@ -164,10 +164,10 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             uint result =
-                (Data[reference + 4] & 0xFFU)
-                | ((Data[reference + 3] & 0xFFU) << 8)
-                | ((Data[reference + 2] & 0xFFU) << 16)
-                | ((Data[reference + 1] & 0xFFU) << 24);
+                Data[reference + 4] & 0xFFU
+                | (Data[reference + 3] & 0xFFU) << 8
+                | (Data[reference + 2] & 0xFFU) << 16
+                | (Data[reference + 1] & 0xFFU) << 24;
 
             Position += 4;
             return result;
@@ -184,8 +184,8 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             short result =
-                (short)((Data[reference + 0] & 0xFF)
-                | ((Data[reference + 1] & 0xFF) << 8));
+                (short)(Data[reference + 0] & 0xFF
+                | (Data[reference + 1] & 0xFF) << 8);
 
             Position += 2;
 
@@ -203,8 +203,8 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             ushort result =
-                (ushort)((Data[reference + 0] & 0xFF)
-                | ((Data[reference + 1] & 0xFF) << 8));
+                (ushort)(Data[reference + 0] & 0xFF
+                | (Data[reference + 1] & 0xFF) << 8);
 
             Position += 2;
 
@@ -222,8 +222,8 @@ namespace TpsParser.Binary
             int reference = BaseOffset + Position;
 
             short result =
-                (short)((Data[reference + 1] & 0xFF)
-                | ((Data[reference + 0] & 0xFF) << 8));
+                (short)(Data[reference + 1] & 0xFF
+                | (Data[reference + 0] & 0xFF) << 8);
 
             Position += 2;
 
@@ -270,7 +270,7 @@ namespace TpsParser.Binary
             long lsb = LongLE() & 0xFFFFFFFFL;
             long msb = LongLE() & 0xFFFFFFFFL;
 
-            long doubleAsLong = (msb << 32) | lsb;
+            long doubleAsLong = msb << 32 | lsb;
 
             double result = BitConverter.Int64BitsToDouble(doubleAsLong);
 
@@ -372,7 +372,7 @@ namespace TpsParser.Binary
         /// </summary>
         /// <param name="offset">The new offset.</param>
         /// <returns></returns>
-        public RandomAccess JumpAbsolute(int offset)
+        public TpsReader JumpAbsolute(int offset)
         {
             Position = offset;
             return this;
@@ -383,7 +383,7 @@ namespace TpsParser.Binary
         /// </summary>
         /// <param name="offset">The relative offset.</param>
         /// <returns></returns>
-        public RandomAccess JumpRelative(int offset)
+        public TpsReader JumpRelative(int offset)
         {
             Position += offset;
             return this;
@@ -410,18 +410,18 @@ namespace TpsParser.Binary
         }
 
         /// <summary>
-        /// Gets a new <see cref="RandomAccess"/> of the given length at the current position and advances the position.
+        /// Gets a new <see cref="TpsReader"/> of the given length at the current position and advances the position.
         /// </summary>
         /// <param name="length">The length of the data array.</param>
         /// <returns></returns>
-        public RandomAccess Read(int length)
+        public TpsReader Read(int length)
         {
             CheckSpace(length);
 
             int reference = BaseOffset + Position;
             Position += length;
 
-            return new RandomAccess(Data, reference, length);
+            return new TpsReader(Data, reference, length);
         }
 
         /// <summary>
@@ -464,7 +464,7 @@ namespace TpsParser.Binary
         /// Unpacks a run length encoded sequence of bytes.
         /// </summary>
         /// <returns></returns>
-        public RandomAccess UnpackRunLengthEncoding()
+        public TpsReader UnpackRunLengthEncoding()
         {
             var bytes = new List<byte>();
 
@@ -482,7 +482,7 @@ namespace TpsParser.Binary
                     int msb = Byte();
                     int lsb = skip & 0x7F;
                     int shift = 0x80 * (msb & 0x01);
-                    skip = ((msb << 7) & 0xFF00) + lsb + shift;
+                    skip = (msb << 7 & 0xFF00) + lsb + shift;
                 }
 
                 bytes.AddRange(ReadBytes(skip));
@@ -499,7 +499,7 @@ namespace TpsParser.Binary
                         int msb = Byte();
                         int lsb = repeatsMinusOne & 0x7F;
                         int shift = 0x80 * (msb & 0x01);
-                        repeatsMinusOne = ((msb << 7) & 0xFF00) + lsb + shift;
+                        repeatsMinusOne = (msb << 7 & 0xFF00) + lsb + shift;
                     }
 
                     byte[] repeat = new byte[repeatsMinusOne];
@@ -514,7 +514,7 @@ namespace TpsParser.Binary
             }
             while (!IsAtEnd);
 
-            return new RandomAccess(bytes.ToArray());
+            return new TpsReader(bytes.ToArray());
         }
 
         public string ToHex8(int value) => $"{value:X8}";
@@ -579,7 +579,7 @@ namespace TpsParser.Binary
             {
                 int value = Data[BaseOffset + i];
 
-                if ((value < 32) | (value > 127))
+                if (value < 32 | value > 127)
                 {
                     stringBuilder.Append(" ");
                     stringBuilder.Append(ToHex2(value));

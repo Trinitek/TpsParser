@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps
 {
@@ -13,14 +12,14 @@ namespace TpsParser.Tps
         public int RecordCount { get; }
         public int Flags { get; }
 
-        private RandomAccess CompressedData { get; }
+        private TpsReader CompressedData { get; }
         private List<TpsRecord> Records { get; }
 
-        private RandomAccess _data;
+        private TpsReader _data;
 
         private bool IsFlushed => _data is null;
 
-        public TpsPage(RandomAccess rx)
+        public TpsPage(TpsReader rx)
         {
             if (rx == null)
             {
@@ -73,7 +72,7 @@ namespace TpsParser.Tps
             Records.Clear();
         }
 
-        public RandomAccess GetUncompressedData()
+        public TpsReader GetUncompressedData()
         {
             if (IsFlushed)
             {

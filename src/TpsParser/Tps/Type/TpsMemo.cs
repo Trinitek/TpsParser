@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -16,7 +14,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new MEMO.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsMemo(RandomAccess rx)
+        public TpsMemo(TpsReader rx)
         {
             if (rx == null)
             {

@@ -1,12 +1,10 @@
-﻿using TpsParser.Binary;
-
-namespace TpsParser.Tps.Header
+﻿namespace TpsParser.Tps.Header
 {
     public sealed class IndexHeader : Header
     {
         public int IndexNumber { get; }
 
-        public IndexHeader(RandomAccess rx)
+        public IndexHeader(TpsReader rx)
             : base(rx)
         {
             IndexNumber = TableType;

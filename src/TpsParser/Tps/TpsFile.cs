@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using TpsParser.Binary;
 using TpsParser.Tps.Header;
 using TpsParser.Tps.Record;
 
@@ -111,7 +110,7 @@ namespace TpsParser.Tps
     /// <inheritdoc/>
     internal sealed class RandomAccessTpsFile : TpsFile
     {
-        private RandomAccess Data { get; }
+        private TpsReader Data { get; }
 
         public RandomAccessTpsFile(Stream stream, Encoding encoding)
             : base(encoding)
@@ -129,7 +128,7 @@ namespace TpsParser.Tps
                 fileData = ms.ToArray();
             }
 
-            Data = new RandomAccess(fileData);
+            Data = new TpsReader(fileData);
         }
 
         public RandomAccessTpsFile(Stream stream, Key key, Encoding encoding)
@@ -143,13 +142,13 @@ namespace TpsParser.Tps
             Decrypt(key);
         }
 
-        public RandomAccessTpsFile(RandomAccess rx, Encoding encoding)
+        public RandomAccessTpsFile(TpsReader rx, Encoding encoding)
             : base(encoding)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
 
-        public RandomAccessTpsFile(RandomAccess rx, Key key, Encoding encoding)
+        public RandomAccessTpsFile(TpsReader rx, Key key, Encoding encoding)
             : this(rx, encoding)
         {
             if (key == null)
@@ -162,7 +161,7 @@ namespace TpsParser.Tps
 
         private void Decrypt(Key key)
         {
-            key.Decrypt(new RandomAccess(Data, 0, 0x200));
+            key.Decrypt(new TpsReader(Data, 0, 0x200));
 
             var header = GetHeader();
 
@@ -173,7 +172,7 @@ namespace TpsParser.Tps
 
                 if ((offset != 0x200 || end != 0x200) && offset < Data.Length)
                 {
-                    key.Decrypt(new RandomAccess(Data, offset, end - offset));
+                    key.Decrypt(new TpsReader(Data, offset, end - offset));
                 }
             }
         }
@@ -327,7 +326,7 @@ namespace TpsParser.Tps
                 elementSelector: group => (ITableDefinitionRecord)new TableDefinitionRecord(Merge(group), Encoding));
         }
 
-        private RandomAccess Merge(IEnumerable<TpsRecord> records) =>
-            new RandomAccess(records.SelectMany(r => r.Data.GetRemainder()).ToArray());
+        private TpsReader Merge(IEnumerable<TpsRecord> records) =>
+            new TpsReader(records.SelectMany(r => r.Data.GetRemainder()).ToArray());
     }
 }

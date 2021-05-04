@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -41,7 +40,7 @@ namespace TpsParser.Tps.Type
         /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
         /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
         /// <returns></returns>
-        internal static TpsObject ParseField(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
+        internal static TpsObject ParseField(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
         {
             if (rx == null)
             {
@@ -70,14 +69,14 @@ namespace TpsParser.Tps.Type
             }
         }
 
-        private static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
+        private static TpsObject ParseNonArrayField(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
             ParseNonArrayField(
                 rx: rx,
                 encoding: encoding,
                 length: enumerator.Current?.Length ?? throw new ArgumentException("The current element is null.", nameof(enumerator)),
                 enumerator: enumerator);
 
-        internal static TpsObject ParseNonArrayField(RandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
+        internal static TpsObject ParseNonArrayField(TpsReader rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {

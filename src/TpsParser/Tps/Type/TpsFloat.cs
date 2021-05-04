@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -15,7 +14,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new SREAL.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsFloat(RandomAccess rx)
+        public TpsFloat(TpsReader rx)
         {
             if (rx == null)
             {

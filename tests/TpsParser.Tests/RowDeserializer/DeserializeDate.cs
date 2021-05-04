@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System;
-using TpsParser.Binary;
 using TpsParser.Tests.DeserializerModels;
 using TpsParser.Tps.Type;
 using static TpsParser.Tests.RowDeserializer.RowDeserializerExtensions;
@@ -37,7 +36,7 @@ namespace TpsParser.Tests.RowDeserializer
         [Test]
         public void ShouldDeserializeNullDate()
         {
-            var row = BuildRow(1, ("Date", new TpsDate(new RandomAccess(new byte[] { 0, 0, 0, 0 }))));
+            var row = BuildRow(1, ("Date", new TpsDate(new TpsReader(new byte[] { 0, 0, 0, 0 }))));
 
             var deserialized = row.Deserialize<NullDateModel>();
 
@@ -47,7 +46,7 @@ namespace TpsParser.Tests.RowDeserializer
         [Test]
         public void ShouldSetDefaultWhenDeserializingNullDateIntoNonNullableDate()
         {
-            var row = BuildRow(1, ("Date", new TpsDate(new RandomAccess(new byte[] { 0, 0, 0, 0 }))));
+            var row = BuildRow(1, ("Date", new TpsDate(new TpsReader(new byte[] { 0, 0, 0, 0 }))));
 
             var deserialized = row.Deserialize<DateModel>();
 

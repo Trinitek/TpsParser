@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record
 {
@@ -58,7 +57,7 @@ namespace TpsParser.Tps.Record
 
         public bool IsBlob => !IsMemo;
 
-        public MemoDefinitionRecord(RandomAccess rx)
+        public MemoDefinitionRecord(TpsReader rx)
         {
             if (rx == null)
             {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TpsParser.Binary;
 using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
@@ -66,7 +65,7 @@ namespace TpsParser.Tps.Record
 
         private Encoding Encoding { get; }
 
-        public TableDefinitionRecord(RandomAccess rx, Encoding encoding)
+        public TableDefinitionRecord(TpsReader rx, Encoding encoding)
         {
             if (rx == null)
             {
@@ -160,7 +159,7 @@ namespace TpsParser.Tps.Record
                 throw new ArgumentNullException(nameof(record));
             }
 
-            var rx = new RandomAccess(record);
+            var rx = new TpsReader(record);
             var values = new List<TpsObject>(Fields.Count);
 
             using (var fieldEnumerator = new FieldDefinitionEnumerator(Fields))

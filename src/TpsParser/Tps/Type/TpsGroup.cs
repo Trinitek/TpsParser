@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -31,7 +30,7 @@ namespace TpsParser.Tps.Type
         /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
         /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
         /// <returns></returns>
-        internal static TpsGroup BuildFromFieldDefinitions(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
+        internal static TpsGroup BuildFromFieldDefinitions(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {

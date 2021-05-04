@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -17,7 +16,7 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="rx"></param>
         /// <param name="encoding"></param>
-        public TpsPString(RandomAccess rx, Encoding encoding)
+        public TpsPString(TpsReader rx, Encoding encoding)
         {
             if (rx == null)
             {

@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using TpsParser.Binary;
 using TpsParser.Tps.Type;
 
 namespace TpsParser.Tests.Tps.Type
@@ -21,7 +20,7 @@ namespace TpsParser.Tests.Tps.Type
         [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
         public void ShouldReadFromRandomAccess(string value, int bcdLength, int bcdDigitsAfterDecimal, byte[] data)
         {
-            var rx = new RandomAccess(data);
+            var rx = new TpsReader(data);
             var dec = new TpsDecimal(rx, bcdLength, bcdDigitsAfterDecimal);
 
             Assert.AreEqual(value, dec.Value);

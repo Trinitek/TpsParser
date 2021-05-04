@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -21,7 +20,7 @@ namespace TpsParser.Tps.Type
         /// <param name="rx">The binary reader that contains the raw data.</param>
         /// <param name="length">The total number of digits in the value.</param>
         /// <param name="digitsAfterDecimal">The number of digits that follow after the decimal point.</param>
-        public TpsDecimal(RandomAccess rx, int length, int digitsAfterDecimal)
+        public TpsDecimal(TpsReader rx, int length, int digitsAfterDecimal)
         {
             if (rx == null)
             {

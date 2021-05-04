@@ -1,6 +1,4 @@
-﻿using TpsParser.Binary;
-
-namespace TpsParser.Tps.Header
+﻿namespace TpsParser.Tps.Header
 {
     public sealed class MetadataHeader : Header
     {
@@ -10,7 +8,7 @@ namespace TpsParser.Tps.Header
 
         public bool IsAboutKeyOrIndex => AboutType < 0xF3;
 
-        public MetadataHeader(RandomAccess rx)
+        public MetadataHeader(TpsReader rx)
             : base(rx)
         {
             AssertIsType(0xF6);

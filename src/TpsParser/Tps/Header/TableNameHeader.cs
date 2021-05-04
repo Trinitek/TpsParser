@@ -1,6 +1,4 @@
-﻿using TpsParser.Binary;
-
-namespace TpsParser.Tps.Header
+﻿namespace TpsParser.Tps.Header
 {
     /// <summary>
     /// Represents a file structure that contains the name of a table.
@@ -25,7 +23,7 @@ namespace TpsParser.Tps.Header
         /// Instantiates a new header that describes the name of the table.
         /// </summary>
         /// <param name="rx"></param>
-        public TableNameHeader(RandomAccess rx)
+        public TableNameHeader(TpsReader rx)
             : base(rx, readTable: false)
         {
             AssertIsType(0xFE);

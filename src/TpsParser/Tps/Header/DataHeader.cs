@@ -1,12 +1,10 @@
-﻿using TpsParser.Binary;
-
-namespace TpsParser.Tps.Header
+﻿namespace TpsParser.Tps.Header
 {
     public sealed class DataHeader : Header
     {
         public int RecordNumber { get; }
 
-        public DataHeader(RandomAccess rx)
+        public DataHeader(TpsReader rx)
             : base(rx)
         {
             AssertIsType(0xF3);

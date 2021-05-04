@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TpsParser.Binary;
 using TpsParser.Tps.Header;
 
 namespace TpsParser.Tps
@@ -11,14 +10,14 @@ namespace TpsParser.Tps
         public int Flags { get; }
         public int RecordLength { get; }
         public int HeaderLength { get; }
-        public RandomAccess Data { get; }
+        public TpsReader Data { get; }
         public IHeader Header { get; private set; }
 
         /// <summary>
         /// Creates a new <see cref="TpsRecord"/>. This is typically done on the first of a list.
         /// </summary>
         /// <param name="rx">The data to read from.</param>
-        public TpsRecord(RandomAccess rx)
+        public TpsRecord(TpsReader rx)
         {
             if (rx == null)
             {
@@ -45,7 +44,7 @@ namespace TpsParser.Tps
         /// </summary>
         /// <param name="previous">The previous record.</param>
         /// <param name="rx">The data to read from.</param>
-        public TpsRecord(TpsRecord previous, RandomAccess rx)
+        public TpsRecord(TpsRecord previous, TpsReader rx)
         {
             if (previous == null)
             {
@@ -84,7 +83,7 @@ namespace TpsParser.Tps
             newData.AddRange(previous.Data.GetData().Take(copy));
             newData.AddRange(rx.ReadBytes(RecordLength - copy));
 
-            Data = new RandomAccess(newData.ToArray());
+            Data = new TpsReader(newData.ToArray());
 
             if (Data.Length != RecordLength)
             {

@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -15,7 +14,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new ULONG.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsUnsignedLong(RandomAccess rx)
+        public TpsUnsignedLong(TpsReader rx)
         {
             if (rx == null)
             {

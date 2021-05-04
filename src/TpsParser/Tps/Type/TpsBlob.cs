@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -17,7 +16,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new BLOB.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsBlob(RandomAccess rx)
+        public TpsBlob(TpsReader rx)
         {
             if (rx == null)
             {

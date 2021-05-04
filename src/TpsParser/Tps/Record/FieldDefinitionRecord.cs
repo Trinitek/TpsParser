@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using TpsParser.Binary;
 using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
@@ -120,7 +119,7 @@ namespace TpsParser.Tps.Record
 
         public IFieldDefinitionRecord OwnerGroup { get; }
 
-        public FieldDefinitionRecord(RandomAccess rx, IFieldDefinitionRecord ownerGroup)
+        public FieldDefinitionRecord(TpsReader rx, IFieldDefinitionRecord ownerGroup)
         {
             if (rx == null)
             {

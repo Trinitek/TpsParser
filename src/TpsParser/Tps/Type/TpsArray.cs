@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Type
 {
@@ -166,7 +165,7 @@ namespace TpsParser.Tps.Type
             }
         }
 
-        internal static TpsObject Parse(RandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
+        internal static TpsObject Parse(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {

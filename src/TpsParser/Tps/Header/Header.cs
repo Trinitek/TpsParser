@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Header
 {
@@ -29,7 +28,7 @@ namespace TpsParser.Tps.Header
         /// Instantiates a new header.
         /// </summary>
         /// <param name="rx"></param>
-        public Header(RandomAccess rx)
+        public Header(TpsReader rx)
             : this(rx, true)
         { }
 
@@ -38,7 +37,7 @@ namespace TpsParser.Tps.Header
         /// </summary>
         /// <param name="rx"></param>
         /// <param name="readTable"></param>
-        public Header(RandomAccess rx, bool readTable)
+        public Header(TpsReader rx, bool readTable)
         {
             if (rx == null)
             {

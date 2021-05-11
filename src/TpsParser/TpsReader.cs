@@ -819,31 +819,8 @@ namespace TpsParser
             // Sign
             high |= ((ulong)data[0] & 0xF0) << 56;
 
-            //byte first = data[0];
-
-            //high |= (ulong)(first & 0xF0) << 56;
-
-            // First byte contains the sign in the high nibble and possibly a digit in the lower, but only if there are an
-            // odd number of possible digits. In other words, if there are 2 digits, they will both be in the second byte,
-            // and the first byte's lower nibble will be zero, effectively making 3 digits where the first is a leading zero.
-
-            //int possibleDigits = 1 + (length - 1) * 2;
-
-            //int shift = 0;
-
-            //if (length > 16)
-            //{
-            //
-            //}
-            //
-            //for (int i = 0; i < length - 1; i++)
-            //{
-            //    ReadByte()
-            //}
-
             return new TpsDecimal(high, low, places);
         }
-            //new TpsDecimal(ReadBinaryCodedDecimal(length, digitsAfterDecimalPoint));
 
         /// <summary>
         /// Reads a <see cref="TpsString"/> and advances the current position.

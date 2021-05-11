@@ -233,7 +233,7 @@ namespace TpsParser.Tps.Type
         public override Maybe<bool> ToBoolean() => new Maybe<bool>(!IsZero);
 
         /// <summary>
-        /// Gets the value as a <see cref="decimal"/>. Clarion allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
+        /// Gets the value as a <see cref="decimal"/>. This type allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
         /// </summary>
         public override Maybe<decimal> ToDecimal()
         {

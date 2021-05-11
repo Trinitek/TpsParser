@@ -111,12 +111,12 @@ namespace TpsParser.Tests.Tps.Binary
         [TestCase("-1.23", 2, 2, new byte[] { 0xF1, 0x23 })]
         [TestCase("0.00000000", 7, 8, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })]
         [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
-        public void ShouldParseBCD(string value, int bcdLength, int bcdDigitsAfterDecimal, byte[] data)
+        public void ShouldParseBCD(string value, int bcdLength, byte bcdDigitsAfterDecimal, byte[] data)
         {
             var rx = new TpsReader(data);
-            var bcd = rx.ReadBinaryCodedDecimal(bcdLength, bcdDigitsAfterDecimal);
+            var bcd = rx.ReadTpsDecimal(bcdLength, bcdDigitsAfterDecimal);
 
-            Assert.AreEqual(value, bcd);
+            Assert.AreEqual(value, bcd.ToString());
         }
 
         [Test]

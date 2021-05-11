@@ -813,7 +813,7 @@ namespace TpsParser
                 }
             }
 
-            // Most significant digit (if present)
+            // Most significant digit (may be zero)
             current |= ((ulong)data[0] & 0x0F) << (8 * shift);
 
             // Sign

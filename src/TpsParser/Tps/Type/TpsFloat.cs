@@ -21,5 +21,14 @@
         /// Returns true if the value is not zero.
         /// </summary>
         public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0.0);
+
+        /// <inheritdoc/>
+        public override Maybe<float> ToFloat() => new Maybe<float>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<double> ToDouble() => new Maybe<double>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<decimal> ToDecimal() => new Maybe<decimal>((decimal)Value);
     }
 }

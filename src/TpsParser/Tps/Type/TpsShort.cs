@@ -18,5 +18,26 @@
         /// Returns true if the value is not zero.
         /// </summary>
         public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0);
+
+        /// <inheritdoc/>
+        public override Maybe<ushort> ToUInt16() => new Maybe<ushort>((ushort)Value);
+
+        /// <inheritdoc/>
+        public override Maybe<short> ToInt16() => new Maybe<short>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<uint> ToUInt32() => new Maybe<uint>((uint)Value);
+
+        /// <inheritdoc/>
+        public override Maybe<int> ToInt32() => new Maybe<int>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<ulong> ToUInt64() => new Maybe<ulong>((ulong)Value);
+
+        /// <inheritdoc/>
+        public override Maybe<long> ToInt64() => new Maybe<long>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<decimal> ToDecimal() => new Maybe<decimal>(Value);
     }
 }

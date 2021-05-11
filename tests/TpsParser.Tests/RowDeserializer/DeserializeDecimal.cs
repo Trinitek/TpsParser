@@ -13,7 +13,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsDecimalData), nameof(ShouldDeserializeDecimalAsDecimalData.Data))]
         public void ShouldDeserializeDecimalAsDecimal(string value, decimal expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -22,7 +22,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsDecimalData), nameof(ShouldDeserializeDecimalAsDecimalData.Data))]
         public void ShouldDeserializeDecimalAsNullableDecimal(string value, decimal expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<NullableDecimalModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -46,7 +46,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5")]
         public void ShouldDeserializeDecimalAsString(string value)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalStringModel>();
 
             Assert.AreEqual(value, des.Price);
@@ -57,7 +57,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5")]
         public void ShouldDeserializeDecimalAsTpsStringField(string value)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalTpsStringFieldModel>();
 
             Assert.AreEqual(value, des.Price);
@@ -68,7 +68,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", true)]
         public void ShouldDeserializeDecimalAsBoolean(string value, bool expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalBooleanModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -79,7 +79,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", true)]
         public void ShouldDeserializeDecimalAsTpsBooleanField(string value, bool expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalTpsBooleanFieldModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -90,7 +90,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (int)3)]
         public void ShouldDeserializeDecimalAsInt(string value, int expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalIntModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -99,7 +99,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableIntData), nameof(ShouldDeserializeDecimalAsNullableIntData.Data))]
         public void ShouldDeserializeDecimalAsNullableInt(string value, int? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableIntModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -123,7 +123,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (uint)3)]
         public void ShouldDeserializeDecimalAsUInt(string value, uint expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalUIntModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -132,7 +132,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableUIntData), nameof(ShouldDeserializeDecimalAsNullableUIntData.Data))]
         public void ShouldDeserializeDecimalAsNullableUInt(string value, uint? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableUIntModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -156,7 +156,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (short)3)]
         public void ShouldDeserializeDecimalAsShort(string value, short expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalShortModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -165,7 +165,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableShortData), nameof(ShouldDeserializeDecimalAsNullableShortData.Data))]
         public void ShouldDeserializeDecimalAsNullableShort(string value, short? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableShortModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -189,7 +189,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (ushort)3)]
         public void ShouldDeserializeDecimalAsUShort(string value, ushort expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalUShortModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -198,7 +198,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableUShortData), nameof(ShouldDeserializeDecimalAsNullableUShortData.Data))]
         public void ShouldDeserializeDecimalAsNullableUShort(string value, ushort? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableUShortModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -222,7 +222,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (long)3)]
         public void ShouldDeserializeDecimalAsLong(string value, long expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalLongModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -231,7 +231,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableLongData), nameof(ShouldDeserializeDecimalAsNullableLongData.Data))]
         public void ShouldDeserializeDecimalAsNullableLong(string value, long? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableLongModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -255,7 +255,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (ulong)3)]
         public void ShouldDeserializeDecimalAsULong(string value, ulong expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalULongModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -264,7 +264,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableULongData), nameof(ShouldDeserializeDecimalAsNullableULongData.Data))]
         public void ShouldDeserializeDecimalAsNullableULong(string value, ulong? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableULongModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -288,7 +288,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (byte)3)]
         public void ShouldDeserializeDecimalAsByte(string value, byte expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalByteModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -297,7 +297,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableByteData), nameof(ShouldDeserializeDecimalAsNullableByteData.Data))]
         public void ShouldDeserializeDecimalAsNullableByte(string value, byte? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableByteModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -321,7 +321,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5", (sbyte)3)]
         public void ShouldDeserializeDecimalAsSByte(string value, sbyte expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalSByteModel>();
 
             Assert.AreEqual(expected, des.Price);
@@ -330,7 +330,7 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsNullableSByteData), nameof(ShouldDeserializeDecimalAsNullableSByteData.Data))]
         public void ShouldDeserializeDecimalAsNullableSByte(string value, sbyte? expected)
         {
-            var row = BuildRow(1, ("Price", new TpsDecimal(value)));
+            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
             var des = row.Deserialize<DecimalNullableSByteModel>();
 
             Assert.AreEqual(expected, des.Price);

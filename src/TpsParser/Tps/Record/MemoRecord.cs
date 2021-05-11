@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using TpsParser.Tps.Header;
 using TpsParser.Tps.Type;
 
@@ -57,7 +56,7 @@ namespace TpsParser.Tps.Record
             }
             else
             {
-                return new TpsString(Data, Encoding.GetEncoding("ISO-8859-1"));
+                return Data.ReadTpsString(TpsParser.DefaultEncoding);
             }
         }
     }

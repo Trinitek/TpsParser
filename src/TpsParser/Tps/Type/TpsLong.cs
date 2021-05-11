@@ -35,5 +35,20 @@ namespace TpsParser.Tps.Type
         /// For more information about the Clarion Standard Time, see the remarks section of <see cref="TpsTime"/>.
         /// </summary>
         public override Maybe<TimeSpan> ToTimeSpan() => new Maybe<TimeSpan>(new TimeSpan(0, 0, 0, 0, Value * 10));
+
+        /// <inheritdoc/>
+        public override Maybe<uint> ToUInt32() => new Maybe<uint>((uint)Value);
+
+        /// <inheritdoc/>
+        public override Maybe<int> ToInt32() => new Maybe<int>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<ulong> ToUInt64() => new Maybe<ulong>((ulong)Value);
+
+        /// <inheritdoc/>
+        public override Maybe<long> ToInt64() => new Maybe<long>(Value);
+
+        /// <inheritdoc/>
+        public override Maybe<decimal> ToDecimal() => new Maybe<decimal>(Value);
     }
 }

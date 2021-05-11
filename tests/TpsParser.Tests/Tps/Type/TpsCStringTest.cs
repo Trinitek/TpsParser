@@ -13,7 +13,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var rx = new TpsReader(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00 });
 
-            var str = new TpsCString(rx, Encoding.ASCII);
+            var str = rx.ReadTpsCString(Encoding.ASCII);
 
             Assert.AreEqual("Hello", str.Value);
         }

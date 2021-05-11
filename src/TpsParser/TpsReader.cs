@@ -316,8 +316,7 @@ namespace TpsParser
 
             AssertSpace(length);
 
-            int reference = BaseOffset + Position;
-            string result = encoding.GetString(Data.ToArray(), reference, length);
+            string result = encoding.GetString(Data.ToArray(), AbsolutePosition, length);
 
             Position += length;
 
@@ -419,10 +418,11 @@ namespace TpsParser
             }
             else
             {
-                return Data
-                    .Skip(BaseOffset)
-                    .Take(Length)
-                    .ToArray();
+                byte[] dest = new byte[Length];
+
+                Array.Copy(Data, BaseOffset, dest, 0, Length);
+
+                return dest;
             }
         }
 
@@ -435,29 +435,24 @@ namespace TpsParser
         {
             AssertSpace(length);
 
-            int reference = BaseOffset + Position;
+            int reference = AbsolutePosition;
             Position += length;
 
             return new TpsReader(Data, reference, length);
         }
 
         /// <summary>
-        /// Reads an array from the current position and advances the position.
+        /// Reads an array of bytes and advances the position.
         /// </summary>
         /// <param name="length"></param>
         /// <returns></returns>
         public byte[] ReadBytes(int length)
         {
-            AssertSpace(length);
-
-            int reference = BaseOffset + Position;
+            var dest = PeekBytes(length);
 
             Position += length;
 
-            return Data
-                .Skip(reference)
-                .Take(length)
-                .ToArray();
+            return dest;
         }
 
         /// <summary>
@@ -469,12 +464,11 @@ namespace TpsParser
         {
             AssertSpace(length);
 
-            int reference = BaseOffset + Position;
+            byte[] dest = new byte[length];
 
-            return Data
-                .Skip(reference)
-                .Take(length)
-                .ToArray();
+            Array.Copy(Data, AbsolutePosition, dest, 0, length);
+
+            return dest;
         }
 
         /// <summary>
@@ -557,13 +551,11 @@ namespace TpsParser
         /// <returns></returns>
         public byte[] GetRemainder()
         {
-            int reference = BaseOffset + Position;
-
             byte[] result = new byte[Length - Position];
 
             Array.Copy(
                 sourceArray: Data,
-                sourceIndex: reference,
+                sourceIndex: AbsolutePosition,
                 destinationArray: result,
                 destinationIndex: 0,
                 length: result.Length);
@@ -785,10 +777,73 @@ namespace TpsParser
         /// <summary>
         /// Reads a <see cref="TpsDecimal"/> and advances the current position.
         /// </summary>
-        /// <param name="length">The total number of digits in the number.</param>
+        /// <param name="length">The total number of bytes that represent the number.</param>
         /// <param name="digitsAfterDecimalPoint">The number of digits in the fractional part of the number.</param>
         /// <returns></returns>
-        public TpsDecimal ReadTpsDecimal(int length, int digitsAfterDecimalPoint) => new TpsDecimal(ReadBinaryCodedDecimal(length, digitsAfterDecimalPoint));
+        public TpsDecimal ReadTpsDecimal(int length, byte digitsAfterDecimalPoint)
+        {
+            if (length < 1 || length > 16)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Expected a byte length between 1 and 16 inclusive.");
+            }
+
+            ulong high = default;
+            ulong low = default;
+            byte places = digitsAfterDecimalPoint;
+
+            ref ulong current = ref (length > 16) ? ref high : ref low;
+
+            byte[] data = ReadBytes(length);
+
+            int shift = 0;
+
+            // Write the least significant 30 digits
+            for (int i = length - 1; i > 0; i--)
+            {
+                current |= (ulong)data[i] << (8 * shift);
+
+                if (i == 16)
+                {
+                    shift = 0;
+                    current = ref high;
+                }
+                else
+                {
+                    shift++;
+                }
+            }
+
+            // Most significant digit (if present)
+            current |= ((ulong)data[0] & 0x0F) << (8 * shift);
+
+            // Sign
+            high |= ((ulong)data[0] & 0xF0) << 56;
+
+            //byte first = data[0];
+
+            //high |= (ulong)(first & 0xF0) << 56;
+
+            // First byte contains the sign in the high nibble and possibly a digit in the lower, but only if there are an
+            // odd number of possible digits. In other words, if there are 2 digits, they will both be in the second byte,
+            // and the first byte's lower nibble will be zero, effectively making 3 digits where the first is a leading zero.
+
+            //int possibleDigits = 1 + (length - 1) * 2;
+
+            //int shift = 0;
+
+            //if (length > 16)
+            //{
+            //
+            //}
+            //
+            //for (int i = 0; i < length - 1; i++)
+            //{
+            //    ReadByte()
+            //}
+
+            return new TpsDecimal(high, low, places);
+        }
+            //new TpsDecimal(ReadBinaryCodedDecimal(length, digitsAfterDecimalPoint));
 
         /// <summary>
         /// Reads a <see cref="TpsString"/> and advances the current position.

@@ -61,5 +61,8 @@ namespace TpsParser.Tps.Type
         /// Returns true if the value is not equal to <see cref="TimeSpan.Zero"/>.
         /// </summary>
         public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != TimeSpan.Zero);
+
+        /// <inheritdoc/>
+        public override Maybe<TimeSpan> ToTimeSpan() => new Maybe<TimeSpan>(Value);
     }
 }

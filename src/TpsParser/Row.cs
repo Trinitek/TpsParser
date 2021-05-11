@@ -136,15 +136,18 @@ namespace TpsParser
                 {
                     string tpsFieldName = member.FieldAttribute.FieldName;
                     TpsObject tpsFieldValue = GetRowValue(tpsFieldName, member.FieldAttribute.IsRequired);
-                    object tpsValue = member.FieldAttribute.InterpretValue(member.MemberInfo, tpsFieldValue);
+                    object clrValue = member.FieldAttribute.InterpretValue(member.MemberInfo, tpsFieldValue);
 
                     try
                     {
-                        member.SetMember(targetObject, tpsValue);
+                        member.SetMember(targetObject, clrValue);
                     }
-                    catch (Exception ex) when (ex.GetType() != typeof(TpsParserException))
+                    catch (Exception ex) when (!(ex is TpsParserException))
                     {
-                        throw new TpsParserException($"Cannot set member [{member}] to value '{tpsValue}' of type '{tpsValue.GetType()}' (Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). See the inner exception for details.", ex);
+                        throw new TpsParserException(
+                            $"Cannot set member [{member}] to value '{clrValue}' of type '{clrValue?.GetType()}' " +
+                            $"(Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). " +
+                            $"See the inner exception for details.", ex);
                     }
                 }
             }

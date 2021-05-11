@@ -63,5 +63,8 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <returns></returns>
         public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != null);
+
+        /// <inheritdoc/>
+        public override Maybe<DateTime?> ToDateTime() => new Maybe<DateTime?>(Value);
     }
 }

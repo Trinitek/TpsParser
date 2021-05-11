@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TpsParser.Tps.Type
+namespace TpsParser
 {
     /// <summary>
     /// Represents a value that may or may not be present.
@@ -20,8 +20,16 @@ namespace TpsParser.Tps.Type
         /// <exception cref="InvalidOperationException">
         /// Thrown when no value has been assigned.
         /// </exception>
-        public T Value => HasValue ? _value : throw new InvalidOperationException("No value has been assigned.");
+        public T Value => HasValue ? _value : throw new InvalidOperationException(
+                $"The TPS object does not implement a conversion to {typeof(T)}. No value has been assigned.");
         private readonly T _value;
+
+        /// <summary>
+        /// Gets the value or the default value of T if it is not set.
+        /// </summary>
+        public T ValueOrDefault => HasValue ? Value : default;
+
+        //public TOther ValueOr<TOther>() => HasValue ? (TOther)Value : default(TOther);
 
         /// <summary>
         /// Instantiates a new instance with a value.
@@ -29,11 +37,6 @@ namespace TpsParser.Tps.Type
         /// <param name="value">The value to use. Must not be null.</param>
         public Maybe(T value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
             HasValue = true;
             _value = value;
         }
@@ -60,5 +63,11 @@ namespace TpsParser.Tps.Type
 
         /// <inheritdoc/>
         public static bool operator !=(Maybe<T> left, Maybe<T> right) => !(left == right);
+    }
+
+    internal static class MaybeExtensions
+    {
+        public static T? AsNullable<T>(this Maybe<T> maybe) where T : struct
+            => maybe.HasValue ? maybe.Value : default(T?);
     }
 }

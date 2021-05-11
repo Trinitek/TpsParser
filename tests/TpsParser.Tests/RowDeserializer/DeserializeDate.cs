@@ -100,7 +100,7 @@ namespace TpsParser.Tests.RowDeserializer
         {
             int clarionStandardDate = 80085;
 
-            var row = BuildRow(1, ("Date", new TpsDecimal(clarionStandardDate.ToString())));
+            var row = BuildRow(1, ("Date", TpsDecimal.Parse(clarionStandardDate.ToString())));
 
             var deserialized = row.Deserialize<DateModel>();
 
@@ -112,7 +112,7 @@ namespace TpsParser.Tests.RowDeserializer
         {
             int clarionStandardDate = 80085;
 
-            var row = BuildRow(1, ("Date", new TpsDecimal(clarionStandardDate.ToString())));
+            var row = BuildRow(1, ("Date", TpsDecimal.Parse(clarionStandardDate.ToString())));
 
             var deserialized = row.Deserialize<NullDateModel>();
 

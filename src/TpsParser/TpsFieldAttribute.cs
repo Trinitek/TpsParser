@@ -79,137 +79,123 @@ namespace TpsParser
 
             Type memberType = GetMemberType(member);
 
-            var interpretedValue = InterpretValuePrivate(memberType, sourceObject);
+            object interpretedValue;
+
+            try
+            {
+                interpretedValue = InterpretValuePrivate(memberType, sourceObject);
+            }
+            catch (Exception ex)
+            {
+                throw new TpsParserException(
+                    $"Could not interpret value of type {sourceObject.GetType()} as {memberType}. " +
+                    $"See the inner exception for details.", ex);
+            }
 
             return CoerceFallback(interpretedValue);
         }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Not applicable when not converting strings.")]
-        private static object ConvertOrDefault<TTarget>(Type memberType, object value) => value is null ? default(TTarget) : Convert.ChangeType(value, memberType);
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Not applicable when not converting strings.")]
+        
         private static object InterpretValuePrivate(Type memberType, TpsObject sourceObject)
         {
-            if (memberType == typeof(DateTime?))
+            if (memberType == typeof(DateTime))
             {
-                switch (sourceObject)
-                {
-                    case IConvertible<DateTime> dateTimeConvertible:
-                        return dateTimeConvertible.AsType();
-                    case IConvertible<DateTime?> nullableDateTimeConvertible:
-                        return nullableDateTimeConvertible.AsType();
-                    default:
-                        return ConvertOrDefault<DateTime?>(memberType, sourceObject);
-                }
+                return sourceObject.ToDateTime().Value ?? default;
             }
-            else if (memberType == typeof(DateTime))
+            else if (memberType == typeof(DateTime?))
             {
-                switch (sourceObject)
-                {
-                    case IConvertible<DateTime> dateTimeConvertible:
-                        return dateTimeConvertible.AsType();
-                    case IConvertible<DateTime?> nullableDateTimeConvertible:
-                        return nullableDateTimeConvertible.AsType() ?? default;
-                    default:
-                        return ConvertOrDefault<DateTime>(memberType, sourceObject);
-                }
-            }
-            else if (memberType == typeof(TimeSpan?))
-            {
-                switch (sourceObject)
-                {
-                    case IConvertible<TimeSpan> timeSpanConvertible:
-                        return timeSpanConvertible.AsType();
-                    case IConvertible<TimeSpan?> nullableTimeSpanConvertible:
-                        return nullableTimeSpanConvertible.AsType() ?? default;
-                    default:
-                        return ConvertOrDefault<TimeSpan?>(memberType, sourceObject);
-                }
+                return sourceObject.ToDateTime().Value;
             }
             else if (memberType == typeof(TimeSpan))
             {
-                switch (sourceObject)
-                {
-                    case IConvertible<TimeSpan> timeSpanConvertible:
-                        return timeSpanConvertible.AsType();
-                    case IConvertible<TimeSpan?> nullableTimeSpanConvertible:
-                        return nullableTimeSpanConvertible.AsType() ?? default;
-                    default:
-                        return ConvertOrDefault<TimeSpan>(memberType, sourceObject);
-                }
+                return sourceObject.ToTimeSpan().Value;
             }
-            else if (memberType == typeof(bool) || memberType == typeof(bool?))
+            else if (memberType == typeof(TimeSpan?))
             {
-                return ((IConvertible<bool>)sourceObject)?.AsType() ?? default;
+                return sourceObject.ToTimeSpan().AsNullable();
+            }
+            else if (memberType == typeof(bool))
+            {
+                return sourceObject.ToBoolean().Value;
+            }
+            else if (memberType == typeof(bool?))
+            {
+                return sourceObject.ToBoolean().AsNullable();
             }
             else if (memberType == typeof(string))
             {
-                return sourceObject?.ToString();
-            }
-            else if (memberType == typeof(decimal?))
-            {
-                switch (sourceObject)
-                {
-                    case IConvertible<decimal> decimalConvertible:
-                        return decimalConvertible.AsType();
-                    case IConvertible<decimal?> nullableDecimalConvertible:
-                        return nullableDecimalConvertible.AsType();
-                    default:
-                        return ConvertOrDefault<decimal?>(memberType, sourceObject);
-                }
+                return sourceObject.ToString();
             }
             else if (memberType == typeof(decimal))
             {
-                switch (sourceObject)
-                {
-                    case IConvertible<decimal> decimalConvertible:
-                        return decimalConvertible.AsType();
-                    case IConvertible<decimal?> nullableDecimalConvertible:
-                        return nullableDecimalConvertible.AsType() ?? default;
-                    default:
-                        return ConvertOrDefault<decimal>(memberType, sourceObject);
-                }
+                return sourceObject.ToDecimal().Value;
             }
-            else if (memberType == typeof(int) || memberType == typeof(int?)
-                || memberType == typeof(short) || memberType == typeof(short?)
-                || memberType == typeof(long) || memberType == typeof(long?)
-                || memberType == typeof(sbyte) || memberType == typeof(sbyte?))
+            else if (memberType == typeof(decimal?))
             {
-                if (sourceObject is IConvertible<decimal> decimalSource)
-                {
-                    decimal sourceValue = decimalSource.AsType();
-                    Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
-
-                    // Convert will round to the nearest whole value, so we floor/ceiling the value to emulate behavior of an explicit cast.
-                    decimal value = sourceValue < 0 ? Math.Ceiling(sourceValue) : Math.Floor(sourceValue);
-
-                    return Convert.ChangeType(value, destType);
-                }
-                else
-                {
-                    return sourceObject?.Value;
-                }
+                return sourceObject.ToDecimal().AsNullable();
             }
-            else if (memberType == typeof(uint) || memberType == typeof(uint?)
-                || memberType == typeof(ushort) || memberType == typeof(ushort?)
-                || memberType == typeof(ulong) || memberType == typeof(ulong?)
-                || memberType == typeof(byte) || memberType == typeof(byte?))
+            else if (memberType == typeof(int))
             {
-                if (sourceObject is TpsDecimal decimalSource)
-                {
-                    decimal sourceValue = ((IConvertible<decimal>)decimalSource).AsType();
-                    Type destType = Nullable.GetUnderlyingType(memberType) ?? memberType;
-
-                    // Convert will round to the nearest whole value, so we floor the value to emulate the behavior of an explicit cast.
-                    // If the value is negative, we coerce it to zero.
-                    decimal value = sourceValue < 0 ? 0 : Math.Floor(sourceValue);
-
-                    return Convert.ChangeType(value, destType);
-                }
-                else
-                {
-                    return sourceObject?.Value;
-                }
+                return sourceObject.ToInt32().Value;
+            }
+            else if (memberType == typeof(int?))
+            {
+                return sourceObject.ToInt32().AsNullable();
+            }
+            else if (memberType == typeof(short))
+            {
+                return sourceObject.ToInt16().Value;
+            }
+            else if (memberType == typeof(short?))
+            {
+                return sourceObject.ToInt16().AsNullable();
+            }
+            else if (memberType == typeof(long))
+            {
+                return sourceObject.ToInt64().Value;
+            }
+            else if (memberType == typeof(long?))
+            {
+                return sourceObject.ToInt64().AsNullable();
+            }
+            else if (memberType == typeof(sbyte))
+            {
+                return sourceObject.ToSByte().Value;
+            }
+            else if (memberType == typeof(sbyte?))
+            {
+                return sourceObject.ToSByte().AsNullable();
+            }
+            else if (memberType == typeof(uint))
+            {
+                return sourceObject.ToUInt32().Value;
+            }
+            else if (memberType == typeof(uint?))
+            {
+                return sourceObject.ToUInt32().AsNullable();
+            }
+            else if (memberType == typeof(ushort))
+            {
+                return sourceObject.ToUInt16().Value;
+            }
+            else if (memberType == typeof(ushort?))
+            {
+                return sourceObject.ToUInt16().AsNullable();
+            }
+            else if (memberType == typeof(ulong))
+            {
+                return sourceObject.ToUInt64().Value;
+            }
+            else if (memberType == typeof(ulong?))
+            {
+                return sourceObject.ToUInt64().AsNullable();
+            }
+            else if (memberType == typeof(byte))
+            {
+                return sourceObject.ToByte().Value;
+            }
+            else if (memberType == typeof(byte?))
+            {
+                return sourceObject.ToByte().AsNullable();
             }
             else
             {

@@ -64,7 +64,7 @@ namespace TpsParser.Tps.Record
         /// <summary>
         /// If the field contains a <see cref="TpsDecimal"/>, gets the number of places after the decimal point.
         /// </summary>
-        int BcdDigitsAfterDecimalPoint { get; }
+        byte BcdDigitsAfterDecimalPoint { get; }
 
         /// <summary>
         /// If the field contains a <see cref="TpsDecimal"/>, gets the number of decimal places.
@@ -111,7 +111,7 @@ namespace TpsParser.Tps.Record
 
         public string StringMask { get; }
 
-        public int BcdDigitsAfterDecimalPoint { get; }
+        public byte BcdDigitsAfterDecimalPoint { get; }
 
         public int BcdElementLength { get; }
 

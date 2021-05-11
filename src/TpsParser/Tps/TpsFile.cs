@@ -112,6 +112,10 @@ namespace TpsParser.Tps
     {
         private TpsReader Data { get; }
 
+        private TpsHeader _header;
+        private IEnumerable<TpsBlock> _blocks;
+        private IEnumerable<TpsBlock> _blocksIgnoredErrors;
+
         public RandomAccessTpsFile(Stream stream, Encoding encoding)
             : base(encoding)
         {
@@ -179,31 +183,56 @@ namespace TpsParser.Tps
 
         public override TpsHeader GetHeader()
         {
-            Data.JumpAbsolute(0);
-
-            var header = new TpsHeader(Data);
-
-            if (!header.IsTopSpeedFile)
+            if (_header is null)
             {
-                throw new NotATopSpeedFileException($"Not a TopSpeed file ({header.MagicNumber})");
+                Data.JumpAbsolute(0);
+
+                _header = Data.ReadTpsHeader();
+
+                if (!_header.IsTopSpeedFile)
+                {
+                    throw new NotATopSpeedFileException($"Not a TopSpeed file ({_header.MagicNumber})");
+                }
             }
 
-            return header;
+            return _header;
         }
 
         public override IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors)
         {
-            var header = GetHeader();
+            if (ignoreErrors)
+            {
+                if (_blocksIgnoredErrors is null)
+                {
+                    _blocksIgnoredErrors = local_GetBlocks();
+                }
 
-            var blocks = Enumerable.Range(0, header.PageStart.Count)
-                .Select(i => (offset: header.PageStart[i], end: header.PageEnd[i]))
+                return _blocksIgnoredErrors;
+            }
+            else
+            {
+                if (_blocks is null)
+                {
+                    _blocks = local_GetBlocks();
+                }
 
-                // Skip the first entry (0 length) and any blocks that are beyond the file size
-                .Where(pair => !(((pair.offset == 0x200) && (pair.end == 0x200)) || (pair.offset >= Data.Length)))
+                return _blocks;
+            }
 
-                .Select(pair => new TpsBlock(Data, pair.offset, pair.end, ignoreErrors));
+            IEnumerable<TpsBlock> local_GetBlocks()
+            {
+                var header = GetHeader();
 
-            return blocks;
+                return Enumerable.Range(0, header.PageStart.Count)
+                    .Select(i => (offset: header.PageStart[i], end: header.PageEnd[i]))
+
+                    // Skip the first entry (0 length) and any blocks that are beyond the file size
+                    .Where(pair => !(((pair.offset == 0x200) && (pair.end == 0x200)) || (pair.offset >= Data.Length)))
+
+                    .Select(pair => new TpsBlock(Data, pair.offset, pair.end, ignoreErrors))
+
+                    .ToList();
+            }
         }
 
         private IEnumerable<TpsRecord> VisitRecords(bool ignoreErrors = false)

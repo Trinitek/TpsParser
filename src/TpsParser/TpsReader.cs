@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TpsParser.Tps;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
@@ -823,7 +824,7 @@ namespace TpsParser
         }
 
         /// <summary>
-        /// Reads a <see cref="TpsString"/> and advances the current position.
+        /// Reads a <see cref="TpsString"/> and consumes the entire data array.
         /// </summary>
         /// <param name="encoding"></param>
         /// <returns></returns>
@@ -868,5 +869,35 @@ namespace TpsParser
         /// </summary>
         /// <returns></returns>
         public TpsPString ReadTpsPString(Encoding encoding) => new TpsPString(ReadPascalString(encoding));
+
+        /// <summary>
+        /// Reads a <see cref="TpsHeader"/> and advances the current position.
+        /// </summary>
+        /// <returns></returns>
+        public TpsHeader ReadTpsHeader()
+        {
+            int address = ReadLongLE();
+
+            if (address != 0)
+            {
+                throw new NotATopSpeedFileException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
+            }
+
+            short headerSize = ReadShortLE();
+
+            var headerReader = Read(headerSize - 6);
+
+            return new TpsHeader(
+                headerSize:  headerSize,
+                fileLength1: headerReader.ReadLongLE(),
+                fileLength2: headerReader.ReadLongLE(),
+                magicNumber: headerReader.FixedLengthString(4),
+                zeroes: headerReader.ReadShortLE(),
+                lastIssuedRow: headerReader.ReadLongBE(),
+                changes: headerReader.ReadLongLE(),
+                managementPageReference: headerReader.ToFileOffset(headerReader.ReadLongLE()),
+                pageStart: headerReader.ToFileOffset(headerReader.LongArrayLE((0x110 - 0x20) / 4)),
+                pageEnd: headerReader.ToFileOffset(headerReader.LongArrayLE((0x200 - 0x110) / 4)));
+        }
     }
 }

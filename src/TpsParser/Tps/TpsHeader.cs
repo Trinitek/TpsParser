@@ -9,8 +9,11 @@ namespace TpsParser.Tps
     /// </summary>
     public sealed class TpsHeader
     {
-        public int Address { get; }
+        /// <summary>
+        /// Gets the size of the header in bytes.
+        /// </summary>
         public int HeaderSize { get; }
+
         public int FileLength1 { get; }
         public int FileLength2 { get; }
 
@@ -34,38 +37,46 @@ namespace TpsParser.Tps
 
         public IReadOnlyList<int> PageEnd { get; }
 
-        private TpsReader Data { get; }
-
         /// <summary>
         /// Returns true if the header represents a valid TopSpeed file.
         /// </summary>
         public bool IsTopSpeedFile => MagicNumber == "tOpS";
 
-        public TpsHeader(TpsReader rx)
+        /// <summary>
+        /// Instantiates a new file header.
+        /// </summary>
+        /// <param name="headerSize"></param>
+        /// <param name="fileLength1"></param>
+        /// <param name="fileLength2"></param>
+        /// <param name="magicNumber"></param>
+        /// <param name="zeroes"></param>
+        /// <param name="lastIssuedRow"></param>
+        /// <param name="changes"></param>
+        /// <param name="managementPageReference"></param>
+        /// <param name="pageStart"></param>
+        /// <param name="pageEnd"></param>
+        public TpsHeader(
+            short headerSize,
+            int fileLength1,
+            int fileLength2,
+            string magicNumber,
+            short zeroes,
+            int lastIssuedRow,
+            int changes,
+            int managementPageReference,
+            IReadOnlyList<int> pageStart,
+            IReadOnlyList<int> pageEnd)
         {
-            Data = rx ?? throw new ArgumentNullException(nameof(rx));
-
-            Address = rx.ReadLongLE();
-
-            if (Address != 0)
-            {
-                throw new NotATopSpeedFileException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
-            }
-
-            HeaderSize = rx.ReadShortLE();
-
-            var header = rx.Read(HeaderSize - 6);
-
-            FileLength1 = header.ReadLongLE();
-            FileLength2 = header.ReadLongLE();
-            MagicNumber = header.FixedLengthString(4);
-            Zeroes = header.ReadShortLE();
-            LastIssuedRow = header.ReadLongBE();
-            Changes = header.ReadLongLE();
-            ManagementPageReference = header.ToFileOffset(header.ReadLongLE());
-
-            PageStart = header.ToFileOffset(header.LongArrayLE((0x110 - 0x20) / 4));
-            PageEnd = header.ToFileOffset(header.LongArrayLE((0x200 - 0x110) / 4));
+            HeaderSize = headerSize;
+            FileLength1 = fileLength1;
+            FileLength2 = fileLength2;
+            MagicNumber = magicNumber ?? throw new ArgumentNullException(nameof(magicNumber));
+            Zeroes = zeroes;
+            LastIssuedRow = lastIssuedRow;
+            Changes = changes;
+            ManagementPageReference = managementPageReference;
+            PageStart = pageStart ?? throw new ArgumentNullException(nameof(pageStart));
+            PageEnd = pageEnd ?? throw new ArgumentNullException(nameof(pageEnd));
         }
 
         /// <inheritdoc/>
@@ -73,7 +84,7 @@ namespace TpsParser.Tps
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine($"TpsHeader({StringUtils.ToHex8(Address)},{StringUtils.ToHex4(HeaderSize)},{StringUtils.ToHex8(FileLength1)},{StringUtils.ToHex8(FileLength2)}," +
+            sb.AppendLine($"TpsHeader({StringUtils.ToHex4(HeaderSize)},{StringUtils.ToHex8(FileLength1)},{StringUtils.ToHex8(FileLength2)}," +
                 $"{MagicNumber},{StringUtils.ToHex4(Zeroes)},{StringUtils.ToHex8(LastIssuedRow)},{StringUtils.ToHex8(Changes)},{StringUtils.ToHex8(ManagementPageReference)})");
 
             for (int i = 0; i < PageStart.Count; i++)

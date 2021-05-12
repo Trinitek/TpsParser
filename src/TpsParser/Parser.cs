@@ -12,9 +12,9 @@ using TpsParser.Tps.Type;
 namespace TpsParser
 {
     /// <summary>
-    /// An easy to use reader and object deserializer for TopSpeed files.
+    /// An easy-to-use reader and object deserializer for TopSpeed files.
     /// </summary>
-    public sealed class TpsParser : IDisposable
+    public sealed class Parser : IDisposable
     {
         /// <summary>
         /// Gets the default encoding, ISO-8859-1.
@@ -30,12 +30,12 @@ namespace TpsParser
 
         private DeserializerContext DeserializerContext { get; }
 
-        private TpsParser()
+        private Parser()
         {
             DeserializerContext = new DeserializerContext();
         }
 
-        internal TpsParser(TpsFile tpsFile)
+        internal Parser(TpsFile tpsFile)
             : this()
         {
             TpsFile = tpsFile ?? throw new ArgumentNullException(nameof(tpsFile));
@@ -46,7 +46,7 @@ namespace TpsParser
         /// </summary>
         /// <param name="stream">The stream from which to read the TopSpeed file.</param>
         /// <param name="encoding">The encoding to use when reading string fields.</param>
-        public TpsParser(Stream stream, Encoding encoding = null)
+        public Parser(Stream stream, Encoding encoding = null)
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
@@ -59,7 +59,7 @@ namespace TpsParser
         /// <param name="stream">The stream from which to read the TopSpeed file.</param>
         /// <param name="password">The password or "owner" to use to decrypt the file.</param>
         /// <param name="encoding">The encoding to use when reading string fields.</param>
-        public TpsParser(Stream stream, string password, Encoding encoding = null)
+        public Parser(Stream stream, string password, Encoding encoding = null)
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
@@ -71,7 +71,7 @@ namespace TpsParser
         /// </summary>
         /// <param name="filename">The filename of the TopSpeed file.</param>
         /// <param name="encoding">The encoding to use when reading string fields.</param>
-        public TpsParser(string filename, Encoding encoding = null)
+        public Parser(string filename, Encoding encoding = null)
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
@@ -84,7 +84,7 @@ namespace TpsParser
         /// <param name="filename">The filename of the TopSpeed file.</param>
         /// <param name="password">The password or "owner" to use to decrypt the file.</param>
         /// <param name="encoding">The encoding to use when reading string fields.</param>
-        public TpsParser(string filename, string password, Encoding encoding = null)
+        public Parser(string filename, string password, Encoding encoding = null)
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);

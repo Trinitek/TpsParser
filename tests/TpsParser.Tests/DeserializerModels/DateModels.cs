@@ -16,25 +16,25 @@ namespace TpsParser.Tests.DeserializerModels
 
     public class DateStringModel
     {
-        [TpsStringField("Date")]
+        [StringOptions("Date")]
         public string Date { get; set; }
     }
 
     public class DateStringFormattedModel
     {
-        [TpsStringField("Date", StringFormat = "MM - dd - yyyy")]
+        [StringOptions("Date", StringFormat = "MM - dd - yyyy")]
         public string Date { get; set; }
     }
 
     public class DateStringNonStringMemberModel
     {
-        [TpsStringField("Date")]
+        [StringOptions("Date")]
         public int Date { get; set; }
     }
 
     public class DateStringFallbackModel
     {
-        [TpsStringField("Date", FallbackValue = "nothing")]
+        [StringOptions("Date", FallbackValue = "nothing")]
         public string Date { get; set; }
     }
 }

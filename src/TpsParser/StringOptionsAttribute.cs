@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
@@ -16,8 +15,13 @@ namespace TpsParser
     /// If present on a property, the property must have a setter. The setter may be private.
     /// </para>
     /// </summary>
-    public sealed class TpsStringFieldAttribute : TpsFieldAttribute
+    public sealed class StringOptionsAttribute : TpsFieldAttribute
     {
+        /// <summary>
+        /// True if the beginning of the string should be trimmed.
+        /// </summary>
+        public bool TrimStart { get; set; } = false;
+
         /// <summary>
         /// True if the end of the string should be trimmed. This is useful when converting from <see cref="TpsString"/>
         /// values as those strings are padded with whitespace up to their total lengths. This is true by default.
@@ -28,28 +32,28 @@ namespace TpsParser
         /// Gets or sets the string format to use when calling ToString() on a type that supports it. The invariant culture is used.
         /// If the type does not support a custom format, this value is ignored.
         /// </summary>
-        public string StringFormat { get; set; }
+        public string StringFormat { get; set; } = null;
 
         /// <summary>
         /// Marks the property or field as a TopSpeed field, MEMO, or BLOB.
         /// </summary>
         /// <param name="fieldName">The case insensitive name of the column.</param>
-        public TpsStringFieldAttribute(string fieldName)
+        public StringOptionsAttribute(string fieldName)
             : base(fieldName)
         { }
 
-        internal override object InterpretValue(MemberInfo member, TpsObject sourceObject)
-        {
-            if (member == null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
+        internal StringOptions GetOptions() => new StringOptions(TrimStart, TrimEnd, StringFormat);
 
-            Type memberType = GetMemberType(member);
+        internal override object InterpretValue(Type memberType, TpsObject sourceObject)
+        {
+            if (memberType is null)
+            {
+                throw new ArgumentNullException(nameof(memberType));
+            }
 
             if (memberType != typeof(string))
             {
-                throw new TpsParserException($"{nameof(TpsStringFieldAttribute)} is only valid on members of type {typeof(string)} ({member}).");
+                throw new TpsParserException($"{nameof(StringOptionsAttribute)} is only valid on members of type {typeof(string)}.");
             }
 
             if (sourceObject?.Value is null)

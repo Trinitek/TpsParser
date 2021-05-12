@@ -22,7 +22,7 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            Value = TpsParser.DefaultEncoding.GetString(rx.GetData());
+            Value = Parser.DefaultEncoding.GetString(rx.GetData());
         }
 
         /// <summary>

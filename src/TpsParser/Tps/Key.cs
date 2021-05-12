@@ -15,7 +15,7 @@ namespace TpsParser.Tps
         /// <param name="password">The password or "owner" of the file.</param>
         public Key(string password)
         {
-            var encoding = TpsParser.DefaultEncoding;
+            var encoding = Parser.DefaultEncoding;
             var passwordBytes = encoding.GetBytes(password);
 
             var keyBytes = new byte[passwordBytes.Length + 1];

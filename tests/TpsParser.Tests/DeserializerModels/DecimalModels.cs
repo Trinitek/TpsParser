@@ -20,7 +20,7 @@
 
     public class DecimalTpsStringFieldModel
     {
-        [TpsStringField("Price")]
+        [StringOptions("Price")]
         public string Price { get; set; }
     }
 
@@ -32,7 +32,7 @@
 
     public class DecimalTpsBooleanFieldModel
     {
-        [TpsBooleanField("Price")]
+        [BooleanOptions("Price")]
         public bool Price { get; set; }
     }
 

@@ -4,7 +4,7 @@ using System.Globalization;
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents a signed integer.
+    /// Represents a signed 32-bit integer.
     /// </summary>
     public sealed class TpsLong : TpsObject<int>
     {

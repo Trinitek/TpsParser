@@ -91,7 +91,7 @@ namespace TpsParser.Tests
                     throw new ArgumentNullException(nameof(memoRecords));
                 }
 
-                var mock = new Mock<TpsFile>(TpsParser.DefaultEncoding);
+                var mock = new Mock<TpsFile>(Parser.DefaultEncoding);
 
                 mock.Setup(m => m.GetTableDefinitions(It.IsAny<bool>()))
                     .Returns(new Dictionary<int, ITableDefinitionRecord>()
@@ -132,7 +132,7 @@ namespace TpsParser.Tests
 
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var deserialized = parser.Deserialize<StringModel>().First();
 
@@ -147,7 +147,7 @@ namespace TpsParser.Tests
 
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var deserialized = parser.Deserialize<StringTrimmingEnabledModel>().First();
 
@@ -162,7 +162,7 @@ namespace TpsParser.Tests
 
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var deserialized = parser.Deserialize<StringTrimmingDisabledModel>().First();
 
@@ -181,7 +181,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanTpsFieldAttributeModel>().First();
 
@@ -200,7 +200,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanModel>().First();
 
@@ -219,7 +219,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanTrueModel>().First();
 
@@ -238,7 +238,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanFalseModel>().First();
 
@@ -257,7 +257,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanTrueFalseFallbackTrueModel>().First();
 
@@ -276,7 +276,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanTrueFalseFallbackFalseModel>().First();
 
@@ -295,7 +295,7 @@ namespace TpsParser.Tests
             {
                 var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
-                using (var parser = new TpsParser(file))
+                using (var parser = new Parser(file))
                 {
                     var des = parser.Deserialize<StringBooleanTrueFalseModel>().First();
 

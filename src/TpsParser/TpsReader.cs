@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TpsParser.Tps;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
+    /// <summary>
+    /// Reads primitive and format-specific types from a byte array.
+    /// </summary>
     public sealed class TpsReader
     {
         private byte[] Data { get; }
@@ -164,8 +166,6 @@ namespace TpsParser
         {
             AssertSpace(4);
 
-            int reference = BaseOffset + Position;
-
             int result =
                 Data[AbsolutePosition + 3] & 0xFF
                 | (Data[AbsolutePosition + 2] & 0xFF) << 8
@@ -300,7 +300,7 @@ namespace TpsParser
         /// </summary>
         /// <param name="length">The length of the string to read.</param>
         /// <returns></returns>
-        public string FixedLengthString(int length) => ReadFixedLengthString(length, TpsParser.DefaultEncoding);
+        public string FixedLengthString(int length) => ReadFixedLengthString(length, Parser.DefaultEncoding);
 
         /// <summary>
         /// Reads a fixed length string and advances the current position.
@@ -328,7 +328,7 @@ namespace TpsParser
         /// Reads a zero-terminated string and advances the current position.
         /// </summary>
         /// <returns></returns>
-        public string ZeroTerminatedString() => ReadZeroTerminatedString(TpsParser.DefaultEncoding);
+        public string ZeroTerminatedString() => ReadZeroTerminatedString(Parser.DefaultEncoding);
 
         /// <summary>
         /// Reads a zero-terminated string and advances the current position.

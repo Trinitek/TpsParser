@@ -13,7 +13,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [Test]
         public void ShouldBuildTableWithMemos()
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             {
                 var table = parser.BuildTable();
                 var rows = table.Rows.OrderBy(r => r.Id).ToList();
@@ -48,11 +48,11 @@ namespace TpsParser.Tests.ParserIntegrations
             }
         }
 
-        private IEnumerable<T> InvokeDeserialize<T>(TpsParser parser, Type targetObjectType, bool ignoreErrors)
+        private IEnumerable<T> InvokeDeserialize<T>(Parser parser, Type targetObjectType, bool ignoreErrors)
         {
             // parser.Deserialize<T>()
             return (IEnumerable<T>)parser.GetType()
-                .GetMethod(nameof(TpsParser.Deserialize))
+                .GetMethod(nameof(Parser.Deserialize))
                 .MakeGenericMethod(targetObjectType)
                 .Invoke(parser, new object[] { ignoreErrors });
         }
@@ -67,7 +67,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [TestCase(typeof(MemosPublicSettersModel))]
         public void ShouldDeserializeMemos(Type targetObjectType)
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             {
                 var rows = InvokeDeserialize<IMemoModel>(parser, targetObjectType, ignoreErrors: false)
                     .ToList();
@@ -99,7 +99,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [Test]
         public void ShouldThrowMissingFieldWhenDeserializingMemos()
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             {
                 Assert.Throws<TpsParserException>(() => parser.Deserialize<MemosNotesRequiredModel>().ToList());
             }
@@ -108,7 +108,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [Test]
         public void ShouldDeserializeRecordNumberField()
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             {
                 var rows = parser.Deserialize<MemosRecordNumberFieldModel>().ToList();
 
@@ -122,7 +122,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [Test]
         public void ShouldDeserializeRecordNumberProperty()
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             {
                 var rows = parser.Deserialize<MemosRecordNumberPropertyModel>().ToList();
 
@@ -136,7 +136,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [Test]
         public void ShouldThrowRecordNumberAndFieldAttrOnSameMember()
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             {
                 Assert.Throws<TpsParserException>(() => parser.Deserialize<MemosRecordNumberAndFieldAttrOnSameMemberModel>().ToList());
             }
@@ -145,7 +145,7 @@ namespace TpsParser.Tests.ParserIntegrations
         [Test]
         public void ShouldCancelAsync()
         {
-            using (var parser = new TpsParser("Resources/table-with-memos.tps"))
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
             using (var cts = new CancellationTokenSource())
             {
                 cts.Cancel();

@@ -12,7 +12,7 @@ namespace TpsParser.Tests.TpsFileIntegrations
         {
             using (var stream = new FileStream("Resources/array-of-groups.tps", FileMode.Open))
             {
-                return new RandomAccessTpsFile(stream, TpsParser.DefaultEncoding);
+                return new RandomAccessTpsFile(stream, Parser.DefaultEncoding);
             }
         }
 

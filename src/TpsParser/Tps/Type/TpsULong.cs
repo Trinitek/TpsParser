@@ -3,7 +3,7 @@
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents an unsigned integer.
+    /// Represents an unsigned 32-bit integer.
     /// </summary>
     public sealed class TpsUnsignedLong : TpsObject<uint>
     {

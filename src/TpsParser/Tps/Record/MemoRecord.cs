@@ -56,7 +56,7 @@ namespace TpsParser.Tps.Record
             }
             else
             {
-                return Data.ReadTpsString(TpsParser.DefaultEncoding);
+                return Data.ReadTpsString(Parser.DefaultEncoding);
             }
         }
     }

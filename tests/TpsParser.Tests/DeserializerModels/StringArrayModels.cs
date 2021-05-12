@@ -41,25 +41,25 @@ namespace TpsParser.Tests.DeserializerModels
 
     public class TrimmedStringIEnumerableStringModel
     {
-        [TpsStringField("BArray")]
+        [StringOptions("BArray")]
         public IEnumerable<string> Strings { get; set; }
     }
 
     public class TrimmedStringIReadOnlyListStringModel
     {
-        [TpsStringField("BArray")]
+        [StringOptions("BArray")]
         public IReadOnlyList<string> Strings { get; set; }
     }
 
     public class BooleanIEnumerableStringModel
     {
-        [TpsBooleanField("BArray")]
+        [BooleanOptions("BArray")]
         public IEnumerable<bool> Strings { get; set; }
     }
 
     public class BooleanIReadOnlyListStringModel
     {
-        [TpsBooleanField("BArray")]
+        [BooleanOptions("BArray")]
         public IReadOnlyList<string> Strings { get; set; }
     }
 }

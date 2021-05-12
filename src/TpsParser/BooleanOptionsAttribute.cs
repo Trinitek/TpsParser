@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
@@ -10,19 +9,20 @@ namespace TpsParser
     /// members to provide conversion options for interpreting TopSpeed field values as true or false.
     /// </para>
     /// <para>
-    /// This is especially useful when converting from string fields that represent boolean values in a non-conventional way that
+    /// This is useful when converting from string fields that represent boolean values in a non-conventional way that
     /// cannot be automatically inferred by <see cref="TpsFieldAttribute"/>. For example, a STRING(1) field might encode "Y" as
     /// true and "N" as false.
     /// </para>
     /// <para>
-    /// Where the field is of type STRING, PSTRING, or CSTRING, both leading and trailing whitespace is trimmed before comparison.
+    /// Where the field is of type STRING (<see cref="TpsString"/>), PSTRING (<see cref="TpsPString"/>), or CSTRING (<see cref="TpsCString"/>),
+    /// both leading and trailing whitespace is trimmed before comparison.
     /// </para>
     /// <para>
     /// The default behavior for value conversions to <see cref="bool"/> are described on the overrides of <see cref="TpsObject.ToBoolean"/>
     /// for each implementing type.
     /// </para>
     /// </summary>
-    public sealed class TpsBooleanFieldAttribute : TpsFieldAttribute
+    public sealed class BooleanOptionsAttribute : TpsFieldAttribute
     {
         /// <summary>
         /// Gets or sets the value to interpret as true. The default behavior is used unless otherwise specified.
@@ -37,7 +37,7 @@ namespace TpsParser
         public object FalseValue { get; set; } = Behavior.Default;
 
         /// <inheritdoc/>
-        public TpsBooleanFieldAttribute(string fieldName)
+        public BooleanOptionsAttribute(string fieldName)
             : base(fieldName)
         {
             FallbackValue = false;
@@ -45,18 +45,16 @@ namespace TpsParser
 
         private bool? AsBoolean(TpsObject sourceObject) => sourceObject?.ToBoolean().Value;
 
-        internal override object InterpretValue(MemberInfo member, TpsObject sourceObject)
+        internal override object InterpretValue(Type memberType, TpsObject sourceObject)
         {
-            if (member == null)
+            if (memberType is null)
             {
-                throw new ArgumentNullException(nameof(member));
+                throw new ArgumentNullException(nameof(memberType));
             }
-
-            Type memberType = GetMemberType(member);
 
             if (memberType != typeof(bool) && memberType != typeof(bool?))
             {
-                throw new TpsParserException($"{nameof(TpsBooleanFieldAttribute)} is only valid on members of type {typeof(bool)} ({member}).");
+                throw new TpsParserException($"{nameof(BooleanOptionsAttribute)} is only valid on members of type {typeof(bool)}.");
             }
 
             var tpsValue = sourceObject?.Value;

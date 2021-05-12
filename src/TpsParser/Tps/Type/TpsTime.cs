@@ -11,10 +11,6 @@ namespace TpsParser.Tps.Type
     /// <para>
     /// A TIME is composed of 4 bytes. Each field corresponds to a byte as follows:
     /// <list type="table">
-    /// <listheader>
-    /// <term>Field</term>
-    /// <term>Range</term>
-    /// </listheader>
     /// <item>
     /// <term>Centiseconds</term>
     /// <description>0 to 99</description>
@@ -40,8 +36,7 @@ namespace TpsParser.Tps.Type
     /// </para>
     /// <para>
     /// Clarion documentation recommends that the 4-byte TIME type be used when communicating with external applications. However, because
-    /// TopSpeed files are typically only used by Clarion applications exclusively, the field may sometimes be defined as a LONG in
-    /// order to avoid repetitive casting.
+    /// TopSpeed files are typically only used by Clarion applications exclusively, the field may sometimes be defined as a LONG instead.
     /// </para>
     /// </remarks>
     public sealed class TpsTime : TpsObject<TimeSpan>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
@@ -49,7 +48,7 @@ namespace TpsParser
 
         internal virtual object InterpretValue(Type memberType, TpsObject sourceObject)
         {
-            if (memberType == null)
+            if (memberType is null)
             {
                 throw new ArgumentNullException(nameof(memberType));
             }

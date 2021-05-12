@@ -23,7 +23,7 @@ namespace TpsParser
         /// Gets the field values that belong to the record, where each <see cref="TpsObject"/> is associated with the name of its column.
         /// </para>
         /// <para>
-        /// This contains data fields as well as any associated memos or blobs.
+        /// This contains data fields as well as any associated MEMOs or BLOBs.
         /// </para>
         /// </summary>
         public IReadOnlyDictionary<string, TpsObject> Values { get; }

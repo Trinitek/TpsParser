@@ -47,37 +47,12 @@ namespace TpsParser
             FieldName = fieldName;
         }
 
-        /// <summary>
-        /// Gets the type of the member on which the attribute is marked.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <returns></returns>
-        protected static Type GetMemberType(MemberInfo info)
+        internal virtual object InterpretValue(Type memberType, TpsObject sourceObject)
         {
-            if (info == null)
+            if (memberType == null)
             {
-                throw new ArgumentNullException(nameof(info));
+                throw new ArgumentNullException(nameof(memberType));
             }
-
-            switch (info)
-            {
-                case PropertyInfo propInfo:
-                    return propInfo.PropertyType;
-                case FieldInfo fieldInfo:
-                    return fieldInfo.FieldType;
-                default:
-                    throw new TpsParserException($"Tried to get the type of an unsupported member on the target deserialization class ({info}).");
-            }
-        }
-
-        internal virtual object InterpretValue(MemberInfo member, TpsObject sourceObject)
-        {
-            if (member == null)
-            {
-                throw new ArgumentNullException(nameof(member));
-            }
-
-            Type memberType = GetMemberType(member);
 
             object interpretedValue;
 

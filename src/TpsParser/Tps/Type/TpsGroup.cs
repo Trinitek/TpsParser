@@ -7,7 +7,7 @@ using System.Text;
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents a grouping of fields.
+    /// Represents a compound data structure composed of one or more <see cref="TpsObject"/> instances.
     /// </summary>
     public sealed class TpsGroup : TpsObject<IReadOnlyList<TpsObject>>
     {

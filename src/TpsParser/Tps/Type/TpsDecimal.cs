@@ -232,6 +232,30 @@ namespace TpsParser.Tps.Type
         /// </summary>
         public override Maybe<bool> ToBoolean() => new Maybe<bool>(!IsZero);
 
+        /// <inheritdoc/>
+        public override Maybe<sbyte> ToSByte() => new Maybe<sbyte>((sbyte)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<byte> ToByte() => new Maybe<byte>((byte)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<ushort> ToUInt16() => new Maybe<ushort>((ushort)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<short> ToInt16() => new Maybe<short>((short)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<uint> ToUInt32() => new Maybe<uint>((uint)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<int> ToInt32() => new Maybe<int>((int)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<ulong> ToUInt64() => new Maybe<ulong>((ulong)ToDecimal().Value);
+
+        /// <inheritdoc/>
+        public override Maybe<long> ToInt64() => new Maybe<long>((long)ToDecimal().Value);
+
         /// <summary>
         /// Gets the value as a <see cref="decimal"/>. This type allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
         /// </summary>

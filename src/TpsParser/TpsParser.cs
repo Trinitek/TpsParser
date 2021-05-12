@@ -213,13 +213,13 @@ namespace TpsParser
 
                         if (columns.TryGetValue(requestedField, out int index))
                         {
-                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberInfo, values[index]);
+                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, values[index]);
                             member.SetMember(target, interpretedValue);
                         }
                         else if (memoRecords.TryGetValue(recordNumber, out var fieldValueDictionary)
                             && fieldValueDictionary.ToDictionary(fv => fv.Key.ToUpperInvariant(), fv => fv.Value).TryGetValue(requestedField, out TpsObject value))
                         {
-                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberInfo, value);
+                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, value);
                             member.SetMember(target, interpretedValue);
                         }
                         else if (member.FieldAttribute.IsRequired)
@@ -252,9 +252,10 @@ namespace TpsParser
             return lookup;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Frees resources owned by the parser.
+        /// </summary>
         public void Dispose()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Stream?.Dispose();
         }

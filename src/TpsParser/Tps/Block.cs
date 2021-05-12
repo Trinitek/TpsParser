@@ -5,26 +5,33 @@ using System.Diagnostics;
 namespace TpsParser.Tps
 {
     /// <summary>
-    /// Represents a block of <see cref="TpsPage"/> objects.
+    /// Represents a block of <see cref="Page"/> objects.
     /// </summary>
-    public sealed class TpsBlock
+    public sealed class Block
     {
         /// <summary>
         /// Gets the pages that belong to this block.
         /// </summary>
-        public IReadOnlyList<TpsPage> Pages => _pages;
-        private readonly List<TpsPage> _pages;
+        public IReadOnlyList<Page> Pages => _pages;
+        private readonly List<Page> _pages;
 
         private int Start { get; }
         private int End { get; }
         private TpsReader Data { get; }
 
-        public TpsBlock(TpsReader rx, int start, int end, bool ignorePageErrors)
+        /// <summary>
+        /// Instantiates a new block.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="ignorePageErrors"></param>
+        public Block(TpsReader rx, int start, int end, bool ignorePageErrors)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
             Start = start;
             End = end;
-            _pages = new List<TpsPage>();
+            _pages = new List<Page>();
 
             Data.PushPosition();
             Data.JumpAbsolute(Start);
@@ -38,7 +45,7 @@ namespace TpsParser.Tps
                     {
                         try
                         {
-                            var page = new TpsPage(Data);
+                            var page = new Page(Data);
                             _pages.Add(page);
                         }
                         catch (RunLengthEncodingException ex)

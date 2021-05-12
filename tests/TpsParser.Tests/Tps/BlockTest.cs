@@ -4,7 +4,7 @@ using TpsParser.Tps;
 namespace TpsParser.Tests.Tps
 {
     [TestFixture]
-    public class TpsBlockTest
+    public class BlockTest
     {
         [Test]
         public void ShouldReadTwoBlocks()
@@ -20,7 +20,7 @@ namespace TpsParser.Tests.Tps
 
             rx.JumpAbsolute(0);
 
-            var block = new TpsBlock(rx, 0, 0x300, false);
+            var block = new Block(rx, 0, 0x300, false);
 
             Assert.AreEqual(2, block.Pages.Count);
             Assert.AreEqual(0x200, block.Pages[0].Size);
@@ -41,7 +41,7 @@ namespace TpsParser.Tests.Tps
 
             rx.JumpAbsolute(0);
 
-            var block = new TpsBlock(rx, 0, 0x300, false);
+            var block = new Block(rx, 0, 0x300, false);
 
             Assert.AreEqual(2, block.Pages.Count);
             Assert.AreEqual(0x100, block.Pages[0].Size);
@@ -62,7 +62,7 @@ namespace TpsParser.Tests.Tps
 
             rx.JumpAbsolute(0);
 
-            var block = new TpsBlock(rx, 0, 0x300, false);
+            var block = new Block(rx, 0, 0x300, false);
 
             Assert.AreEqual(1, block.Pages.Count);
             Assert.AreEqual(0x100, block.Pages[0].Address);

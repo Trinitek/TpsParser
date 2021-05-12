@@ -56,7 +56,8 @@ namespace TpsParser
 
         public TpsFieldAttribute FieldAttribute { get; }
 
-        public MemberInfo MemberInfo { get; }
+        //public MemberInfo MemberInfo { get; }
+        public Type MemberType { get; }
 
         private Action<T, object> Setter { get; }
 
@@ -91,15 +92,21 @@ namespace TpsParser
 
         private ModelMember(MemberInfo memberInfo, TpsFieldAttribute fieldAttribute)
         {
-            MemberInfo = memberInfo ?? throw new ArgumentNullException(nameof(memberInfo));
+            if (memberInfo is null)
+            {
+                throw new ArgumentNullException(nameof(memberInfo));
+            }
+            //MemberInfo = memberInfo ?? throw new ArgumentNullException(nameof(memberInfo));
+
+
             FieldAttribute = fieldAttribute;
             IsRecordNumber = FieldAttribute is null;
 
-            if (MemberInfo is PropertyInfo property)
+            if (memberInfo is PropertyInfo property)
             {
                 if (!property.CanWrite)
                 {
-                    throw new TpsParserException($"The property '{MemberInfo.Name}' must have a setter.");
+                    throw new TpsParserException($"The property '{memberInfo.Name}' must have a setter.");
                 }
 
                 // Builds the expression...
@@ -114,7 +121,7 @@ namespace TpsParser
 
                 Setter = lambda;
             }
-            else if (MemberInfo is FieldInfo field)
+            else if (memberInfo is FieldInfo field)
             {
                 // Builds the expression...
                 // targetObject.SomeField = (FieldType)value;
@@ -127,6 +134,10 @@ namespace TpsParser
                 var lambda = Expression.Lambda<Action<T, object>>(assignmentExpr, targetExpr, valueExpr).Compile();
 
                 Setter = lambda;
+            }
+            else
+            {
+                throw new TpsParserException($"{nameof(TpsFieldAttribute)} is only supported on properties and fields. (Member {memberInfo} declared in {memberInfo.DeclaringType})");
             }
         }
 

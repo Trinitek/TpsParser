@@ -25,13 +25,6 @@ namespace TpsParser
         private readonly T _value;
 
         /// <summary>
-        /// Gets the value or the default value of T if it is not set.
-        /// </summary>
-        public T ValueOrDefault => HasValue ? Value : default;
-
-        //public TOther ValueOr<TOther>() => HasValue ? (TOther)Value : default(TOther);
-
-        /// <summary>
         /// Instantiates a new instance with a value.
         /// </summary>
         /// <param name="value">The value to use. Must not be null.</param>

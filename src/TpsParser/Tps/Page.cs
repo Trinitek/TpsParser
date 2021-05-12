@@ -6,7 +6,7 @@ namespace TpsParser.Tps
     /// <summary>
     /// Represents a page of <see cref="TpsRecord"/> objects.
     /// </summary>
-    public sealed class TpsPage
+    public sealed class Page
     {
         /// <summary>
         /// Gets the position of the page in the file.
@@ -32,7 +32,11 @@ namespace TpsParser.Tps
         /// Gets the number of records in the page.
         /// </summary>
         public int RecordCount { get; }
-        public int Flags { get; }
+
+        /// <summary>
+        /// Gets a set of undocumented bit flags.
+        /// </summary>
+        public byte Flags { get; }
 
         private TpsReader CompressedData { get; }
         private List<TpsRecord> Records { get; }
@@ -41,7 +45,7 @@ namespace TpsParser.Tps
 
         private bool IsFlushed => _data is null;
 
-        public TpsPage(TpsReader rx)
+        public Page(TpsReader rx)
         {
             if (rx == null)
             {

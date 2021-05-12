@@ -3,7 +3,8 @@
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents a memo containing an ISO-8859-1 encoded string.
+    /// Represents a MEMO containing an ISO-8859-1 encoded string. MEMOs are variable-length
+    /// text fields that can be up to 65,536 bytes long.
     /// </summary>
     public sealed class TpsMemo : TpsObject<string>
     {

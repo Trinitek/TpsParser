@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents a blob of bytes.
+    /// Represents an arbitrary array of bytes. Unlike <see cref="TpsMemo"/>,
+    /// a BLOB can be larger than 65,536 bytes.
     /// </summary>
-    public sealed class TpsBlob : TpsObject<IEnumerable<byte>>
+    public sealed class TpsBlob : TpsObject<byte[]>
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.None;

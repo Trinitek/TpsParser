@@ -44,7 +44,7 @@ namespace TpsParser.Tps
         /// </summary>
         /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
         /// <returns></returns>
-        public abstract IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors);
+        public abstract IEnumerable<Block> GetBlocks(bool ignoreErrors);
 
         /// <summary>
         /// Gets a list of data records for the associated table and its table definition.
@@ -113,8 +113,8 @@ namespace TpsParser.Tps
         private TpsReader Data { get; }
 
         private FileHeader _header;
-        private IEnumerable<TpsBlock> _blocks;
-        private IEnumerable<TpsBlock> _blocksIgnoredErrors;
+        private IEnumerable<Block> _blocks;
+        private IEnumerable<Block> _blocksIgnoredErrors;
 
         public RandomAccessTpsFile(Stream stream, Encoding encoding)
             : base(encoding)
@@ -198,7 +198,7 @@ namespace TpsParser.Tps
             return _header;
         }
 
-        public override IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors)
+        public override IEnumerable<Block> GetBlocks(bool ignoreErrors)
         {
             if (ignoreErrors)
             {
@@ -219,7 +219,7 @@ namespace TpsParser.Tps
                 return _blocks;
             }
 
-            IEnumerable<TpsBlock> local_GetBlocks()
+            IEnumerable<Block> local_GetBlocks()
             {
                 var header = GetHeader();
 
@@ -229,7 +229,7 @@ namespace TpsParser.Tps
                     // Skip the first entry (0 length) and any blocks that are beyond the file size
                     .Where(pair => !(((pair.offset == 0x200) && (pair.end == 0x200)) || (pair.offset >= Data.Length)))
 
-                    .Select(pair => new TpsBlock(Data, pair.offset, pair.end, ignoreErrors))
+                    .Select(pair => new Block(Data, pair.offset, pair.end, ignoreErrors))
 
                     .ToList();
             }

@@ -138,15 +138,15 @@ namespace TpsParser.Tps.Record
 
             foreach (var field in Fields)
             {
-                sb.AppendLine($"  {field.ToString()}");
+                sb.AppendLine($"  {field}");
             }
             foreach (var memo in Memos)
             {
-                sb.AppendLine($"  {memo.ToString()}");
+                sb.AppendLine($"  {memo}");
             }
             foreach (var index in Indexes)
             {
-                sb.AppendLine($"  {index.ToString()}");
+                sb.AppendLine($"  {index}");
             }
 
             sb.Append(")");

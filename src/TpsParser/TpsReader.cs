@@ -564,12 +564,22 @@ namespace TpsParser
             return result;
         }
 
-        public int ToFileOffset(int pageReference) => (pageReference << 8) + 0x200;
+        /// <summary>
+        /// Gets the absolute position of the given page by its reference number.
+        /// </summary>
+        /// <param name="pageReference"></param>
+        /// <returns></returns>
+        public static int GetFileOffset(int pageReference) => (pageReference << 8) + 0x200;
 
-        public int[] ToFileOffset(int[] pageReferences)
+        /// <summary>
+        /// Gets the absolute positions of the given pages by their reference numbers.
+        /// </summary>
+        /// <param name="pageReferences"></param>
+        /// <returns></returns>
+        public static int[] GetFileOffset(int[] pageReferences)
         {
             return pageReferences
-                .Select(reference => ToFileOffset(reference))
+                .Select(reference => GetFileOffset(reference))
                 .ToArray();
         }
 
@@ -609,35 +619,6 @@ namespace TpsParser
 
             return stringBuilder.ToString();
         }
-
-        public string ReadBinaryCodedDecimal(int length, int digitsAfterDecimalPoint)
-        {
-            var stringBuilder = new StringBuilder();
-
-            foreach (byte b in ReadBytes(length))
-            {
-                stringBuilder.Append(StringUtils.ToHex2(b));
-            }
-
-            string currentString = stringBuilder.ToString();
-
-            string sign = currentString.Substring(0, 1);
-            string number = currentString.Substring(1);
-
-            if (digitsAfterDecimalPoint > 0)
-            {
-                int decimalIndex = number.Length - digitsAfterDecimalPoint;
-                number = TrimLeadingZeroes(number.Substring(0, decimalIndex)) + "." + number.Substring(decimalIndex);
-            }
-            else
-            {
-                number = TrimLeadingZeroes(number);
-            }
-
-            return (!(sign == "0") ? "-" : string.Empty) + number;
-        }
-
-        private string TrimLeadingZeroes(string number) => string.IsNullOrWhiteSpace(number) ? "0" : decimal.Parse(number).ToString();
 
         /// <inheritdoc/>
         public override string ToString()
@@ -869,35 +850,5 @@ namespace TpsParser
         /// </summary>
         /// <returns></returns>
         public TpsPString ReadTpsPString(Encoding encoding) => new TpsPString(ReadPascalString(encoding));
-
-        /// <summary>
-        /// Reads a <see cref="TpsHeader"/> and advances the current position.
-        /// </summary>
-        /// <returns></returns>
-        public TpsHeader ReadTpsHeader()
-        {
-            int address = ReadLongLE();
-
-            if (address != 0)
-            {
-                throw new NotATopSpeedFileException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
-            }
-
-            short headerSize = ReadShortLE();
-
-            var headerReader = Read(headerSize - 6);
-
-            return new TpsHeader(
-                headerSize:  headerSize,
-                fileLength1: headerReader.ReadLongLE(),
-                fileLength2: headerReader.ReadLongLE(),
-                magicNumber: headerReader.FixedLengthString(4),
-                zeroes: headerReader.ReadShortLE(),
-                lastIssuedRow: headerReader.ReadLongBE(),
-                changes: headerReader.ReadLongLE(),
-                managementPageReference: headerReader.ToFileOffset(headerReader.ReadLongLE()),
-                pageStart: headerReader.ToFileOffset(headerReader.LongArrayLE((0x110 - 0x20) / 4)),
-                pageEnd: headerReader.ToFileOffset(headerReader.LongArrayLE((0x200 - 0x110) / 4)));
-        }
     }
 }

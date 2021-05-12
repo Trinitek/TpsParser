@@ -37,7 +37,7 @@ namespace TpsParser.Tps
         /// Gets the file header.
         /// </summary>
         /// <returns></returns>
-        public abstract TpsHeader GetHeader();
+        public abstract FileHeader GetHeader();
 
         /// <summary>
         /// Gets a list of blocks in the file.
@@ -112,7 +112,7 @@ namespace TpsParser.Tps
     {
         private TpsReader Data { get; }
 
-        private TpsHeader _header;
+        private FileHeader _header;
         private IEnumerable<TpsBlock> _blocks;
         private IEnumerable<TpsBlock> _blocksIgnoredErrors;
 
@@ -181,13 +181,13 @@ namespace TpsParser.Tps
             }
         }
 
-        public override TpsHeader GetHeader()
+        public override FileHeader GetHeader()
         {
             if (_header is null)
             {
                 Data.JumpAbsolute(0);
 
-                _header = Data.ReadTpsHeader();
+                _header = FileHeader.Read(Data);
 
                 if (!_header.IsTopSpeedFile)
                 {
@@ -263,7 +263,7 @@ namespace TpsParser.Tps
         public override IEnumerable<TableNameRecord> GetTableNameRecords()
         {
             return VisitRecords()
-                .Where(record => record.Header is ITableNameHeader)
+                .Where(record => record.Header is TableNameHeader)
                 .Select(record => new TableNameRecord(record));
         }
 

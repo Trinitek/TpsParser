@@ -1,23 +1,61 @@
-﻿namespace TpsParser.Tps.Header
+﻿using System;
+
+namespace TpsParser.Tps.Header
 {
-    public sealed class MetadataHeader : Header
+    /// <summary>
+    /// Encapsulates metadata information about particular record.
+    /// </summary>
+    public sealed class MetadataHeader : HeaderBase
     {
-        public int AboutType { get; }
+        /// <summary>
+        /// Gets the data type that this header describes.
+        /// </summary>
+        public byte DescribesType { get; }
 
-        public bool IsAboutData => AboutType == 0xF3;
+        /// <summary>
+        /// True if this header describes a data record.
+        /// </summary>
+        public bool DescribesData => DescribesType == (byte)HeaderKind.Data;
 
-        public bool IsAboutKeyOrIndex => AboutType < 0xF3;
+        /// <summary>
+        /// True if this header describes a key or index.
+        /// </summary>
+        public bool DescribesKeyOrIndex => DescribesType < (byte)HeaderKind.Data;
 
-        public MetadataHeader(TpsReader rx)
-            : base(rx)
+        /// <summary>
+        /// Instantiates a new header.
+        /// </summary>
+        /// <param name="tableNumber"></param>
+        /// <param name="kind"></param>
+        /// <param name="describesType"></param>
+        public MetadataHeader(int tableNumber, HeaderKind kind, byte describesType)
+            : base(tableNumber, kind)
         {
-            AssertIsType(0xF6);
+            AssertIsType(HeaderKind.Metadata);
 
-            AboutType = rx.ReadByte();
+            DescribesType = describesType;
         }
 
         /// <inheritdoc/>
         public override string ToString() =>
-            $"IndexHeader({(IsAboutData ? "Data" : IsAboutKeyOrIndex ? $"Index({AboutType})" : "??")})";
+            $"IndexHeader({(DescribesData ? "Data" : DescribesKeyOrIndex ? $"Index({DescribesType})" : "??")})";
+
+        /// <summary>
+        /// Creates a new <see cref="MetadataHeader"/> from the given reader.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <returns></returns>
+        public static MetadataHeader Read(TpsReader rx)
+        {
+            if (rx is null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            return new MetadataHeader(
+                tableNumber: rx.ReadLongBE(),
+                kind: (HeaderKind)rx.ReadByte(),
+                describesType: rx.ReadByte());
+        }
     }
 }

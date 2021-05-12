@@ -11,21 +11,21 @@ namespace TpsParser.Tests.RowDeserializer
     public class DeserializeDecimal
     {
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsDecimalData), nameof(ShouldDeserializeDecimalAsDecimalData.Data))]
-        public void ShouldDeserializeDecimalAsDecimal(string value, decimal expected)
+        public decimal ShouldDeserializeDecimalAsDecimal(TpsDecimal value)
         {
-            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
-            var des = row.Deserialize<DecimalModel>();
+            var row = BuildRow(1, (DeserializerModel.FieldName, value));
+            var des = row.Deserialize<DeserializerModel<decimal>>();
 
-            Assert.AreEqual(expected, des.Price);
+            return des.Value;
         }
 
         [TestCaseSource(typeof(ShouldDeserializeDecimalAsDecimalData), nameof(ShouldDeserializeDecimalAsDecimalData.Data))]
-        public void ShouldDeserializeDecimalAsNullableDecimal(string value, decimal expected)
+        public decimal? ShouldDeserializeDecimalAsNullableDecimal(TpsDecimal value)
         {
-            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
-            var des = row.Deserialize<NullableDecimalModel>();
+            var row = BuildRow(1, (DeserializerModel.FieldName, value));
+            var des = row.Deserialize<DeserializerModel<decimal?>>();
 
-            Assert.AreEqual(expected, des.Price);
+            return des.Value;
         }
 
         private class ShouldDeserializeDecimalAsDecimalData
@@ -34,9 +34,9 @@ namespace TpsParser.Tests.RowDeserializer
             {
                 get
                 {
-                    yield return new TestCaseData("0", 0m);
-                    yield return new TestCaseData("-2.3", -2.3m);
-                    yield return new TestCaseData("3.4", 3.4m);
+                    yield return new TestCaseData(TpsDecimal.Parse("0")).Returns(0m);
+                    yield return new TestCaseData(TpsDecimal.Parse("-2.3")).Returns(-2.3m);
+                    yield return new TestCaseData(TpsDecimal.Parse("3.4")).Returns(3.4m);
                 }
             }
         }
@@ -46,10 +46,10 @@ namespace TpsParser.Tests.RowDeserializer
         [TestCase("3.5")]
         public void ShouldDeserializeDecimalAsString(string value)
         {
-            var row = BuildRow(1, ("Price", TpsDecimal.Parse(value)));
-            var des = row.Deserialize<DecimalStringModel>();
+            var row = BuildRow(1, (DeserializerModel.FieldName, TpsDecimal.Parse(value)));
+            var des = row.Deserialize<TpsStringFieldDeserializerModel>();
 
-            Assert.AreEqual(value, des.Price);
+            Assert.AreEqual(value, des.Value);
         }
 
         [TestCase("0")]

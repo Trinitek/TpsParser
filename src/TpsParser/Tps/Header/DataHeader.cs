@@ -1,18 +1,51 @@
-﻿namespace TpsParser.Tps.Header
+﻿using System;
+
+namespace TpsParser.Tps.Header
 {
-    public sealed class DataHeader : Header
+    /// <summary>
+    /// Encapsulates information about a particular <see cref="TpsRecord"/>.
+    /// </summary>
+    public sealed class DataHeader : HeaderBase
     {
+        /// <summary>
+        /// Gets the record number of the data entry this header describes.
+        /// </summary>
         public int RecordNumber { get; }
 
-        public DataHeader(TpsReader rx)
-            : base(rx)
+        /// <summary>
+        /// Instantiates a new header.
+        /// </summary>
+        /// <param name="tableNumber"></param>
+        /// <param name="kind"></param>
+        /// <param name="recordNumber"></param>
+        public DataHeader(int tableNumber, HeaderKind kind, int recordNumber)
+            : base(tableNumber, kind)
         {
-            AssertIsType(0xF3);
+            AssertIsType(HeaderKind.Data);
 
-            RecordNumber = rx.ReadLongBE();
+            RecordNumber = recordNumber;
         }
 
+        /// <inheritdoc/>
         public override string ToString() =>
             $"DataHeader({TableNumber}, {RecordNumber})";
+
+        /// <summary>
+        /// Creates a new <see cref="DataHeader"/> from the given reader.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <returns></returns>
+        public static DataHeader Read(TpsReader rx)
+        {
+            if (rx is null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            return new DataHeader(
+                tableNumber: rx.ReadLongBE(),
+                kind: (HeaderKind)rx.ReadByte(),
+                recordNumber: rx.ReadLongBE());
+        }
     }
 }

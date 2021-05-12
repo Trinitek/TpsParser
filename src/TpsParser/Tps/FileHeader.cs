@@ -7,8 +7,13 @@ namespace TpsParser.Tps
     /// <summary>
     /// Represents a TopSpeed file header.
     /// </summary>
-    public sealed class TpsHeader
+    public sealed class FileHeader
     {
+        /// <summary>
+        /// Gets the magic number used to identify a TopSpeed file.
+        /// </summary>
+        public const string TopSpeedMagicNumber = "tOpS";
+
         /// <summary>
         /// Gets the size of the header in bytes.
         /// </summary>
@@ -40,7 +45,7 @@ namespace TpsParser.Tps
         /// <summary>
         /// Returns true if the header represents a valid TopSpeed file.
         /// </summary>
-        public bool IsTopSpeedFile => MagicNumber == "tOpS";
+        public bool IsTopSpeedFile => MagicNumber == FileHeader.TopSpeedMagicNumber;
 
         /// <summary>
         /// Instantiates a new file header.
@@ -55,7 +60,7 @@ namespace TpsParser.Tps
         /// <param name="managementPageReference"></param>
         /// <param name="pageStart"></param>
         /// <param name="pageEnd"></param>
-        public TpsHeader(
+        public FileHeader(
             short headerSize,
             int fileLength1,
             int fileLength2,
@@ -93,6 +98,42 @@ namespace TpsParser.Tps
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="FileHeader"/> from the given reader.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <returns></returns>
+        public static FileHeader Read(TpsReader rx)
+        {
+            if (rx is null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            int address = rx.ReadLongLE();
+
+            if (address != 0)
+            {
+                throw new NotATopSpeedFileException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
+            }
+
+            short headerSize = rx.ReadShortLE();
+
+            var headerReader = rx.Read(headerSize - 6);
+
+            return new FileHeader(
+                headerSize: headerSize,
+                fileLength1: headerReader.ReadLongLE(),
+                fileLength2: headerReader.ReadLongLE(),
+                magicNumber: headerReader.FixedLengthString(4),
+                zeroes: headerReader.ReadShortLE(),
+                lastIssuedRow: headerReader.ReadLongBE(),
+                changes: headerReader.ReadLongLE(),
+                managementPageReference: TpsReader.GetFileOffset(headerReader.ReadLongLE()),
+                pageStart: TpsReader.GetFileOffset(headerReader.LongArrayLE((0x110 - 0x20) / 4)),
+                pageEnd: TpsReader.GetFileOffset(headerReader.LongArrayLE((0x200 - 0x110) / 4)));
         }
     }
 }

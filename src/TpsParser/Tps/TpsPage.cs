@@ -121,16 +121,10 @@ namespace TpsParser.Tps
 
                     do
                     {
-                        TpsRecord currentRecord = null;
-
-                        if (previousRecord is null)
-                        {
-                            currentRecord = new TpsRecord(rx);
-                        }
-                        else
-                        {
-                            currentRecord = new TpsRecord(previousRecord, rx);
-                        }
+                        TpsRecord currentRecord
+                            = previousRecord is null
+                            ? new TpsRecord(rx)
+                            : new TpsRecord(previousRecord, rx);
 
                         Records.Add(currentRecord);
 

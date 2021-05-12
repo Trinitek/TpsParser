@@ -1,4 +1,5 @@
-﻿using TpsParser.Tps.Record;
+﻿using System;
+using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps.Header
 {
@@ -15,42 +16,66 @@ namespace TpsParser.Tps.Header
         /// <summary>
         /// Gets the sequence number of the memo when the memo is segmented into multiple records. The first segment is 0.
         /// </summary>
-        int SequenceNumber { get; }
+        short SequenceNumber { get; }
 
         /// <summary>
         /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="ITableDefinitionRecord.Memos"/>.
         /// </summary>
-        int MemoIndex { get; }
+        byte MemoIndex { get; }
     }
 
     /// <inheritdoc/>
-    internal sealed class MemoHeader : Header, IMemoHeader
+    public sealed class MemoHeader : HeaderBase, IMemoHeader
     {
         /// <inheritdoc/>
         public int OwningRecord { get; }
 
         /// <inheritdoc/>
-        public int SequenceNumber { get; }
+        public short SequenceNumber { get; }
 
         /// <inheritdoc/>
-        public int MemoIndex { get; }
+        public byte MemoIndex { get; }
 
         /// <summary>
         /// Instantiates a new header.
         /// </summary>
-        /// <param name="rx"></param>
-        public MemoHeader(TpsReader rx)
-            : base(rx)
+        /// <param name="tableNumber"></param>
+        /// <param name="kind"></param>
+        /// <param name="owningRecord"></param>
+        /// <param name="sequenceNumber"></param>
+        /// <param name="memoIndex"></param>
+        public MemoHeader(int tableNumber, HeaderKind kind, int owningRecord, short sequenceNumber, byte memoIndex)
+            : base(tableNumber, kind)
         {
-            AssertIsType(0xFC);
+            AssertIsType(HeaderKind.Memo);
 
-            OwningRecord = rx.ReadLongBE();
-            MemoIndex = rx.ReadByte();
-            SequenceNumber = rx.ReadShortBE();
+            OwningRecord = owningRecord;
+            SequenceNumber = sequenceNumber;
+            MemoIndex = memoIndex;
         }
 
         /// <inheritdoc/>
         public override string ToString() =>
             $"Memo(Table={TableNumber}, Owner={OwningRecord}, Index={MemoIndex}, Sequence={SequenceNumber})";
+
+        /// <summary>
+        /// Creates a new <see cref="MemoHeader"/> from the given reader.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <returns></returns>
+        public static MemoHeader Read(TpsReader rx)
+        {
+            if (rx is null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            return new MemoHeader(
+                tableNumber: rx.ReadLongBE(),
+                kind: (HeaderKind)rx.ReadByte(),
+                owningRecord: rx.ReadLongBE(),
+                memoIndex: rx.ReadByte(),
+                sequenceNumber: rx.ReadShortBE());
+        }
     }
 }

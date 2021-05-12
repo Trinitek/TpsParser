@@ -1,24 +1,48 @@
-﻿namespace TpsParser.Tps.Header
+﻿using System;
+
+namespace TpsParser.Tps.Header
 {
-    public sealed class TableDefinitionHeader : Header
+    /// <summary>
+    /// Encapsulates information about a table.
+    /// </summary>
+    public sealed class TableDefinitionHeader : HeaderBase
     {
         public int Block { get; }
 
-        public TableDefinitionHeader(TpsReader rx)
-            : base(rx)
+        /// <summary>
+        /// Instantiates a new header.
+        /// </summary>
+        /// <param name="tableNumber"></param>
+        /// <param name="kind"></param>
+        /// <param name="block"></param>
+        public TableDefinitionHeader(int tableNumber, HeaderKind kind, int block)
+            : base(tableNumber, kind)
         {
-            if (rx is null)
-            {
-                throw new System.ArgumentNullException(nameof(rx));
-            }
+            AssertIsType(HeaderKind.TableDefinition);
 
-            AssertIsType(0xFA);
-
-            Block = rx.ReadShortLE();
+            Block = block;
         }
 
         /// <inheritdoc/>
         public override string ToString() =>
             $"TableDef({TableNumber}, {Block})";
+
+        /// <summary>
+        /// Creates a new <see cref="TableDefinitionHeader"/> from the given reader.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <returns></returns>
+        public static TableDefinitionHeader Read(TpsReader rx)
+        {
+            if (rx is null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            return new TableDefinitionHeader(
+                tableNumber: rx.ReadLongBE(),
+                kind: (HeaderKind)rx.ReadByte(),
+                block: rx.ReadShortLE());
+        }
     }
 }

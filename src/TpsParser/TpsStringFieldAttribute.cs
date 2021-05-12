@@ -25,7 +25,8 @@ namespace TpsParser
         public bool TrimEnd { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the string format to use when calling ToString() on a non-string type.
+        /// Gets or sets the string format to use when calling ToString() on a type that supports it. The invariant culture is used.
+        /// If the type does not support a custom format, this value is ignored.
         /// </summary>
         public string StringFormat { get; set; }
 
@@ -51,38 +52,22 @@ namespace TpsParser
                 throw new TpsParserException($"{nameof(TpsStringFieldAttribute)} is only valid on members of type {typeof(string)} ({member}).");
             }
 
-            object tpsValue = sourceObject?.Value;
-
-            if (tpsValue is null)
+            if (sourceObject?.Value is null)
             {
                 return FallbackValue;
             }
-            else if (TrimEnd && tpsValue is string tpsStringValue)
+
+            string result
+                = StringFormat is null
+                ? sourceObject.ToString()
+                : sourceObject.ToString(StringFormat);
+
+            if (TrimEnd)
             {
-                return tpsStringValue.TrimEnd();
+                result = result?.TrimEnd();
             }
-            else
-            {
-                try
-                {
-                    if (tpsValue.GetType().GetMethod("ToString", new Type[] { typeof(string) }) is var miStringParam && miStringParam != null)
-                    {
-                        return (string)miStringParam.Invoke(tpsValue, new string[] { StringFormat });
-                    }
-                    else if (tpsValue.GetType().GetMethod("ToString", Type.EmptyTypes) is var miNoParams && miNoParams != null)
-                    {
-                        return (string)miNoParams.Invoke(tpsValue, null);
-                    }
-                    else
-                    {
-                        throw new TpsParserException("No suitable ToString method was found on the object. This is probably a bug in the library.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new TpsParserException($"Unable to apply string conversion on the given member. See the inner exception for details. ({member})", ex);
-                }
-            }
+
+            return result;
         }
     }
 }

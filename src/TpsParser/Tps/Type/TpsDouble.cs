@@ -1,4 +1,6 @@
-﻿namespace TpsParser.Tps.Type
+﻿using System.Globalization;
+
+namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a double-precision floating point number.
@@ -27,5 +29,8 @@
 
         /// <inheritdoc/>
         public override Maybe<decimal> ToDecimal() => new Maybe<decimal>((decimal)Value);
+
+        /// <inheritdoc/>
+        public override string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
     }
 }

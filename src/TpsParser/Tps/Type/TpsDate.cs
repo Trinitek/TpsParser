@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace TpsParser.Tps.Type
 {
@@ -66,5 +67,8 @@ namespace TpsParser.Tps.Type
 
         /// <inheritdoc/>
         public override Maybe<DateTime?> ToDateTime() => new Maybe<DateTime?>(Value);
+
+        /// <inheritdoc/>
+        public override string ToString(string format) => Value?.ToString(format, CultureInfo.InvariantCulture);
     }
 }

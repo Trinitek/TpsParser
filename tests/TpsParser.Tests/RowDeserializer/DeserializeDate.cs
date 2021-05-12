@@ -88,7 +88,7 @@ namespace TpsParser.Tests.RowDeserializer
         [Test]
         public void ShouldUseFallbackDeserializingNullDate()
         {
-            var row = BuildRow(1, ("Date", new TpsDate((DateTime?)null)));
+            var row = BuildRow(1, ("Date", new TpsDate(null)));
 
             var deserialized = row.Deserialize<DateStringFallbackModel>();
 

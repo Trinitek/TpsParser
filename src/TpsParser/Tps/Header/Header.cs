@@ -11,56 +11,43 @@ namespace TpsParser.Tps.Header
         /// Gets the table number to which the header belongs.
         /// </summary>
         int TableNumber { get; }
+
+        /// <summary>
+        /// Gets the type code that represents the header.
+        /// </summary>
+        HeaderKind Kind { get; }
     }
 
     /// <inheritdoc/>
-    public abstract class Header : IHeader
+    public abstract class HeaderBase : IHeader
     {
         /// <inheritdoc/>
         public int TableNumber { get; }
-
-        /// <summary>
-        /// Gets the type code that represents the type of table.
-        /// </summary>
-        protected int TableType { get; }
-
-        /// <summary>
-        /// Instantiates a new header.
-        /// </summary>
-        /// <param name="rx"></param>
-        public Header(TpsReader rx)
-            : this(rx, true)
-        { }
+        
+        /// <inheritdoc/>
+        public HeaderKind Kind { get; }
 
         /// <summary>
         /// Instantiates a new header.
         /// </summary>
-        /// <param name="rx"></param>
-        /// <param name="readTable"></param>
-        public Header(TpsReader rx, bool readTable)
+        /// <param name="tableNumber"></param>
+        /// <param name="kind"></param>
+        public HeaderBase(int tableNumber, HeaderKind kind)
+            : base()
         {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            if (readTable)
-            {
-                TableNumber = rx.ReadLongBE();
-            }
-
-            TableType = rx.ReadByte();
+            TableNumber = tableNumber;
+            Kind = kind;
         }
 
         /// <summary>
         /// Throws an exception if the table type is not equal to the type given.
         /// </summary>
         /// <param name="expected"></param>
-        protected void AssertIsType(int expected)
+        protected void AssertIsType(HeaderKind expected)
         {
-            if (TableType != expected)
+            if (Kind != expected)
             {
-                throw new ArgumentException($"Header is not of expected type. Expected {expected} but was {TableType}.");
+                throw new ArgumentException($"Header is not of expected type. Expected {expected} but was {Kind}.");
             }
         }
     }

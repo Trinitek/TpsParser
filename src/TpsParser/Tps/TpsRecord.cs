@@ -107,28 +107,28 @@ namespace TpsParser.Tps
 
             if (rx.Length >= 5)
             {
-                if (rx.Peek(0) == 0xFE)
+                if ((HeaderKind)rx.Peek(0) == HeaderKind.TableName)
                 {
-                    Header = new TableNameHeader(rx);
+                    Header = TableNameHeader.Read(rx);
                 }
                 else
                 {
-                    switch (rx.Peek(4))
+                    switch ((HeaderKind)rx.Peek(4))
                     {
-                        case 0xF3:
-                            Header = new DataHeader(rx);
+                        case HeaderKind.Data:
+                            Header = DataHeader.Read(rx);
                             break;
-                        case 0xF6:
-                            Header = new MetadataHeader(rx);
+                        case HeaderKind.Metadata:
+                            Header = MetadataHeader.Read(rx);
                             break;
-                        case 0xFA:
-                            Header = new TableDefinitionHeader(rx);
+                        case HeaderKind.TableDefinition:
+                            Header = TableDefinitionHeader.Read(rx);
                             break;
-                        case 0xFC:
-                            Header = new MemoHeader(rx);
+                        case HeaderKind.Memo:
+                            Header = MemoHeader.Read(rx);
                             break;
                         default:
-                            Header = new IndexHeader(rx);
+                            Header = IndexHeader.Read(rx);
                             break;
                     }
                 }

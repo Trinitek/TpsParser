@@ -250,5 +250,10 @@ namespace TpsParser.Tps.Type
         /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
         /// </summary>
         public override Maybe<DateTime?> ToDateTime() => new Maybe<DateTime?>(TpsDate.ClarionEpoch.Add(new TimeSpan((int)ToDecimal().Value, 0, 0, 0)));
+
+        /// <summary>
+        /// Gets a string representation of the type returned by <see cref="ToDecimal"/>.
+        /// </summary>
+        public override string ToString(string format) => ToDecimal().Value.ToString(format, CultureInfo.InvariantCulture);
     }
 }

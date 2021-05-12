@@ -1,38 +1,49 @@
-﻿namespace TpsParser.Tps.Header
+﻿using System;
+
+namespace TpsParser.Tps.Header
 {
     /// <summary>
     /// Represents a file structure that contains the name of a table.
     /// </summary>
-    public interface ITableNameHeader
+    public sealed class TableNameHeader : HeaderBase
     {
         /// <summary>
         /// Gets the name of the table.
         /// </summary>
-        string Name { get; }
-    }
-
-    /// <summary>
-    /// Represents a file structure that contains the name of a table.
-    /// </summary>
-    public sealed class TableNameHeader : Header, ITableNameHeader
-    {
-        /// <inheritdoc/>
         public string Name { get; }
 
         /// <summary>
         /// Instantiates a new header that describes the name of the table.
         /// </summary>
-        /// <param name="rx"></param>
-        public TableNameHeader(TpsReader rx)
-            : base(rx, readTable: false)
+        /// <param name="kind"></param>
+        /// <param name="name"></param>
+        public TableNameHeader(HeaderKind kind, string name)
+            : base(default, kind)
         {
-            AssertIsType(0xFE);
+            AssertIsType(HeaderKind.TableName);
 
-            Name = rx.FixedLengthString(rx.Length - rx.Position);
+            Name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         /// <inheritdoc/>
         public override string ToString() =>
             $"TableName({Name})";
+
+        /// <summary>
+        /// Creates a new <see cref="TableNameHeader"/> from the given reader.
+        /// </summary>
+        /// <param name="rx"></param>
+        /// <returns></returns>
+        public static TableNameHeader Read(TpsReader rx)
+        {
+            if (rx is null)
+            {
+                throw new ArgumentNullException(nameof(rx));
+            }
+
+            return new TableNameHeader(
+                kind: (HeaderKind)rx.ReadByte(),
+                name: rx.FixedLengthString(rx.Length - rx.Position));
+        }
     }
 }

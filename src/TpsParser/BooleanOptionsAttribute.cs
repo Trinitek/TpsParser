@@ -28,13 +28,13 @@ namespace TpsParser
         /// Gets or sets the value to interpret as true. The default behavior is used unless otherwise specified.
         /// When this is a string, a case-insensitive comparison is made.
         /// </summary>
-        public object TrueValue { get; set; } = Behavior.Default;
+        public object TrueValue { get; set; } = BooleanOptions.UnsetValue;
 
         /// <summary>
         /// Gets or sets the value to interpret as false. The default behavior is used unless otherwise specified.
         /// When this is a string, a case-insensitive comparison is made.
         /// </summary>
-        public object FalseValue { get; set; } = Behavior.Default;
+        public object FalseValue { get; set; } = BooleanOptions.UnsetValue;
 
         /// <inheritdoc/>
         public BooleanOptionsAttribute(string fieldName)
@@ -42,6 +42,12 @@ namespace TpsParser
         {
             FallbackValue = false;
         }
+
+        internal BooleanOptions GetOptions() => new BooleanOptions
+        {
+            TrueValue = TrueValue,
+            FalseValue = FalseValue
+        };
 
         private bool? AsBoolean(TpsObject sourceObject) => sourceObject?.ToBoolean().Value;
 
@@ -59,7 +65,7 @@ namespace TpsParser
 
             var tpsValue = sourceObject?.Value;
 
-            if (TrueValue != Behavior.Default && FalseValue == Behavior.Default)
+            if (TrueValue != BooleanOptions.UnsetValue && FalseValue == BooleanOptions.UnsetValue)
             {
                 if (tpsValue is string tpsString && TrueValue is string trueString)
                 {
@@ -70,7 +76,7 @@ namespace TpsParser
                     return AsBoolean(sourceObject) ?? FallbackValue;
                 }
             }
-            else if (TrueValue == Behavior.Default && FalseValue != Behavior.Default)
+            else if (TrueValue == BooleanOptions.UnsetValue && FalseValue != BooleanOptions.UnsetValue)
             {
                 if (tpsValue is string tpsString && FalseValue is string falseString)
                 {
@@ -85,7 +91,7 @@ namespace TpsParser
                     return isFalse ? false : AsBoolean(sourceObject) ?? FallbackValue;
                 }
             }
-            else if (TrueValue != Behavior.Default && FalseValue != Behavior.Default)
+            else if (TrueValue != BooleanOptions.UnsetValue && FalseValue != BooleanOptions.UnsetValue)
             {
                 if (tpsValue is string tpsString && TrueValue is string trueString && FalseValue is string falseString)
                 {

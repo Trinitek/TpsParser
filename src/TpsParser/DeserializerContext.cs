@@ -56,8 +56,10 @@ namespace TpsParser
 
         public TpsFieldAttribute FieldAttribute { get; }
 
-        //public MemberInfo MemberInfo { get; }
         public Type MemberType { get; }
+
+        public StringOptions StringOptions { get; }
+        public BooleanOptions BooleanOptions { get; }
 
         private Action<T, object> Setter { get; }
 
@@ -96,8 +98,6 @@ namespace TpsParser
             {
                 throw new ArgumentNullException(nameof(memberInfo));
             }
-            //MemberInfo = memberInfo ?? throw new ArgumentNullException(nameof(memberInfo));
-
 
             FieldAttribute = fieldAttribute;
             IsRecordNumber = FieldAttribute is null;

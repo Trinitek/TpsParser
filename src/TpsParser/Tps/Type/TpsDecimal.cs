@@ -7,6 +7,21 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a 128-bit binary coded decimal that can hold up to 31 digits.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The native value of this type is a <see cref="ValueTuple"/> that contains two <see cref="ulong"/> values
+    /// that represent the digits and a <see cref="byte"/> for the number of digits in the fractional portion.
+    /// </para>
+    /// <para>
+    /// The 31 digits are contained in the lower 124 bits, where <see cref="ValueHigh"/> and <see cref="ValueLow"/> are treated
+    /// as a contiguous 128-bit value, and the most significant 4 bits represent the sign: 0 is positive,
+    /// and every other value is negative.
+    /// </para>
+    /// <para>
+    /// This type can contain numbers that are too large to convert to a <see cref="decimal"/> using <see cref="ToDecimal"/>.
+    /// If you need to handle values with more than 27 digits, consider using <see cref="ToString()"/> instead.
+    /// </para>
+    /// </remarks>
     public sealed class TpsDecimal : TpsObject<(ulong High, ulong Low, byte Places)>
     {
         /// <summary>

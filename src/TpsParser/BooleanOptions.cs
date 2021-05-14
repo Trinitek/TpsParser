@@ -1,6 +1,4 @@
-﻿using TpsParser.Tps.Type;
-
-namespace TpsParser
+﻿namespace TpsParser
 {
     /// <summary>
     /// Contains deserialization settings for boolean members.
@@ -13,16 +11,21 @@ namespace TpsParser
         public static BooleanOptions Default { get; } = new BooleanOptions();
 
         /// <summary>
-        /// Gets or sets the value to use when testing for 'true',
-        /// or null to use the default behavior.
+        /// Represents an unset value.
         /// </summary>
-        public TpsObject TrueValue { get; set; } = null;
+        public static object UnsetValue { get; } = new object();
+
+        /// <summary>
+        /// Gets or sets the value to use when testing for 'true',
+        /// or <see cref="UnsetValue"/> to use the default behavior.
+        /// </summary>
+        public object TrueValue { get; set; } = UnsetValue;
 
         /// <summary>
         /// Gets or sets the value to use when testing for 'false',
-        /// or null to use the default behavior.
+        /// or <see cref="UnsetValue"/> to use the default behavior.
         /// </summary>
-        public TpsObject FalseValue { get; set; } = null;
+        public object FalseValue { get; set; } = UnsetValue;
 
         internal BooleanOptions GetCopy() => new BooleanOptions
         {

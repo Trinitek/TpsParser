@@ -73,26 +73,36 @@ namespace TpsParser
             var tpsFieldAttribute = memberInfo.GetCustomAttribute<TpsFieldAttribute>();
             var tpsRecordNumberAttribute = memberInfo.GetCustomAttribute<TpsRecordNumberAttribute>();
 
+            var stringOpt = memberInfo.GetCustomAttribute<StringOptionsAttribute>()?.GetOptions();
+            var booleanOpt = memberInfo.GetCustomAttribute<BooleanOptionsAttribute>()?.GetOptions();
+
             if (tpsFieldAttribute != null && tpsRecordNumberAttribute != null)
             {
                 throw new TpsParserException($"Members cannot be marked with both {nameof(TpsFieldAttribute)} and {nameof(TpsRecordNumberAttribute)}. Property name '{memberInfo.Name}'.");
             }
 
-            if (tpsRecordNumberAttribute != null)
-            {
-                return new ModelMember<T>(memberInfo, null);
-            }
-            else if (tpsFieldAttribute != null)
-            {
-                return new ModelMember<T>(memberInfo, tpsFieldAttribute);
-            }
-            else
+            if (tpsRecordNumberAttribute is null && tpsFieldAttribute is null)
             {
                 return null;
             }
+
+            if (stringOpt != null && booleanOpt != null)
+            {
+                throw new TpsParserException($"Too many option attributes are specified on property '{memberInfo.Name}'.");
+            }
+
+            return new ModelMember<T>(
+                memberInfo,
+                tpsFieldAttribute,
+                stringOpt,
+                booleanOpt);
         }
 
-        private ModelMember(MemberInfo memberInfo, TpsFieldAttribute fieldAttribute)
+        private ModelMember(
+            MemberInfo memberInfo,
+            TpsFieldAttribute fieldAttribute,
+            StringOptions stringOptions,
+            BooleanOptions booleanOptions)
         {
             if (memberInfo is null)
             {
@@ -102,12 +112,19 @@ namespace TpsParser
             FieldAttribute = fieldAttribute;
             IsRecordNumber = FieldAttribute is null;
 
+            StringOptions = stringOptions;
+            BooleanOptions = booleanOptions;
+
+            Type type;
+
             if (memberInfo is PropertyInfo property)
             {
                 if (!property.CanWrite)
                 {
                     throw new TpsParserException($"The property '{memberInfo.Name}' must have a setter.");
                 }
+
+                type = property.PropertyType;
 
                 // Builds the expression...
                 // targetObject.SomeProperty = (PropertyType)value;
@@ -123,6 +140,8 @@ namespace TpsParser
             }
             else if (memberInfo is FieldInfo field)
             {
+                type = field.FieldType;
+
                 // Builds the expression...
                 // targetObject.SomeField = (FieldType)value;
 
@@ -138,6 +157,22 @@ namespace TpsParser
             else
             {
                 throw new TpsParserException($"{nameof(TpsFieldAttribute)} is only supported on properties and fields. (Member {memberInfo} declared in {memberInfo.DeclaringType})");
+            }
+
+            if (stringOptions != null)
+            {
+                if (type != typeof(string) || !type.IsAssignableFrom(typeof(string[])))
+                {
+                    throw new TpsParserException($"{nameof(StringOptions)} is only valid on members and collections of type {typeof(string)}.");
+                }
+            }
+
+            if (booleanOptions != null)
+            {
+                if (type != typeof(bool) || !type.IsAssignableFrom(typeof(bool[])))
+                {
+                    throw new TpsParserException($"{nameof(BooleanOptions)} is only valid on members and collections of type {typeof(bool)}.");
+                }
             }
         }
 

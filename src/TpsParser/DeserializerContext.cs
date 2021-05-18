@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
@@ -50,7 +51,7 @@ namespace TpsParser
     internal abstract class ModelMember
     { }
 
-    internal sealed class ModelMember<T> : ModelMember
+    internal sealed class ModelMember<TModel> : ModelMember
     {
         public bool IsRecordNumber { get; }
 
@@ -61,9 +62,9 @@ namespace TpsParser
         public StringOptions StringOptions { get; }
         public BooleanOptions BooleanOptions { get; }
 
-        private Action<T, object> Setter { get; }
+        private Action<TModel, TpsObject> Setter { get; set; }
 
-        public static ModelMember<T> BuildModelMember(MemberInfo memberInfo)
+        public static ModelMember<TModel> BuildModelMember(MemberInfo memberInfo)
         {
             if (memberInfo is null)
             {
@@ -91,7 +92,7 @@ namespace TpsParser
                 throw new TpsParserException($"Too many option attributes are specified on property '{memberInfo.Name}'.");
             }
 
-            return new ModelMember<T>(
+            return new ModelMember<TModel>(
                 memberInfo,
                 tpsFieldAttribute,
                 stringOpt,
@@ -115,7 +116,10 @@ namespace TpsParser
             StringOptions = stringOptions;
             BooleanOptions = booleanOptions;
 
-            Type type;
+            var targetParamExpr = Expression.Parameter(typeof(TModel));
+            var tpsObjParamExpr = Expression.Parameter(typeof(TpsObject));
+
+            MemberExpression memberExpression;
 
             if (memberInfo is PropertyInfo property)
             {
@@ -124,35 +128,15 @@ namespace TpsParser
                     throw new TpsParserException($"The property '{memberInfo.Name}' must have a setter.");
                 }
 
-                type = property.PropertyType;
+                MemberType = property.PropertyType;
 
-                // Builds the expression...
-                // targetObject.SomeProperty = (PropertyType)value;
-
-                var targetExpr = Expression.Parameter(typeof(T));
-                var valueExpr = Expression.Parameter(typeof(object));
-                var castExpr = Expression.Convert(valueExpr, property.PropertyType);
-                var propExpr = Expression.Property(targetExpr, property);
-                var assignmentExpr = Expression.Assign(propExpr, castExpr);
-                var lambda = Expression.Lambda<Action<T, object>>(assignmentExpr, targetExpr, valueExpr).Compile();
-
-                Setter = lambda;
+                memberExpression = Expression.Property(targetParamExpr, property);
             }
             else if (memberInfo is FieldInfo field)
             {
-                type = field.FieldType;
+                MemberType = field.FieldType;
 
-                // Builds the expression...
-                // targetObject.SomeField = (FieldType)value;
-
-                var targetExpr = Expression.Parameter(typeof(T));
-                var valueExpr = Expression.Parameter(typeof(object));
-                var castExpr = Expression.Convert(valueExpr, field.FieldType);
-                var fieldExpr = Expression.Field(targetExpr, field);
-                var assignmentExpr = Expression.Assign(fieldExpr, castExpr);
-                var lambda = Expression.Lambda<Action<T, object>>(assignmentExpr, targetExpr, valueExpr).Compile();
-
-                Setter = lambda;
+                memberExpression = Expression.Field(targetParamExpr, field);
             }
             else
             {
@@ -161,7 +145,7 @@ namespace TpsParser
 
             if (stringOptions != null)
             {
-                if (type != typeof(string) || !type.IsAssignableFrom(typeof(string[])))
+                if (MemberType != typeof(string) || !MemberType.IsAssignableFrom(typeof(string[])))
                 {
                     throw new TpsParserException($"{nameof(StringOptions)} is only valid on members and collections of type {typeof(string)}.");
                 }
@@ -169,13 +153,57 @@ namespace TpsParser
 
             if (booleanOptions != null)
             {
-                if (type != typeof(bool) || !type.IsAssignableFrom(typeof(bool[])))
+                if (MemberType != typeof(bool) || !MemberType.IsAssignableFrom(typeof(bool[])))
                 {
                     throw new TpsParserException($"{nameof(BooleanOptions)} is only valid on members and collections of type {typeof(bool)}.");
                 }
             }
+
+            if (!TpsFieldAttribute.ValueInterpreters.TryGetValue(MemberType, out var getTpsObjValueExpr))
+            {
+                if (typeof(TpsObject).IsAssignableFrom(MemberType))
+                {
+                    // Cast may fail if the member is, for example, TpsLong but the field is TpsByte.
+                    // Field types are not known at this point.
+
+                    getTpsObjValueExpr = x => ReferenceEquals(x, null) ? FieldAttribute.FallbackValue : x;
+                }
+                else
+                {
+                    //if (MemberType.IsValueType)
+                    //{
+                    //    // Equivalent to...
+                    //    // x => x == null ? default(MemberType) : x.Value
+                    //
+                    //    getTpsObjValueExpr =
+                    //        Expression.Lambda<Func<TpsObject, object>>(
+                    //            Expression.IfThenElse(
+                    //                test: Expression.ReferenceEqual(tpsObjParamExpr, Expression.Constant(null)),
+                    //                ifTrue: Expression.Constant(FieldAttribute.FallbackValue), //Expression.New(MemberType),
+                    //                ifFalse: Expression.Property(tpsObjParamExpr, nameof(TpsObject.Value))),
+                    //            tpsObjParamExpr);
+                    //}
+                    //else
+                    //{
+                    //    getTpsObjValueExpr = x => x == null ? FieldAttribute.FallbackValue : x.Value;
+                    //}
+
+                    getTpsObjValueExpr = x => ReferenceEquals(x, null) ? FieldAttribute.FallbackValue : x.Value;
+                }
+            }
+
+            // Builds the expression...
+            // targetObject.SomeProperty = (MemberType)value;
+
+            var assignmentExpr = Expression.Assign(
+                    memberExpression,
+                    Expression.Convert(getTpsObjValueExpr, MemberType));
+
+            var lambda = Expression.Lambda<Action<TModel, TpsObject>>(assignmentExpr, targetParamExpr, tpsObjParamExpr).Compile();
+
+            Setter = lambda;
         }
 
-        public void SetMember(T targetObject, object value) => Setter.Invoke(targetObject, value);
+        public void SetMember(TModel targetObject, TpsObject sourceValue) => Setter.Invoke(targetObject, sourceValue);
     }
 }

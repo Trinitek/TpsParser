@@ -71,7 +71,7 @@ namespace TpsParser
             return CoerceFallback(interpretedValue);
         }
 
-        private static Dictionary<Type, Expression<Func<TpsObject, object>>> ValueInterpreters { get; } =
+        internal static Dictionary<Type, Expression<Func<TpsObject, object>>> ValueInterpreters { get; } =
             new Dictionary<Type, Expression<Func<TpsObject, object>>>
             {
                 [typeof(DateTime)] = x => x.ToDateTime().Value ?? default,

@@ -1,4 +1,8 @@
-﻿namespace TpsParser
+﻿using System;
+using System.Linq.Expressions;
+using TpsParser.Tps.Type;
+
+namespace TpsParser
 {
     /// <summary>
     /// Contains deserialization settings for boolean members.
@@ -32,5 +36,80 @@
             TrueValue = TrueValue,
             FalseValue = FalseValue
         };
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0041:Use 'is null' check", Justification = "Cannot use pattern-matching operators in expression trees.")]
+        internal Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
+        {
+            Expression<Func<TpsObject, object>> asBooleanOrFallbackExpr =
+                x => ReferenceEquals(x, null) ? fallbackValue : x.ToBoolean().Value;
+
+            if (TrueValue != UnsetValue && FalseValue == UnsetValue)
+            {
+                if (TrueValue is string trueString)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : string.Equals(x.ToString().Trim(), trueString, StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    return asBooleanOrFallbackExpr;
+                }
+            }
+            else if (TrueValue == UnsetValue && FalseValue != UnsetValue)
+            {
+                if (FalseValue is string falseString)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        :
+                            string.Equals(x.ToString().Trim(), falseString, StringComparison.OrdinalIgnoreCase)
+                            ? false
+                            : x.ToBoolean().Value;
+                }
+                else
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : !Equals(x.Value, FalseValue);
+                }
+            }
+            else if (TrueValue != UnsetValue && FalseValue != UnsetValue)
+            {
+                if (TrueValue is string trueString && FalseValue is string falseString)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        :
+                            string.Equals(x.ToString().Trim(), trueString, StringComparison.OrdinalIgnoreCase)
+                            ? true
+                            :
+                                string.Equals(x.ToString().Trim(), falseString, StringComparison.OrdinalIgnoreCase)
+                                ? false
+                                : fallbackValue;
+                }
+                else
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        :
+                            x.Value.Equals(TrueValue)
+                            ? true
+                            :
+                                x.Value.Equals(FalseValue)
+                                ? false
+                                : fallbackValue;
+                }
+            }
+            else
+            {
+                return asBooleanOrFallbackExpr;
+            }
+        }
     }
 }

@@ -130,23 +130,25 @@ namespace TpsParser
             {
                 if (member.IsRecordNumber)
                 {
-                    member.SetMember(targetObject, Id);
+                    member.SetMember(targetObject, new TpsLong(Id));
                 }
                 else
                 {
                     string tpsFieldName = member.FieldAttribute.FieldName;
                     TpsObject tpsFieldValue = GetRowValue(tpsFieldName, member.FieldAttribute.IsRequired);
-                    object clrValue = member.FieldAttribute.InterpretValue(member.MemberInfo, tpsFieldValue);
+                    //object clrValue = member.FieldAttribute.InterpretValue(member.MemberInfo, tpsFieldValue);
 
                     try
                     {
-                        member.SetMember(targetObject, clrValue);
+                        //member.SetMember(targetObject, clrValue);
+                        member.SetMember(targetObject, tpsFieldValue);
                     }
                     catch (Exception ex) when (!(ex is TpsParserException))
                     {
                         throw new TpsParserException(
-                            $"Cannot set member [{member}] to value '{clrValue}' of type '{clrValue?.GetType()}' " +
-                            $"(Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). " +
+                            //$"Cannot set member [{member}] to value '{clrValue}' of type '{clrValue?.GetType()}' " +
+                            $"Cannot set member [{member}] to value '{tpsFieldValue}' of type '{tpsFieldValue?.GetType()}'." +
+                            //$"(Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). " +
                             $"See the inner exception for details.", ex);
                     }
                 }

@@ -42,7 +42,12 @@ namespace TpsParser
             : base(fieldName)
         { }
 
-        internal StringOptions GetOptions() => new StringOptions(TrimStart, TrimEnd, StringFormat);
+        internal StringOptions GetOptions() => new StringOptions
+        {
+            TrimStart = TrimStart,
+            TrimEnd = TrimEnd,
+            Format = StringFormat
+        };
 
         internal override object InterpretValue(Type memberType, TpsObject sourceObject)
         {

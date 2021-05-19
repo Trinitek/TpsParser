@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using TpsParser.Tps.Type;
 
 namespace TpsParser
@@ -6,13 +7,8 @@ namespace TpsParser
     /// <summary>
     /// Contains deserialization settings for string members.
     /// </summary>
-    public sealed class StringOptions
+    public sealed class StringOptions : TypeMapOptions
     {
-        /// <summary>
-        /// Gets a <see cref="StringOptions"/> instance with default options set.
-        /// </summary>
-        public static StringOptions Default { get; } = new StringOptions();
-
         /// <summary>
         /// True if whitespace at the beginning of the string should be trimmed.
         /// </summary>
@@ -34,5 +30,73 @@ namespace TpsParser
             TrimEnd = TrimEnd,
             Format = Format
         };
+
+        /// <inheritdoc/>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0041:Use 'is null' check", Justification = "Cannot use pattern-matching operators in expression trees.")]
+        protected internal override Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
+        {
+            if (Format is null)
+            {
+                if (TrimStart && !TrimEnd)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString().TrimStart();
+                }
+                else if (!TrimStart && TrimEnd)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString().TrimEnd();
+                }
+                else if (TrimStart && TrimEnd)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString().Trim();
+                }
+                else
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString();
+                }
+            }
+            else
+            {
+                if (TrimStart && !TrimEnd)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString(Format).TrimStart();
+                }
+                else if (!TrimStart && TrimEnd)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString(Format).TrimEnd();
+                }
+                else if (TrimStart && TrimEnd)
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString(Format).Trim();
+                }
+                else
+                {
+                    return x =>
+                        ReferenceEquals(x, null)
+                        ? fallbackValue
+                        : x.ToString(Format);
+                }
+            }
+        }
     }
 }

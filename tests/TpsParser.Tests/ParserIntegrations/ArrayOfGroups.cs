@@ -7,7 +7,7 @@ namespace TpsParser.Tests.ParserIntegrations
     [TestFixture]
     public class ArrayOfGroups
     {
-        private TpsParser GetParser() => new TpsParser("Resources/array-of-groups.tps");
+        private Parser GetParser() => new Parser("Resources/array-of-groups.tps");
 
         [Test]
         public void ShouldBuildTable()

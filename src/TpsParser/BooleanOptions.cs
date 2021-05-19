@@ -7,13 +7,8 @@ namespace TpsParser
     /// <summary>
     /// Contains deserialization settings for boolean members.
     /// </summary>
-    public sealed class BooleanOptions
+    public sealed class BooleanOptions : TypeMapOptions
     {
-        /// <summary>
-        /// Gets a <see cref="BooleanOptions"/> instance with default options set.
-        /// </summary>
-        public static BooleanOptions Default { get; } = new BooleanOptions();
-
         /// <summary>
         /// Represents an unset value.
         /// </summary>
@@ -37,8 +32,10 @@ namespace TpsParser
             FalseValue = FalseValue
         };
 
+        /// <inheritdoc/>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0041:Use 'is null' check", Justification = "Cannot use pattern-matching operators in expression trees.")]
-        internal Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0075:Simplify conditional expression", Justification = "Nested ternaries have better readability, comparatively.")]
+        protected internal override Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
         {
             Expression<Func<TpsObject, object>> asBooleanOrFallbackExpr =
                 x => ReferenceEquals(x, null) ? fallbackValue : x.ToBoolean().Value;

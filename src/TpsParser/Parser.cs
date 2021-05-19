@@ -205,7 +205,7 @@ namespace TpsParser
                 {
                     if (member.IsRecordNumber)
                     {
-                        member.SetMember(target, recordNumber);
+                        member.SetMember(target, new TpsLong(recordNumber));
                     }
                     else
                     {
@@ -213,14 +213,16 @@ namespace TpsParser
 
                         if (columns.TryGetValue(requestedField, out int index))
                         {
-                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, values[index]);
-                            member.SetMember(target, interpretedValue);
+                            //object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, values[index]);
+                            //member.SetMember(target, interpretedValue);
+                            member.SetMember(target, values[index]);
                         }
                         else if (memoRecords.TryGetValue(recordNumber, out var fieldValueDictionary)
                             && fieldValueDictionary.ToDictionary(fv => fv.Key.ToUpperInvariant(), fv => fv.Value).TryGetValue(requestedField, out TpsObject value))
                         {
-                            object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, value);
-                            member.SetMember(target, interpretedValue);
+                            //object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, value);
+                            //member.SetMember(target, interpretedValue);
+                            member.SetMember(target, value);
                         }
                         else if (member.FieldAttribute.IsRequired)
                         {

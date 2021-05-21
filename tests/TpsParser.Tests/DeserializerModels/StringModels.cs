@@ -8,13 +8,14 @@
 
     public class StringTrimmingEnabledModel
     {
-        [StringOptions("Notes")]
+        [TpsField("Notes")]
         public string Notes { get; set; }
     }
 
     public class StringTrimmingDisabledModel
     {
-        [StringOptions("Notes", TrimEnd = false)]
+        [TpsField("Notes")]
+        [StringOptions(TrimEnd = false)]
         public string Notes { get; set; }
     }
 
@@ -26,37 +27,42 @@
 
     public class StringBooleanModel
     {
-        [BooleanOptions("Notes")]
+        [TpsField("Notes")]
         public bool HasNotes { get; set; }
     }
 
     public class StringBooleanTrueModel
     {
-        [BooleanOptions("Notes", TrueValue = "Y")]
+        [TpsField("Notes")]
+        [BooleanOptions(TrueValue = "Y")]
         public bool HasNotes { get; set; }
     }
 
     public class StringBooleanFalseModel
     {
-        [BooleanOptions("Notes", FalseValue = "N")]
+        [TpsField("Notes")]
+        [BooleanOptions(FalseValue = "N")]
         public bool HasNotes { get; set; }
     }
 
     public class StringBooleanTrueFalseModel
     {
-        [BooleanOptions("Notes", TrueValue = "Y", FalseValue = "N")]
+        [TpsField("Notes")]
+        [BooleanOptions(TrueValue = "Y", FalseValue = "N")]
         public bool HasNotes { get; set; }
     }
 
     public class StringBooleanTrueFalseFallbackFalseModel
     {
-        [BooleanOptions("Notes", TrueValue = "Y", FalseValue = "N", FallbackValue = false)]
+        [TpsField("Notes", FallbackValue = false)]
+        [BooleanOptions(TrueValue = "Y", FalseValue = "N")]
         public bool HasNotes { get; set; }
     }
 
     public class StringBooleanTrueFalseFallbackTrueModel
     {
-        [BooleanOptions("Notes", TrueValue = "Y", FalseValue = "N", FallbackValue = true)]
+        [TpsField("Notes", FallbackValue = true)]
+        [BooleanOptions(TrueValue = "Y", FalseValue = "N")]
         public bool HasNotes { get; set; }
     }
 }

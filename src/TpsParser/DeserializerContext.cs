@@ -10,9 +10,14 @@ namespace TpsParser
     internal sealed class DeserializerContext
     {
         private Dictionary<Type, ModelMember[]> TypeCache { get; }
+        private StringOptions DefaultStringOptions { get; }
+        private BooleanOptions DefaultBooleanOptions { get; }
 
-        public DeserializerContext()
+        public DeserializerContext(StringOptions defaultStringOptions, BooleanOptions defaultBooleanOptions)
         {
+            DefaultStringOptions = defaultStringOptions ?? throw new ArgumentNullException(nameof(defaultStringOptions));
+            DefaultBooleanOptions = defaultBooleanOptions ?? throw new ArgumentNullException(nameof(defaultBooleanOptions));
+            
             TypeCache = new Dictionary<Type, ModelMember[]>();
         }
 
@@ -38,7 +43,7 @@ namespace TpsParser
             var members = typeof(T).GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             var modelMembers = members
-                .Select(m => ModelMember<T>.BuildModelMember(m))
+                .Select(m => ModelMember<T>.BuildModelMember(m, DefaultStringOptions, DefaultBooleanOptions))
                 .Where(m => m != null)
                 .ToArray();
 
@@ -63,18 +68,50 @@ namespace TpsParser
 
         private Action<TModel, TpsObject> Setter { get; set; }
 
-        public static ModelMember<TModel> BuildModelMember(MemberInfo memberInfo)
+        private static Type GetMemberType(MemberInfo info)
+        {
+            if (info is PropertyInfo pi)
+            {
+                return pi.PropertyType;
+            }
+            else if (info is FieldInfo fi)
+            {
+                return fi.FieldType;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Expected PropertyInfo or FieldInfo, was {info?.GetType()}");
+            }
+        }
+
+        private static bool IsSingleOrArray<T>(Type subject)
+            => subject == typeof(T) || subject.IsAssignableFrom(typeof(T[]));
+
+        private static TypeMapOptions GetOptions<T>(Type subject, TypeMapOptions specific, TypeMapOptions fallback)
+            => IsSingleOrArray<T>(subject) ? specific ?? fallback : null;
+
+        public static ModelMember<TModel> BuildModelMember(
+            MemberInfo memberInfo,
+            StringOptions defaultStringOptions,
+            BooleanOptions defaultBooleanOptions)
         {
             if (memberInfo is null)
             {
                 throw new ArgumentNullException(nameof(memberInfo));
             }
 
+            if (defaultStringOptions is null)
+            {
+                throw new ArgumentNullException(nameof(defaultStringOptions));
+            }
+
+            if (defaultBooleanOptions is null)
+            {
+                throw new ArgumentNullException(nameof(defaultBooleanOptions));
+            }
+
             var tpsFieldAttribute = memberInfo.GetCustomAttribute<TpsFieldAttribute>();
             var tpsRecordNumberAttribute = memberInfo.GetCustomAttribute<TpsRecordNumberAttribute>();
-
-            var stringOpt = memberInfo.GetCustomAttribute<StringOptionsAttribute>()?.GetOptions();
-            var booleanOpt = memberInfo.GetCustomAttribute<BooleanOptionsAttribute>()?.GetOptions();
 
             if (tpsFieldAttribute != null && tpsRecordNumberAttribute != null)
             {
@@ -86,15 +123,31 @@ namespace TpsParser
                 return null;
             }
 
-            if (stringOpt != null && booleanOpt != null)
+            var stringOpt = memberInfo.GetCustomAttribute<StringOptionsAttribute>()?.GetOptions();
+            var booleanOpt = memberInfo.GetCustomAttribute<BooleanOptionsAttribute>()?.GetOptions();
+
+            var mType = GetMemberType(memberInfo);
+
+            //if (stringOpt != null && mType != typeof(string) && !mType.IsAssignableFrom(typeof(string[])))
+            if (stringOpt != null && !IsSingleOrArray<string>(mType))
             {
-                throw new TpsParserException($"Too many option attributes are specified on property '{memberInfo.Name}'.");
+                throw new TpsParserException($"{nameof(StringOptions)} is only valid on members and collections of type {typeof(string)}.");
             }
+
+            //if (booleanOpt != null && mType != typeof(bool) && !mType.IsAssignableFrom(typeof(bool[])))
+            if (booleanOpt != null && !IsSingleOrArray<bool>(mType))
+            {
+                throw new TpsParserException($"{nameof(BooleanOptions)} is only valid on members and collections of type {typeof(bool)}.");
+            }
+
+            TypeMapOptions assignableMapOptions =
+                GetOptions<string>(mType, stringOpt, defaultStringOptions)
+                ?? GetOptions<bool>(mType, booleanOpt, defaultBooleanOptions);
 
             return new ModelMember<TModel>(
                 memberInfo,
                 tpsFieldAttribute,
-                (TypeMapOptions)stringOpt ?? booleanOpt);
+                assignableMapOptions);
         }
 
         private ModelMember(
@@ -136,23 +189,7 @@ namespace TpsParser
             }
             else
             {
-                throw new TpsParserException($"{nameof(TpsFieldAttribute)} is only supported on properties and fields. (Member {memberInfo} declared in {memberInfo.DeclaringType})");
-            }
-
-            if (MapOptions is StringOptions stringOptions)
-            {
-                if (MemberType != typeof(string) && !MemberType.IsAssignableFrom(typeof(string[])))
-                {
-                    throw new TpsParserException($"{nameof(StringOptions)} is only valid on members and collections of type {typeof(string)}.");
-                }
-            }
-
-            if (MapOptions is BooleanOptions booleanOptions)
-            {
-                if (MemberType != typeof(bool) && !MemberType.IsAssignableFrom(typeof(bool[])))
-                {
-                    throw new TpsParserException($"{nameof(BooleanOptions)} is only valid on members and collections of type {typeof(bool)}.");
-                }
+                throw new TpsParserException($"Tried to create a {nameof(ModelMember)} for a member that is not a property or field. (Member {memberInfo} declared in {memberInfo.DeclaringType})");
             }
 
             Expression<Func<TpsObject, object>> getTpsObjValueExpr;
@@ -196,6 +233,24 @@ namespace TpsParser
             Setter = lambda;
         }
 
-        public void SetMember(TModel targetObject, TpsObject sourceValue) => Setter.Invoke(targetObject, sourceValue);
+        public void SetMember(TModel targetObject, TpsObject sourceValue)
+        {
+            if (sourceValue is ITpsArray)
+            {
+                // TODO
+                throw new NotImplementedException();
+            }
+            else if (sourceValue is TpsGroup)
+            {
+                // TODO
+                throw new NotImplementedException();
+            }
+            else
+            {
+                Setter.Invoke(targetObject, sourceValue);
+            }
+        }
+
+        //public void SetMember(TModel targetObject, TpsObject sourceValue) => Setter.Invoke(targetObject, sourceValue);
     }
 }

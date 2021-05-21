@@ -13,13 +13,13 @@
 
     public class TpsStringFieldDeserializerModel
     {
-        [StringOptions(DeserializerModel.FieldName)]
+        [TpsField(DeserializerModel.FieldName)]
         public string Value { get; set; }
     }
 
     public class TpsBooleanFieldDeserializerModel
     {
-        [StringOptions(DeserializerModel.FieldName)]
+        [TpsField(DeserializerModel.FieldName)]
         public bool Value { get; set; }
     }
 }

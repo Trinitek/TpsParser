@@ -128,15 +128,13 @@ namespace TpsParser.Tests
             [Test]
             public void ShouldDeserializeString()
             {
-                string expected = " Hello world!     ";
-
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(" Hello world!     ")) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
                     var deserialized = parser.Deserialize<StringModel>().First();
 
-                    Assert.AreEqual(expected, deserialized.Notes);
+                    Assert.AreEqual(" Hello world!", deserialized.Notes);
                 }
             }
 

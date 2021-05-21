@@ -45,7 +45,7 @@ namespace TpsParser.Tps
         /// <summary>
         /// Returns true if the header represents a valid TopSpeed file.
         /// </summary>
-        public bool IsTopSpeedFile => MagicNumber == FileHeader.TopSpeedMagicNumber;
+        public bool IsTopSpeedFile => MagicNumber == TopSpeedMagicNumber;
 
         /// <summary>
         /// Instantiates a new file header.

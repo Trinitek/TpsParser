@@ -65,7 +65,46 @@ namespace TpsParser.Tests.ParserIntegrations
         [TestCase(typeof(MemosProtectedSettersModel))]
         [TestCase(typeof(MemosPublicFieldsModel))]
         [TestCase(typeof(MemosPublicSettersModel))]
-        public void ShouldDeserializeMemos(Type targetObjectType)
+        public void ShouldDeserializeMemos_DefaultStringOptions(Type targetObjectType)
+        {
+            using (var parser = new Parser("Resources/table-with-memos.tps"))
+            {
+                var rows = InvokeDeserialize<IMemoModel>(parser, targetObjectType, ignoreErrors: false)
+                    .ToList();
+
+                Assert.AreEqual(4, rows.Count());
+
+                Assert.AreEqual("Joe Smith", rows[0].Name);
+                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Date);
+                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Notes);
+                Assert.AreEqual("He also likes sushi.", rows[0].AdditionalNotes);
+
+                Assert.AreEqual("Jane Jones", rows[1].Name);
+                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Date);
+                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Notes);
+                Assert.AreEqual("She doesn't like sushi as much as Joe.", rows[1].AdditionalNotes);
+
+                Assert.AreEqual("John NoNotes", rows[2].Name);
+                Assert.AreEqual(new DateTime(2019, 10, 7), rows[2].Date);
+                Assert.IsNull(rows[2].Notes);
+                Assert.IsNull(rows[2].AdditionalNotes);
+
+                Assert.AreEqual("Jimmy OneNote", rows[3].Name);
+                Assert.AreEqual(new DateTime(2013, 3, 14), rows[3].Date);
+                Assert.IsNull(rows[3].Notes);
+                Assert.AreEqual("Has a strange last name.", rows[3].AdditionalNotes);
+            }
+        }
+
+        [TestCase(typeof(MemosInternalFieldsModel_NoTrim))]
+        [TestCase(typeof(MemosInternalSettersModel_NoTrim))]
+        [TestCase(typeof(MemosPrivateFieldsModel_NoTrim))]
+        [TestCase(typeof(MemosPrivateSettersModel_NoTrim))]
+        [TestCase(typeof(MemosProtectedFieldsModel_NoTrim))]
+        [TestCase(typeof(MemosProtectedSettersModel_NoTrim))]
+        [TestCase(typeof(MemosPublicFieldsModel_NoTrim))]
+        [TestCase(typeof(MemosPublicSettersModel_NoTrim))]
+        public void ShouldDeserializeMemos_NoTrim(Type targetObjectType)
         {
             using (var parser = new Parser("Resources/table-with-memos.tps"))
             {

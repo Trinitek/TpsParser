@@ -32,7 +32,9 @@ namespace TpsParser
 
         private Parser()
         {
-            DeserializerContext = new DeserializerContext();
+            DeserializerContext = new DeserializerContext(
+                new StringOptions(),
+                new BooleanOptions());
         }
 
         internal Parser(TpsFile tpsFile)

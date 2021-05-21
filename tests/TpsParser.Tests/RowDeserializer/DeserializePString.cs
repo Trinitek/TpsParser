@@ -11,13 +11,11 @@ namespace TpsParser.Tests.RowDeserializer
         [Test]
         public void ShouldDeserializeString()
         {
-            string expected = " Hello world!     ";
-
-            var row = BuildRow(1, ("Notes", new TpsPString(expected)));
+            var row = BuildRow(1, ("Notes", new TpsPString(" Hello world!     ")));
 
             var deserialized = row.Deserialize<StringModel>();
 
-            Assert.AreEqual(expected, deserialized.Notes);
+            Assert.AreEqual(" Hello world!", deserialized.Notes);
         }
 
         [Test]

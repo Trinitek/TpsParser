@@ -46,5 +46,9 @@ namespace TpsParser
                 [typeof(byte)] = x => x.ToByte().Value,
                 [typeof(byte?)] = x => x.ToByte().AsNullable(),
             };
+        /// <summary>
+        /// Represents an unset value.
+        /// </summary>
+        public static object UnsetValue { get; } = new object();
     }
 }

@@ -8,12 +8,25 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents an array of objects.
     /// </summary>
+    public interface ITpsArray
+    {
+        /// <summary>
+        /// Gets the collection of objects in this array.
+        /// </summary>
+        IReadOnlyList<TpsObject> Objects { get; }
+    }
+
+    /// <summary>
+    /// Represents an array of objects.
+    /// </summary>
     public sealed class TpsArray<TTpsObject> :
-        TpsObject<IReadOnlyList<TTpsObject>>
+        TpsObject<IReadOnlyList<TTpsObject>>, ITpsArray
         where TTpsObject : TpsObject
     {
         /// <inheritdoc/>
         public override TpsTypeCode TypeCode => TpsTypeCode.None;
+
+        IReadOnlyList<TpsObject> ITpsArray.Objects => Value;
 
         /// <summary>
         /// Instantiates a new array.

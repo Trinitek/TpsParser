@@ -24,8 +24,10 @@ namespace TpsParser
 
         /// <summary>
         /// Gets or sets the fallback value to use if the field is null.
+        /// The default is <see cref="TypeMapOptions.UnsetValue"/>. If unset, this may be overridden by additional
+        /// <see cref="TypeMapOptions"/> applied to the field.
         /// </summary>
-        public object FallbackValue { get; set; } = null;
+        public object FallbackValue { get; set; } = TypeMapOptions.UnsetValue;
 
         /// <summary>
         /// <para>

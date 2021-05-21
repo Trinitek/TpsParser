@@ -10,26 +10,33 @@ namespace TpsParser
     public sealed class BooleanOptions : TypeMapOptions
     {
         /// <summary>
-        /// Represents an unset value.
-        /// </summary>
-        public static object UnsetValue { get; } = new object();
-
-        /// <summary>
         /// Gets or sets the value to use when testing for 'true',
-        /// or <see cref="UnsetValue"/> to use the default behavior.
+        /// or <see cref="TypeMapOptions.UnsetValue"/> to use the default behavior.
         /// </summary>
         public object TrueValue { get; set; } = UnsetValue;
 
         /// <summary>
         /// Gets or sets the value to use when testing for 'false',
-        /// or <see cref="UnsetValue"/> to use the default behavior.
+        /// or <see cref="TypeMapOptions.UnsetValue"/> to use the default behavior.
         /// </summary>
         public object FalseValue { get; set; } = UnsetValue;
+
+        /// <summary>
+        /// Gets or sets the fallback value to use when <see cref="TpsFieldAttribute.FallbackValue"/> is unset.
+        /// </summary>
+        public bool FallbackValue { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the string comparison mode. The default is <see cref="StringComparison.OrdinalIgnoreCase"/>.
+        /// </summary>
+        public StringComparison ComparisonMode { get; set; } = StringComparison.OrdinalIgnoreCase;
 
         internal BooleanOptions GetCopy() => new BooleanOptions
         {
             TrueValue = TrueValue,
-            FalseValue = FalseValue
+            FalseValue = FalseValue,
+            ComparisonMode = ComparisonMode,
+            FallbackValue = FallbackValue
         };
 
         /// <inheritdoc/>
@@ -37,6 +44,11 @@ namespace TpsParser
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0075:Simplify conditional expression", Justification = "Nested ternaries have better readability, comparatively.")]
         protected internal override Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
         {
+            fallbackValue =
+                fallbackValue == UnsetValue
+                ? this.FallbackValue
+                : fallbackValue;
+
             Expression<Func<TpsObject, object>> asBooleanOrFallbackExpr =
                 x => ReferenceEquals(x, null) ? fallbackValue : x.ToBoolean().Value;
 
@@ -47,7 +59,7 @@ namespace TpsParser
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : string.Equals(x.ToString().NullTrim(), trueString, StringComparison.OrdinalIgnoreCase);
+                        : string.Equals(x.ToString().NullTrim(), trueString, ComparisonMode);
                 }
                 else
                 {
@@ -62,7 +74,7 @@ namespace TpsParser
                         ReferenceEquals(x, null)
                         ? fallbackValue
                         :
-                            string.Equals(x.ToString().NullTrim(), falseString, StringComparison.OrdinalIgnoreCase)
+                            string.Equals(x.ToString().NullTrim(), falseString, ComparisonMode)
                             ? false
                             : x.ToBoolean().Value;
                 }
@@ -82,10 +94,10 @@ namespace TpsParser
                         ReferenceEquals(x, null)
                         ? fallbackValue
                         :
-                            string.Equals(x.ToString().NullTrim(), trueString, StringComparison.OrdinalIgnoreCase)
+                            string.Equals(x.ToString().NullTrim(), trueString, ComparisonMode)
                             ? true
                             :
-                                string.Equals(x.ToString().NullTrim(), falseString, StringComparison.OrdinalIgnoreCase)
+                                string.Equals(x.ToString().NullTrim(), falseString, ComparisonMode)
                                 ? false
                                 : fallbackValue;
                 }

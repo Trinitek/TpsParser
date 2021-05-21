@@ -111,14 +111,14 @@ namespace TpsParser.Tps.Type
         public virtual Maybe<IReadOnlyList<TpsObject>> ToArray() => default;
 
         /// <summary>
-        /// Gets a string representation of the value.
+        /// Gets a string representation of the value. May be null.
         /// </summary>
         /// <returns></returns>
         public override string ToString() => Value?.ToString();
 
 
         /// <summary>
-        /// Gets a string representation of the value.
+        /// Gets a string representation of the value. May be null.
         /// </summary>
         /// <param name="format"></param>
         /// <returns></returns>

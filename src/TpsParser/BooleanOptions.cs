@@ -47,7 +47,7 @@ namespace TpsParser
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : string.Equals(x.ToString().Trim(), trueString, StringComparison.OrdinalIgnoreCase);
+                        : string.Equals(x.ToString().NullTrim(), trueString, StringComparison.OrdinalIgnoreCase);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace TpsParser
                         ReferenceEquals(x, null)
                         ? fallbackValue
                         :
-                            string.Equals(x.ToString().Trim(), falseString, StringComparison.OrdinalIgnoreCase)
+                            string.Equals(x.ToString().NullTrim(), falseString, StringComparison.OrdinalIgnoreCase)
                             ? false
                             : x.ToBoolean().Value;
                 }
@@ -82,10 +82,10 @@ namespace TpsParser
                         ReferenceEquals(x, null)
                         ? fallbackValue
                         :
-                            string.Equals(x.ToString().Trim(), trueString, StringComparison.OrdinalIgnoreCase)
+                            string.Equals(x.ToString().NullTrim(), trueString, StringComparison.OrdinalIgnoreCase)
                             ? true
                             :
-                                string.Equals(x.ToString().Trim(), falseString, StringComparison.OrdinalIgnoreCase)
+                                string.Equals(x.ToString().NullTrim(), falseString, StringComparison.OrdinalIgnoreCase)
                                 ? false
                                 : fallbackValue;
                 }

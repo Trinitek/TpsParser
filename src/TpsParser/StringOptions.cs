@@ -31,6 +31,8 @@ namespace TpsParser
             Format = Format
         };
 
+        private static object ValueOrFallback(string s, object fallback) => s is null ? fallback : s;
+
         /// <inheritdoc/>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0041:Use 'is null' check", Justification = "Cannot use pattern-matching operators in expression trees.")]
         protected internal override Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
@@ -42,28 +44,28 @@ namespace TpsParser
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString().TrimStart();
+                        : ValueOrFallback(x.ToString().NullTrimStart(), fallbackValue);
                 }
                 else if (!TrimStart && TrimEnd)
                 {
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString().TrimEnd();
+                        : ValueOrFallback(x.ToString().NullTrimEnd(), fallbackValue);
                 }
                 else if (TrimStart && TrimEnd)
                 {
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString().Trim();
+                        : ValueOrFallback(x.ToString().NullTrim(), fallbackValue);
                 }
                 else
                 {
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString();
+                        : ValueOrFallback(x.ToString(), fallbackValue);
                 }
             }
             else
@@ -73,28 +75,28 @@ namespace TpsParser
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString(Format).TrimStart();
+                        : ValueOrFallback(x.ToString(Format).NullTrimStart(), fallbackValue);
                 }
                 else if (!TrimStart && TrimEnd)
                 {
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString(Format).TrimEnd();
+                        : ValueOrFallback(x.ToString(Format).NullTrimEnd(), fallbackValue);
                 }
                 else if (TrimStart && TrimEnd)
                 {
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString(Format).Trim();
+                        : ValueOrFallback(x.ToString(Format).NullTrim(), fallbackValue);
                 }
                 else
                 {
                     return x =>
                         ReferenceEquals(x, null)
                         ? fallbackValue
-                        : x.ToString(Format);
+                        : ValueOrFallback(x.ToString(Format), fallbackValue);
                 }
             }
         }

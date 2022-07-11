@@ -163,7 +163,7 @@ namespace TpsParser.Tps.Type
             for (int i = 0; i < current.ElementCount; i++)
             {
                 enumerator.Position = nextEnumeratorPosition;
-                arrayValues[i] = TpsObject.ParseNonArrayField(rx, encoding, fieldSize, enumerator);
+                arrayValues[i] = TpsObject.ParseScalarField(rx, encoding, fieldSize, enumerator);
             }
 
             return Create(current.Type, arrayValues);

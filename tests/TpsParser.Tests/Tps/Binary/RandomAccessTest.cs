@@ -74,7 +74,7 @@ namespace TpsParser.Tests.Tps.Binary
         [Test]
         public void ShouldReadZeroTerminatedString()
         {
-            Assert.AreEqual(" !\"", new TpsReader(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ZeroTerminatedString());
+            Assert.AreEqual(" !\"", new TpsReader(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ReadZeroTerminatedString());
         }
 
         [Test]

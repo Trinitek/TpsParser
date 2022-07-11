@@ -147,7 +147,7 @@ namespace TpsParser
                     {
                         throw new TpsParserException(
                             //$"Cannot set member [{member}] to value '{clrValue}' of type '{clrValue?.GetType()}' " +
-                            $"Cannot set member [{member}] to value '{tpsFieldValue}' of type '{tpsFieldValue?.GetType()}'." +
+                            $"Cannot set member [{member}] to value '{tpsFieldValue}' of type '{tpsFieldValue?.GetType().Name}'. " +
                             //$"(Source value '{tpsFieldValue}' of {nameof(TpsObject)} type '{tpsFieldValue.GetType().Name}'). " +
                             $"See the inner exception for details.", ex);
                     }

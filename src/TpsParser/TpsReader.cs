@@ -327,20 +327,11 @@ namespace TpsParser
         /// <summary>
         /// Reads a zero-terminated string and advances the current position.
         /// </summary>
+        /// <param name="encoding">The encoding of the string to use. If null, <see cref="Parser.DefaultEncoding"/> is used.</param>
         /// <returns></returns>
-        public string ZeroTerminatedString() => ReadZeroTerminatedString(Parser.DefaultEncoding);
-
-        /// <summary>
-        /// Reads a zero-terminated string and advances the current position.
-        /// </summary>
-        /// <param name="encoding">The encoding of the string.</param>
-        /// <returns></returns>
-        public string ReadZeroTerminatedString(Encoding encoding)
+        public string ReadZeroTerminatedString(Encoding encoding = null)
         {
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
+            encoding = encoding ?? Parser.DefaultEncoding;
 
             var bytes = new List<byte>();
 
@@ -729,7 +720,7 @@ namespace TpsParser
             // Centiseconds (seconds/100) 0 - 99
             int centi = time & 0x000000FF;
 
-            return new TpsTime(new TimeSpan(0, hours, mins, secs, centi * 10));
+            return new TpsTime((byte)hours, (byte)mins, (byte)secs, (byte)(centi * 10));
         }
 
         /// <summary>

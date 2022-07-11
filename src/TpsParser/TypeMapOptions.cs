@@ -11,14 +11,14 @@ namespace TpsParser
     public abstract class TypeMapOptions
     {
         /// <summary>
-        /// Gets an expression that interprets a <see cref="TpsObject"/> as some value based on the set options.
+        /// Gets an expression that interprets a <see cref="ITpsObject"/> as some value based on the set options.
         /// </summary>
         /// <param name="fallbackValue"></param>
         /// <returns></returns>
-        protected internal abstract Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue);
+        protected internal abstract Expression<Func<ITpsObject, object>> CreateValueInterpreter(object fallbackValue);
 
-        internal static Dictionary<Type, Expression<Func<TpsObject, object>>> DefaultInterpreters { get; } =
-            new Dictionary<Type, Expression<Func<TpsObject, object>>>
+        internal static Dictionary<Type, Expression<Func<ITpsObject, object>>> DefaultInterpreters { get; } =
+            new Dictionary<Type, Expression<Func<ITpsObject, object>>>
             {
                 [typeof(DateTime)] = x => x.ToDateTime().Value ?? default,
                 [typeof(DateTime?)] = x => x.ToDateTime().Value,
@@ -46,6 +46,7 @@ namespace TpsParser
                 [typeof(byte)] = x => x.ToByte().Value,
                 [typeof(byte?)] = x => x.ToByte().AsNullable(),
             };
+
         /// <summary>
         /// Represents an unset value.
         /// </summary>

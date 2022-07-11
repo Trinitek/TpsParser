@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -22,7 +23,7 @@ namespace TpsParser.Tps.Type
     /// If you need to handle values with more than 27 digits, consider using <see cref="ToString()"/> instead.
     /// </para>
     /// </remarks>
-    public sealed class TpsDecimal : TpsObject<(ulong High, ulong Low, byte Places)>
+    public readonly struct TpsDecimal : ITpsObject, IEquatable<TpsDecimal>
     {
         /// <summary>
         /// The maximum allowable number of decimal digits.
@@ -30,22 +31,22 @@ namespace TpsParser.Tps.Type
         public const int MaxLength = 31;
 
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.Decimal;
+        public TpsTypeCode TypeCode => TpsTypeCode.Decimal;
 
         /// <summary>
         /// Gets the upper 64 bits of the packed decimal, including the sign in the highest nibble.
         /// </summary>
-        public ulong ValueHigh => Value.High;
+        public ulong ValueHigh { get; }
 
         /// <summary>
         /// Gets the lower 64 bits of the packed decimal.
         /// </summary>
-        public ulong ValueLow => Value.Low;
+        public ulong ValueLow { get; }
 
         /// <summary>
         /// Gets the number of decimal digits in the fractional portion.
         /// </summary>
-        public byte Places => Value.Places;
+        public byte Scale { get; }
 
         /// <summary>
         /// Returns true if positive.
@@ -62,22 +63,22 @@ namespace TpsParser.Tps.Type
         /// </summary>
         public bool IsZero => ValueLow == 0 && (ValueHigh & 0x0FFF_FFFF_FFFF_FFFF) == 0;
 
-        private decimal? _valueAsDecimal;
-
         /// <summary>
         /// Instantiates a new DECIMAL.
         /// </summary>
         /// <param name="high"></param>
         /// <param name="low"></param>
-        /// <param name="places"></param>
-        public TpsDecimal(ulong high, ulong low, byte places)
+        /// <param name="scale"></param>
+        public TpsDecimal(ulong high, ulong low, byte scale)
         {
-            if (places > MaxLength)
+            if (scale > MaxLength)
             {
-                throw new ArgumentOutOfRangeException(nameof(places), $"Number of places must not exceed {MaxLength}.");
+                throw new ArgumentOutOfRangeException(nameof(scale), $"Number of places must not exceed {MaxLength}.");
             }
 
-            Value = (high, low, places);
+            ValueHigh = high;
+            ValueLow = low;
+            Scale = scale;
         }
 
         /// <summary>
@@ -180,7 +181,7 @@ namespace TpsParser.Tps.Type
 
             bool leadingZeroHandled = false;
             
-            int leftPlaces = MaxLength - Places;
+            int leftPlaces = MaxLength - Scale;
 
             if (leftPlaces == 0)
             {
@@ -245,54 +246,145 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public override Maybe<bool> ToBoolean() => new Maybe<bool>(!IsZero);
+        public Maybe<bool> ToBoolean() => Maybe.Some(!IsZero);
 
         /// <inheritdoc/>
-        public override Maybe<sbyte> ToSByte() => new Maybe<sbyte>((sbyte)ToDecimal().Value);
+        public Maybe<sbyte> ToSByte()
+        {
+            decimal d = ToDecimal().Value;
+            return sbyte.MinValue > d || sbyte.MaxValue < d
+                ? Maybe.None<sbyte>()
+                : Maybe.Some((sbyte)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<byte> ToByte() => new Maybe<byte>((byte)ToDecimal().Value);
+        public Maybe<byte> ToByte()
+        {
+            decimal d = ToDecimal().Value;
+            return byte.MinValue > d || byte.MaxValue < d
+                ? Maybe.None<byte>()
+                : Maybe.Some((byte)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<ushort> ToUInt16() => new Maybe<ushort>((ushort)ToDecimal().Value);
+        public Maybe<ushort> ToUInt16()
+        {
+            decimal d = ToDecimal().Value;
+            return ushort.MinValue > d || ushort.MaxValue < d
+                ? Maybe.None<ushort>()
+                : Maybe.Some((ushort)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<short> ToInt16() => new Maybe<short>((short)ToDecimal().Value);
+        public Maybe<short> ToInt16()
+        {
+            decimal d = ToDecimal().Value;
+            return short.MinValue > d || short.MaxValue < d
+                ? Maybe.None<short>()
+                : Maybe.Some((short)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<uint> ToUInt32() => new Maybe<uint>((uint)ToDecimal().Value);
+        public Maybe<uint> ToUInt32()
+        {
+            decimal d = ToDecimal().Value;
+            return uint.MinValue > d || uint.MaxValue < d
+                ? Maybe.None<uint>()
+                : Maybe.Some((uint)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<int> ToInt32() => new Maybe<int>((int)ToDecimal().Value);
+        public Maybe<int> ToInt32()
+        {
+            decimal d = ToDecimal().Value;
+            return int.MinValue > d || int.MaxValue < d
+                ? Maybe.None<int>()
+                : Maybe.Some((int)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<ulong> ToUInt64() => new Maybe<ulong>((ulong)ToDecimal().Value);
+        public Maybe<ulong> ToUInt64()
+        {
+            decimal d = ToDecimal().Value;
+            return ulong.MinValue > d || ulong.MaxValue < d
+                ? Maybe.None<ulong>()
+                : Maybe.Some((ulong)d);
+        }
 
         /// <inheritdoc/>
-        public override Maybe<long> ToInt64() => new Maybe<long>((long)ToDecimal().Value);
+        public Maybe<long> ToInt64()
+        {
+            decimal d = ToDecimal().Value;
+            return long.MinValue > d || long.MaxValue < d
+                ? Maybe.None<long>()
+                : Maybe.Some((long)d);
+        }
 
         /// <summary>
         /// Gets the value as a <see cref="decimal"/>. This type allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
         /// </summary>
-        public override Maybe<decimal> ToDecimal()
-        {
-            if (!_valueAsDecimal.HasValue)
-            {
-                _valueAsDecimal = decimal.Parse(ToString(), CultureInfo.InvariantCulture);
-            }
-
-            return new Maybe<decimal>(_valueAsDecimal.Value);
-        }
+        public Maybe<decimal> ToDecimal() =>
+            (Scale <= 28 && true)
+                ? Maybe.Some(new decimal(
+                    lo: 0,
+                    mid: 0,
+                    hi: 0,
+                    isNegative: IsNegative,
+                    scale: Scale))
+                : Maybe.None<decimal>();
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.
         /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
         /// </summary>
-        public override Maybe<DateTime?> ToDateTime() => new Maybe<DateTime?>(TpsDate.ClarionEpoch.Add(new TimeSpan((int)ToDecimal().Value, 0, 0, 0)));
+        public Maybe<DateTime?> ToDateTime()
+        {
+            var i = ToInt32();
+            return i.HasValue
+                ? Maybe.Some<DateTime?>(TpsDate.ClarionEpoch.Add(new TimeSpan(i.Value, 0, 0, 0)))
+                : Maybe.None<DateTime?>();
+        }
 
         /// <summary>
         /// Gets a string representation of the type returned by <see cref="ToDecimal"/>.
         /// </summary>
-        public override string ToString(string format) => ToDecimal().Value.ToString(format, CultureInfo.InvariantCulture);
+        public string ToString(string format) => ToDecimal().Value.ToString(format, CultureInfo.InvariantCulture);
+
+        /// <inheritdoc/>
+        public Maybe<float> ToFloat() => ToDecimal().ConvertSome(d => (float)d);
+
+        /// <inheritdoc/>
+        public Maybe<double> ToDouble() => ToDecimal().ConvertSome(d => (double)d);
+
+        /// <inheritdoc/>
+        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
+
+        /// <inheritdoc/>
+        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is TpsDecimal x && Equals(x);
+
+        /// <inheritdoc/>
+        public bool Equals(TpsDecimal other) =>
+            ValueHigh == other.ValueHigh
+            && ValueLow == other.ValueLow
+            && Scale == other.Scale;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            int hashCode = -1054985165;
+            hashCode = hashCode * -1521134295 + ValueHigh.GetHashCode();
+            hashCode = hashCode * -1521134295 + ValueLow.GetHashCode();
+            hashCode = hashCode * -1521134295 + Scale.GetHashCode();
+            return hashCode;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator ==(TpsDecimal left, TpsDecimal right) => left.Equals(right);
+
+        /// <inheritdoc/>
+        public static bool operator !=(TpsDecimal left, TpsDecimal right) => !(left == right);
     }
 }

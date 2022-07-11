@@ -64,7 +64,7 @@ namespace TpsParser.Tps.Record
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            ExternalFile = rx.ZeroTerminatedString();
+            ExternalFile = rx.ReadZeroTerminatedString();
 
             if (ExternalFile.Length == 0)
             {
@@ -76,7 +76,7 @@ namespace TpsParser.Tps.Record
                 }
             }
 
-            FullName = rx.ZeroTerminatedString();
+            FullName = rx.ReadZeroTerminatedString();
             Length = rx.ReadShortLE();
             Flags = rx.ReadShortLE();
         }

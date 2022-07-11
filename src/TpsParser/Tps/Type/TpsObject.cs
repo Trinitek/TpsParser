@@ -8,113 +8,108 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a typed object within the TopSpeed file.
     /// </summary>
-    public abstract class TpsObject
+    public interface ITpsObject
     {
-        /// <summary>
-        /// Gets the .NET equivalent value of the TopSpeed object.
-        /// </summary>
-        public object Value { get; protected set; }
-
         /// <summary>
         /// Gets the type code of the object.
         /// </summary>
-        public abstract TpsTypeCode TypeCode { get; }
+        TpsTypeCode TypeCode { get; }
 
         /// <summary>
         /// Gets a <see cref="bool"/> representation of the value as governed by Clarion logic evaluation rules for the type.
         /// </summary>
         /// <returns></returns>
-        public abstract Maybe<bool> ToBoolean();
+        Maybe<bool> ToBoolean();
 
         /// <summary>
         /// Gets an <see cref="sbyte"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<sbyte> ToSByte() => default;
+        Maybe<sbyte> ToSByte();
         
         /// <summary>
         /// Gets a <see cref="byte"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<byte> ToByte() => default;
+        Maybe<byte> ToByte();
 
         /// <summary>
         /// Gets a <see cref="short"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<short> ToInt16() => default;
+        Maybe<short> ToInt16();
 
         /// <summary>
         /// Gets a <see cref="uint"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<ushort> ToUInt16() => default;
+        Maybe<ushort> ToUInt16();
 
         /// <summary>
         /// Gets an <see cref="int"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<int> ToInt32() => default;
+        Maybe<int> ToInt32();
 
         /// <summary>
         /// Gets a <see cref="uint"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<uint> ToUInt32() => default;
+        Maybe<uint> ToUInt32();
 
         /// <summary>
         /// Gets a <see cref="long"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<long> ToInt64() => default;
+        Maybe<long> ToInt64();
 
         /// <summary>
         /// Gets a <see cref="ulong"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<ulong> ToUInt64() => default;
+        Maybe<ulong> ToUInt64();
 
         /// <summary>
         /// Gets a <see cref="float"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<float> ToFloat() => default;
+        Maybe<float> ToFloat();
 
         /// <summary>
         /// Gets a <see cref="double"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<double> ToDouble() => default;
+        Maybe<double> ToDouble();
 
         /// <summary>
         /// Gets a <see cref="decimal"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<decimal> ToDecimal() => default;
+        Maybe<decimal> ToDecimal();
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<DateTime?> ToDateTime() => default;
+        Maybe<DateTime?> ToDateTime();
 
         /// <summary>
         /// Gets a <see cref="TimeSpan"/> representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<TimeSpan> ToTimeSpan() => default;
+        Maybe<TimeSpan> ToTimeSpan();
 
         /// <summary>
         /// Gets an array representation of the value.
         /// </summary>
         /// <returns></returns>
-        public virtual Maybe<IReadOnlyList<TpsObject>> ToArray() => default;
+        Maybe<IReadOnlyList<ITpsObject>> ToArray();
 
         /// <summary>
         /// Gets a string representation of the value. May be null.
         /// </summary>
         /// <returns></returns>
-        public override string ToString() => Value?.ToString();
+        //public override string ToString() => Value?.ToString();
 
 
         /// <summary>
@@ -122,17 +117,17 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="format"></param>
         /// <returns></returns>
-        public virtual string ToString(string format) => ToString();
+        string ToString(string format);
 
         /// <summary>
-        /// Builds a <see cref="TpsObject"/> from the given binary reader and field definition information.
+        /// Builds a <see cref="ITpsObject"/> from the given binary reader and field definition information.
         /// </summary>
         /// <param name="rx">The binary reader.</param>
         /// <param name="encoding">The text encoding to use when reading string values.</param>
         /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
         /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
         /// <returns></returns>
-        internal static TpsObject ParseField(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
+        internal static ITpsObject ParseField(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
         {
             if (rx == null)
             {
@@ -157,18 +152,18 @@ namespace TpsParser.Tps.Type
             }
             else
             {
-                return ParseNonArrayField(rx, encoding, enumerator);
+                return ParseScalarField(rx, encoding, enumerator);
             }
         }
 
-        private static TpsObject ParseNonArrayField(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
-            ParseNonArrayField(
+        private static ITpsObject ParseScalarField(TpsReader rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
+            ParseScalarField(
                 rx: rx,
                 encoding: encoding,
                 length: enumerator.Current?.Length ?? throw new ArgumentException("The current element is null.", nameof(enumerator)),
                 enumerator: enumerator);
 
-        internal static TpsObject ParseNonArrayField(TpsReader rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
+        internal static ITpsObject ParseScalarField(TpsReader rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
         {
             if (rx is null)
             {
@@ -222,39 +217,39 @@ namespace TpsParser.Tps.Type
             }
         }
 
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            if (obj is TpsObject o)
-            {
-                return Value?.Equals(o.Value) ?? false;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        ///// <inheritdoc/>
+        //public sealed override bool Equals(object obj)
+        //{
+        //    if (obj is TpsObject o)
+        //    {
+        //        return Value?.Equals(o.Value) ?? false;
+        //    }
+        //    else
+        //    {
+        //        return false;
+        //    }
+        //}
 
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            var hashCode = -1431579180;
-            hashCode = hashCode * -1521134295 + EqualityComparer<object>.Default.GetHashCode(Value);
-            hashCode = hashCode * -1521134295 + TypeCode.GetHashCode();
-            return hashCode;
-        }
+        ///// <inheritdoc/>
+        //public override int GetHashCode()
+        //{
+        //    var hashCode = -1431579180;
+        //    hashCode = hashCode * -1521134295 + EqualityComparer<object>.Default.GetHashCode(Value);
+        //    hashCode = hashCode * -1521134295 + TypeCode.GetHashCode();
+        //    return hashCode;
+        //}
 
-        /// <inheritdoc/>
-        public static bool operator ==(TpsObject left, TpsObject right)
-        {
-            return EqualityComparer<TpsObject>.Default.Equals(left, right);
-        }
+        ///// <inheritdoc/>
+        //public static bool operator ==(TpsObject left, TpsObject right)
+        //{
+        //    return EqualityComparer<TpsObject>.Default.Equals(left, right);
+        //}
 
-        /// <inheritdoc/>
-        public static bool operator !=(TpsObject left, TpsObject right)
-        {
-            return !(left == right);
-        }
+        ///// <inheritdoc/>
+        //public static bool operator !=(TpsObject left, TpsObject right)
+        //{
+        //    return !(left == right);
+        //}
     }
 
     /// <summary>
@@ -263,16 +258,20 @@ namespace TpsParser.Tps.Type
     /// <typeparam name="T">The .NET equivalent type of the value this object encapsulates.</typeparam>
     public abstract class TpsObject<T> : TpsObject
     {
-        /// <inheritdoc/>
-        public new T Value
+        /// <summary>
+        /// Gets the .NET equivalent object value that represents this type.
+        /// </summary>
+        public T Value
         {
             get => _typedValue;
             protected set
             {
                 _typedValue = value;
-                base.Value = value;
             }
         }
         private T _typedValue;
+
+        /// <inheritdoc/>
+        public override string ToString() => Value?.ToString();
     }
 }

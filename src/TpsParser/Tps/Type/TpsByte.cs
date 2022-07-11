@@ -1,14 +1,18 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a byte.
     /// </summary>
-    public sealed class TpsByte : TpsObject<byte>
+    public readonly struct TpsByte : ITpsObject, IEquatable<TpsByte>
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.Byte;
+        public TpsTypeCode TypeCode => TpsTypeCode.Byte;
+
+        private byte Value { get; }
 
         /// <summary>
         /// Instantiates a new BYTE.
@@ -19,36 +23,73 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0);
+        public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0);
 
         /// <inheritdoc/>
-        public override Maybe<sbyte> ToSByte() => new Maybe<sbyte>((sbyte)Value);
+        public Maybe<sbyte> ToSByte() => Maybe.Some((sbyte)Value);
 
         /// <inheritdoc/>
-        public override Maybe<byte> ToByte() => new Maybe<byte>(Value);
+        public Maybe<byte> ToByte() => Maybe.Some(Value);
 
         /// <inheritdoc/>
-        public override Maybe<ushort> ToUInt16() => new Maybe<ushort>(Value);
+        public Maybe<ushort> ToUInt16() => Maybe.Some<ushort>(Value);
 
         /// <inheritdoc/>
-        public override Maybe<short> ToInt16() => new Maybe<short>((short)Value);
+        public Maybe<short> ToInt16() => Maybe.Some((short)Value);
 
         /// <inheritdoc/>
-        public override Maybe<uint> ToUInt32() => new Maybe<uint>(Value);
+        public Maybe<uint> ToUInt32() => Maybe.Some<uint>(Value);
 
         /// <inheritdoc/>
-        public override Maybe<int> ToInt32() => new Maybe<int>(Value);
+        public Maybe<int> ToInt32() => Maybe.Some<int>(Value);
 
         /// <inheritdoc/>
-        public override Maybe<ulong> ToUInt64() => new Maybe<ulong>(Value);
+        public Maybe<ulong> ToUInt64() => Maybe.Some<ulong>(Value);
 
         /// <inheritdoc/>
-        public override Maybe<long> ToInt64() => new Maybe<long>(Value);
+        public Maybe<long> ToInt64() => Maybe.Some<long>(Value);
 
         /// <inheritdoc/>
-        public override Maybe<decimal> ToDecimal() => new Maybe<decimal>(Value);
+        public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
 
         /// <inheritdoc/>
-        public override string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
+        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
+
+        /// <inheritdoc/>
+        public string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
+
+        /// <inheritdoc/>
+        public Maybe<float> ToFloat() => Maybe.Some<float>(Value);
+
+        /// <inheritdoc/>
+        public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
+
+        /// <inheritdoc/>
+        public Maybe<DateTime?> ToDateTime() => Maybe.None<DateTime?>();
+
+        /// <inheritdoc/>
+        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
+
+        /// <inheritdoc/>
+        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
+
+        /// <inheritdoc/>
+        public bool Equals(TpsByte other) =>
+            Value == other.Value;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is TpsByte x && Equals(x);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return -1937169414 + Value.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public static bool operator ==(TpsByte left, TpsByte right) => left.Equals(right);
+
+        /// <inheritdoc/>
+        public static bool operator !=(TpsByte left, TpsByte right) => !(left == right);
     }
 }

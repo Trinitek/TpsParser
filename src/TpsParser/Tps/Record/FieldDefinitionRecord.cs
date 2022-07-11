@@ -130,7 +130,7 @@ namespace TpsParser.Tps.Record
 
             Type = (TpsTypeCode)rx.ReadByte();
             Offset = rx.ReadShortLE();
-            FullName = rx.ZeroTerminatedString();
+            FullName = rx.ReadZeroTerminatedString();
             ElementCount = rx.ReadShortLE();
             Length = rx.ReadShortLE();
             Flags = rx.ReadShortLE();
@@ -146,7 +146,7 @@ namespace TpsParser.Tps.Record
                 case TpsTypeCode.CString:
                 case TpsTypeCode.PString:
                     StringLength = rx.ReadShortLE();
-                    StringMask = rx.ZeroTerminatedString();
+                    StringMask = rx.ReadZeroTerminatedString();
                     if (StringMask.Length == 0)
                     {
                         rx.ReadByte();

@@ -21,7 +21,7 @@ namespace TpsParser
         /// Thrown when no value has been assigned.
         /// </exception>
         public T Value => HasValue ? _value : throw new InvalidOperationException(
-                $"The TPS object does not implement a conversion to {typeof(T)}. No value has been assigned.");
+                $"The TPS object value is not representable as {typeof(T)}.");
         private readonly T _value;
 
         /// <summary>
@@ -58,9 +58,75 @@ namespace TpsParser
         public static bool operator !=(Maybe<T> left, Maybe<T> right) => !(left == right);
     }
 
-    internal static class MaybeExtensions
+    /// <summary>
+    /// Static extension methods for working with <see cref="Maybe{T}"/>.
+    /// </summary>
+    public static class Maybe
     {
+        /// <summary>
+        /// Creates a <see cref="Maybe{T}"/> that has no value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static Maybe<T> None<T>() => new Maybe<T>();
+
+        /// <summary>
+        /// Creates a <see cref="Maybe{T}"/> with the given value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Maybe<T> Some<T>(T value) => new Maybe<T>(value);
+
+        /// <summary>
+        /// Converts a <see cref="Maybe{T}"/> into a <see cref="Nullable{T}"/> that is null if no value is assigned.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="maybe"></param>
+        /// <returns></returns>
         public static T? AsNullable<T>(this Maybe<T> maybe) where T : struct
             => maybe.HasValue ? maybe.Value : default(T?);
+
+        /// <summary>
+        /// Changes the result type of a <see cref="Maybe{T}"/> if a value is present.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="maybe"></param>
+        /// <param name="conversion"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static Maybe<TResult> Convert<TSource, TResult>(this Maybe<TSource> maybe, Func<TSource, Maybe<TResult>> conversion)
+        {
+            if (conversion is null)
+            {
+                throw new ArgumentNullException(nameof(conversion));
+            }
+
+            return maybe.HasValue
+                ? conversion.Invoke(maybe.Value)
+                : Maybe.None<TResult>();
+        }
+
+        /// <summary>
+        /// Changes the result type of a <see cref="Maybe{T}"/> if a value is present.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="maybe"></param>
+        /// <param name="conversion"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static Maybe<TResult> ConvertSome<TSource, TResult>(this Maybe<TSource> maybe, Func<TSource, TResult> conversion)
+        {
+            if (conversion is null)
+            {
+                throw new ArgumentNullException(nameof(conversion));
+            }
+
+            return maybe.HasValue
+                ? Maybe.Some(conversion.Invoke(maybe.Value))
+                : Maybe.None<TResult>();
+        }
     }
 }

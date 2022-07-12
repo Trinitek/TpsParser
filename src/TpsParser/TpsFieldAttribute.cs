@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Tps.Type;
 
 namespace TpsParser
 {

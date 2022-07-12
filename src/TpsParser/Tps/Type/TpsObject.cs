@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 
 namespace TpsParser.Tps.Type
@@ -14,9 +13,17 @@ namespace TpsParser.Tps.Type
         /// Gets the type code of the object.
         /// </summary>
         TpsTypeCode TypeCode { get; }
+    }
 
+    /// <summary>
+    /// Represents a simple Clarion type.
+    /// </summary>
+    public interface ISimple : ITpsObject
+    {
         /// <summary>
         /// Gets a <see cref="bool"/> representation of the value as governed by Clarion logic evaluation rules for the type.
+        /// For all numeric types, this will be true for all non-zero values.
+        /// For all string types, this will be true for strings that have a length greater than zero and do not consist entirely of "blank" padding characters (ASCII 0x20, i.e. space).
         /// </summary>
         /// <returns></returns>
         Maybe<bool> ToBoolean();
@@ -88,7 +95,7 @@ namespace TpsParser.Tps.Type
         Maybe<decimal> ToDecimal();
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> representation of the value.
+        /// Gets a <see cref="DateTime"/> representation of the value. A null value is used to represent the Clarion date 0000-00-00.
         /// </summary>
         /// <returns></returns>
         Maybe<DateTime?> ToDateTime();
@@ -98,26 +105,6 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <returns></returns>
         Maybe<TimeSpan> ToTimeSpan();
-
-        /// <summary>
-        /// Gets an array representation of the value.
-        /// </summary>
-        /// <returns></returns>
-        Maybe<IReadOnlyList<ITpsObject>> ToArray();
-
-        /// <summary>
-        /// Gets a string representation of the value. May be null.
-        /// </summary>
-        /// <returns></returns>
-        //public override string ToString() => Value?.ToString();
-
-
-        /// <summary>
-        /// Gets a string representation of the value. May be null.
-        /// </summary>
-        /// <param name="format"></param>
-        /// <returns></returns>
-        string ToString(string format);
 
         /// <summary>
         /// Builds a <see cref="ITpsObject"/> from the given binary reader and field definition information.
@@ -216,62 +203,11 @@ namespace TpsParser.Tps.Type
                     throw new ArgumentException($"Unsupported type {current.Type} ({length})", nameof(enumerator));
             }
         }
-
-        ///// <inheritdoc/>
-        //public sealed override bool Equals(object obj)
-        //{
-        //    if (obj is TpsObject o)
-        //    {
-        //        return Value?.Equals(o.Value) ?? false;
-        //    }
-        //    else
-        //    {
-        //        return false;
-        //    }
-        //}
-
-        ///// <inheritdoc/>
-        //public override int GetHashCode()
-        //{
-        //    var hashCode = -1431579180;
-        //    hashCode = hashCode * -1521134295 + EqualityComparer<object>.Default.GetHashCode(Value);
-        //    hashCode = hashCode * -1521134295 + TypeCode.GetHashCode();
-        //    return hashCode;
-        //}
-
-        ///// <inheritdoc/>
-        //public static bool operator ==(TpsObject left, TpsObject right)
-        //{
-        //    return EqualityComparer<TpsObject>.Default.Equals(left, right);
-        //}
-
-        ///// <inheritdoc/>
-        //public static bool operator !=(TpsObject left, TpsObject right)
-        //{
-        //    return !(left == right);
-        //}
     }
 
     /// <summary>
-    /// Represents a typed object within the TopSpeed file.
+    /// Represents a complex Clarion type that owns one or more instances of <see cref="ITpsObject"/>.
     /// </summary>
-    /// <typeparam name="T">The .NET equivalent type of the value this object encapsulates.</typeparam>
-    public abstract class TpsObject<T> : TpsObject
-    {
-        /// <summary>
-        /// Gets the .NET equivalent object value that represents this type.
-        /// </summary>
-        public T Value
-        {
-            get => _typedValue;
-            protected set
-            {
-                _typedValue = value;
-            }
-        }
-        private T _typedValue;
-
-        /// <inheritdoc/>
-        public override string ToString() => Value?.ToString();
-    }
+    public interface IComplex : ITpsObject
+    { }
 }

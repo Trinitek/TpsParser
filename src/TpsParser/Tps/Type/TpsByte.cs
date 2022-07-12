@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace TpsParser.Tps.Type
@@ -7,7 +6,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a byte.
     /// </summary>
-    public readonly struct TpsByte : ITpsObject, IEquatable<TpsByte>
+    public readonly struct TpsByte : ISimple, IEquatable<TpsByte>
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.Byte;
@@ -26,7 +25,10 @@ namespace TpsParser.Tps.Type
         public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0);
 
         /// <inheritdoc/>
-        public Maybe<sbyte> ToSByte() => Maybe.Some((sbyte)Value);
+        public Maybe<sbyte> ToSByte() =>
+            sbyte.MaxValue < Value
+            ? Maybe.None<sbyte>()
+            : Maybe.Some((sbyte)Value);
 
         /// <inheritdoc/>
         public Maybe<byte> ToByte() => Maybe.Some(Value);
@@ -53,12 +55,6 @@ namespace TpsParser.Tps.Type
         public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
 
         /// <inheritdoc/>
-        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
-
-        /// <inheritdoc/>
-        public string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
-
-        /// <inheritdoc/>
         public Maybe<float> ToFloat() => Maybe.Some<float>(Value);
 
         /// <inheritdoc/>
@@ -71,7 +67,7 @@ namespace TpsParser.Tps.Type
         public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
 
         /// <inheritdoc/>
-        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
+        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
         /// <inheritdoc/>
         public bool Equals(TpsByte other) =>

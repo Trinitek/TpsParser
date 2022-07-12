@@ -21,13 +21,13 @@ namespace TpsParser
         /// Thrown when no value has been assigned.
         /// </exception>
         public T Value => HasValue ? _value : throw new InvalidOperationException(
-                $"The TPS object value is not representable as {typeof(T)}.");
+                $"The TPS object value is not representable as a {typeof(T)}.");
         private readonly T _value;
 
         /// <summary>
         /// Instantiates a new instance with a value.
         /// </summary>
-        /// <param name="value">The value to use. Must not be null.</param>
+        /// <param name="value"></param>
         public Maybe(T value)
         {
             HasValue = true;

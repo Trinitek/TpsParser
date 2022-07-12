@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TpsParser.Tps.Header;
-using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {

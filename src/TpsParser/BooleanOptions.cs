@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq.Expressions;
-using TpsParser.Tps.Type;
 
 namespace TpsParser
 {

@@ -10,7 +10,7 @@ namespace TpsParser.Tps.Type
     public sealed class TpsBlob : TpsObject<byte[]>
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.None;
+        public TpsTypeCode TypeCode => TpsTypeCode.None;
 
         /// <summary>
         /// Instantiates a new BLOB.

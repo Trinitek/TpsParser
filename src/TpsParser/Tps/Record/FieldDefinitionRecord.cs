@@ -14,7 +14,10 @@ namespace TpsParser.Tps.Record
         /// </summary>
         TpsTypeCode Type { get; }
 
-        int Offset { get; }
+        /// <summary>
+        /// Gets the number of bytes from the start of the record where the field value begins.
+        /// </summary>
+        ushort Offset { get; }
 
         /// <summary>
         /// <para>
@@ -39,22 +42,22 @@ namespace TpsParser.Tps.Record
         /// <summary>
         /// If the field is an array, gets the number of elements in the array. See <see cref="IsArray"/>.
         /// </summary>
-        int ElementCount { get; }
+        ushort ElementCount { get; }
 
         /// <summary>
         /// Gets the size of the field in bytes.
         /// </summary>
-        int Length { get; }
+        ushort Length { get; }
 
         /// <summary>
         /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
         /// </summary>
-        int Index { get; }
+        ushort Index { get; }
 
         /// <summary>
         /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the number of bytes in the string.
         /// </summary>
-        int StringLength { get; }
+        ushort StringLength { get; }
 
         /// <summary>
         /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the string mask.
@@ -69,7 +72,7 @@ namespace TpsParser.Tps.Record
         /// <summary>
         /// If the field contains a <see cref="TpsDecimal"/>, gets the number of decimal places.
         /// </summary>
-        int BcdElementLength { get; }
+        byte BcdElementLength { get; }
 
         /// <summary>
         /// True if the field contains an array of values.
@@ -93,27 +96,27 @@ namespace TpsParser.Tps.Record
     {
         public TpsTypeCode Type { get; }
 
-        public int Offset { get; }
+        public ushort Offset { get; }
 
         public string FullName { get; }
 
         public string Name => FullName.Split(':').Last();
 
-        public int ElementCount { get; }
+        public ushort ElementCount { get; }
 
-        public int Length { get; }
+        public ushort Length { get; }
 
-        public int Flags { get; }
+        public ushort Flags { get; }
 
-        public int Index { get; }
+        public ushort Index { get; }
 
-        public int StringLength { get; }
+        public ushort StringLength { get; }
 
         public string StringMask { get; }
 
         public byte BcdDigitsAfterDecimalPoint { get; }
 
-        public int BcdElementLength { get; }
+        public byte BcdElementLength { get; }
 
         public bool IsArray => ElementCount > 1;
 
@@ -129,12 +132,12 @@ namespace TpsParser.Tps.Record
             OwnerGroup = ownerGroup;
 
             Type = (TpsTypeCode)rx.ReadByte();
-            Offset = rx.ReadShortLE();
+            Offset = rx.ReadUnsignedShortLE();
             FullName = rx.ReadZeroTerminatedString();
-            ElementCount = rx.ReadShortLE();
-            Length = rx.ReadShortLE();
-            Flags = rx.ReadShortLE();
-            Index = rx.ReadShortLE();
+            ElementCount = rx.ReadUnsignedShortLE();
+            Length = rx.ReadUnsignedShortLE();
+            Flags = rx.ReadUnsignedShortLE();
+            Index = rx.ReadUnsignedShortLE();
 
             switch (Type)
             {
@@ -145,7 +148,7 @@ namespace TpsParser.Tps.Record
                 case TpsTypeCode.String:
                 case TpsTypeCode.CString:
                 case TpsTypeCode.PString:
-                    StringLength = rx.ReadShortLE();
+                    StringLength = rx.ReadUnsignedShortLE();
                     StringMask = rx.ReadZeroTerminatedString();
                     if (StringMask.Length == 0)
                     {

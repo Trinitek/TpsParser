@@ -5,7 +5,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents an unsigned short.
     /// </summary>
-    public readonly struct TpsUnsignedShort : ISimple, IEquatable<TpsUnsignedShort>
+    public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.UShort;
@@ -19,13 +19,28 @@ namespace TpsParser.Tps.Type
         public TpsUnsignedShort(ushort value) => Value = value;
 
         /// <inheritdoc/>
-        public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0);
+        public bool ToBoolean() => Value != 0;
+
+        /// <inheritdoc/>
+        public Maybe<sbyte> ToSByte() =>
+            sbyte.MaxValue < Value
+            ? Maybe.None<sbyte>()
+            : Maybe.Some((sbyte)Value);
+
+        /// <inheritdoc/>
+        public Maybe<byte> ToByte() =>
+            byte.MaxValue < Value
+            ? Maybe.None<byte>()
+            : Maybe.Some((byte)Value);
 
         /// <inheritdoc/>
         public Maybe<ushort> ToUInt16() => Maybe.Some(Value);
 
         /// <inheritdoc/>
-        public Maybe<short> ToInt16() => Maybe.Some((short)Value);
+        public Maybe<short> ToInt16() =>
+            short.MaxValue < Value
+            ? Maybe.None<short>()
+            : Maybe.Some((short)Value);
 
         /// <inheritdoc/>
         public Maybe<uint> ToUInt32() => Maybe.Some<uint>(Value);
@@ -43,28 +58,10 @@ namespace TpsParser.Tps.Type
         public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
 
         /// <inheritdoc/>
-        public Maybe<sbyte> ToSByte() =>
-            sbyte.MaxValue < Value
-            ? Maybe.None<sbyte>()
-            : Maybe.Some((sbyte)Value);
-
-        /// <inheritdoc/>
-        public Maybe<byte> ToByte() =>
-            byte.MaxValue < Value
-            ? Maybe.None<byte>()
-            : Maybe.Some((byte)Value);
-
-        /// <inheritdoc/>
         public Maybe<float> ToFloat() => Maybe.Some<float>(Value);
 
         /// <inheritdoc/>
         public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
-
-        /// <inheritdoc/>
-        public Maybe<DateTime?> ToDateTime() => Maybe.None<DateTime?>();
-
-        /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
         
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is TpsUnsignedShort x && Equals(x);

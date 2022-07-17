@@ -66,7 +66,7 @@ namespace TpsParser
 
         public TypeMapOptions MapOptions { get; }
 
-        private Action<TModel, TpsObject> Setter { get; set; }
+        private Action<TModel, ITpsObject> Setter { get; set; }
 
         private static Type GetMemberType(MemberInfo info)
         {
@@ -166,7 +166,7 @@ namespace TpsParser
             MapOptions = mapOptions;
 
             var targetParamExpr = Expression.Parameter(typeof(TModel));
-            var tpsObjParamExpr = Expression.Parameter(typeof(TpsObject));
+            var tpsObjParamExpr = Expression.Parameter(typeof(ITpsObject));
 
             MemberExpression memberExpression;
 
@@ -192,7 +192,7 @@ namespace TpsParser
                 throw new TpsParserException($"Tried to create a {nameof(ModelMember)} for a member that is not a property or field. (Member {memberInfo} declared in {memberInfo.DeclaringType})");
             }
 
-            Expression<Func<TpsObject, object>> getTpsObjValueExpr;
+            Expression<Func<ITpsObject, object>> getTpsObjValueExpr;
 
             if (MapOptions != null)
             {
@@ -200,7 +200,7 @@ namespace TpsParser
             }
             else if (!TypeMapOptions.DefaultInterpreters.TryGetValue(MemberType, out getTpsObjValueExpr))
             {
-                if (typeof(TpsObject).IsAssignableFrom(MemberType))
+                if (typeof(ITpsObject).IsAssignableFrom(MemberType))
                 {
                     // Cast may fail if the member is, for example, TpsLong but the field is TpsByte.
                     // TPS field types are not known at this point.
@@ -213,7 +213,7 @@ namespace TpsParser
                 }
                 else
                 {
-                    getTpsObjValueExpr = x => ReferenceEquals(x, null) ? FieldAttribute.FallbackValue : x.Value;
+                    getTpsObjValueExpr = x => ReferenceEquals(x, null) ? FieldAttribute.FallbackValue : null; // x.Value;
                 }
             }
 
@@ -228,12 +228,12 @@ namespace TpsParser
                             tpsObjParamExpr),
                         MemberType));
 
-            var lambda = Expression.Lambda<Action<TModel, TpsObject>>(assignmentExpr, targetParamExpr, tpsObjParamExpr).Compile();
+            var lambda = Expression.Lambda<Action<TModel, ITpsObject>>(assignmentExpr, targetParamExpr, tpsObjParamExpr).Compile();
 
             Setter = lambda;
         }
 
-        public void SetMember(TModel targetObject, TpsObject sourceValue)
+        public void SetMember(TModel targetObject, ITpsObject sourceValue)
         {
             if (sourceValue is ITpsArray)
             {

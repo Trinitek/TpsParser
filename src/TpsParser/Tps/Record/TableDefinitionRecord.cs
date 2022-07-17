@@ -46,7 +46,7 @@ namespace TpsParser.Tps.Record
         /// </summary>
         /// <param name="record"></param>
         /// <returns></returns>
-        IReadOnlyList<TpsObject> Parse(byte[] record);
+        IReadOnlyList<ITpsObject> Parse(byte[] record);
     }
 
     /// <summary>
@@ -154,7 +154,7 @@ namespace TpsParser.Tps.Record
             return sb.ToString();
         }
 
-        public IReadOnlyList<TpsObject> Parse(byte[] record)
+        public IReadOnlyList<ITpsObject> Parse(byte[] record)
         {
             if (record == null)
             {
@@ -162,7 +162,7 @@ namespace TpsParser.Tps.Record
             }
 
             var rx = new TpsReader(record);
-            var values = new List<TpsObject>(Fields.Count);
+            var values = new List<ITpsObject>(Fields.Count);
 
             using (var fieldEnumerator = new FieldDefinitionEnumerator(Fields))
             {

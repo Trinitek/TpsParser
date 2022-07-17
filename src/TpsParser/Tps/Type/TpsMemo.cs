@@ -3,31 +3,26 @@
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents a MEMO containing an ISO-8859-1 encoded string. MEMOs are variable-length
+    /// Represents a MEMO containing a string, usually encoded in ISO-8859-1. MEMOs are variable-length
     /// text fields that can be up to 65,536 bytes long.
     /// </summary>
-    public sealed class TpsMemo : TpsObject<string>
+    public sealed class TpsMemo : ITpsObject
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.None;
+        public TpsTypeCode TypeCode => TpsTypeCode.None;
+
+        /// <summary>
+        /// Gets the string backing this type.
+        /// </summary>
+        public string Value { get; }
 
         /// <summary>
         /// Instantiates a new MEMO.
         /// </summary>
-        /// <param name="rx"></param>
-        public TpsMemo(TpsReader rx)
+        /// <param name="value"></param>
+        public TpsMemo(string value)
         {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            Value = Parser.DefaultEncoding.GetString(rx.GetData());
+            Value = value ?? throw new ArgumentNullException(nameof(value));
         }
-
-        /// <summary>
-        /// Returns true if the text does not have a length of zero.
-        /// </summary>
-        public override Maybe<bool> ToBoolean() => new Maybe<bool>(!string.IsNullOrEmpty(Value));
     }
 }

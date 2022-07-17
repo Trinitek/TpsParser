@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 
 namespace TpsParser.Tps.Type
 {
@@ -32,45 +30,60 @@ namespace TpsParser.Tps.Type
     /// A centisecond is 1/100th of a second.
     /// </para>
     /// <para>
-    /// In the Clarion programming language, when a TIME value is used in an expression, it is implicitly converted to a
-    /// LONG (see <see cref="TpsLong"/>). This is called a Clarion Standard Time value. This value is the number of centiseconds since midnight.
+    /// In the Clarion documentation, this type is often referred to as a Btrieve time, referring to the historical
+    /// <see href="https://en.wikipedia.org/wiki/Btrieve">Btrieve Record Manager</see> and is designed for interoperability with that and
+    /// other external systems.
     /// </para>
     /// <para>
-    /// Clarion documentation recommends that the 4-byte TIME type be used when communicating with external applications. However, because
-    /// TopSpeed files are typically only used by Clarion applications exclusively, the field may sometimes be defined as a LONG instead.
+    /// The native time type used in the Clarion programming language when performing calculations is a LONG (<see cref = "TpsLong"/>).
+    /// This is called a Clarion Standard Time value and counts the number of centiseconds since midnight, plus 1 centisecond.
+    /// The valid Clarion Standard Time range is 00:00:00.00 through 23:59:59.99, that is, an inclusive numerical range from 1
+    /// to 8,640,000, with 0 used to represent a null value.
     /// </para>
     /// </remarks>
-    public readonly struct TpsTime : ITpsObject, IEquatable<TpsTime>
+    public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     {
         /// <summary>
         /// The maximum number of centiseconds this type can represent.
+        /// For the maximum valid Clarion Standard Time value, see <see cref="ClarionStandardTimeMaxValue"/>.
         /// </summary>
-        public const int MaxTotalCentiseconds = 8639999;
+        public static readonly int MaxTotalCentiseconds = 8640000 - 1;
+
+        /// <summary>
+        /// Gets the minimum valid value of a Clarion Standard Time, 00:00:00.00.
+        /// </summary>
+        public static readonly int ClarionStandardTimeMinValue = 1;
+
+        /// <summary>
+        /// Gets the maximum valid value of a Clarion Standard Time, 23:59:59.99.
+        /// </summary>
+        public static readonly int ClarionStandardTimeMaxValue = MaxTotalCentiseconds + 1;
 
         /// <summary>
         /// Gets the total number of centiseconds (hundredths of a second) since midnight.
+        /// This is not a Clarion Standard Time value.
         /// </summary>
         public int TotalCentiseconds { get; }
 
         /// <summary>
-        /// Gets the number of hours, between 0 and 23 inclusive.
+        /// Gets the number of hours, between 0 and 23 inclusive, or null.
         /// </summary>
-        public byte Hours => (byte)(TotalCentiseconds / (60 * 60 * 100));
+        public byte Hours => (byte)((TotalCentiseconds - 1) / (60 * 60 * 100));
 
         /// <summary>
-        /// Gets the number of minutes, between 0 and 59 inclusive.
+        /// Gets the number of minutes, between 0 and 59 inclusive, or null.
         /// </summary>
-        public byte Minutes => (byte)(TotalCentiseconds / (60 * 100) % 60);
+        public byte Minutes => (byte)((TotalCentiseconds - 1) / (60 * 100) % 60);
 
         /// <summary>
-        /// Gets the number of seconds, between 0 and 59 inclusive.
+        /// Gets the number of seconds, between 0 and 59 inclusive, or null.
         /// </summary>
-        public byte Seconds => (byte)((TotalCentiseconds / 100) % 60);
+        public byte Seconds => (byte)(((TotalCentiseconds - 1) / 100) % 60);
 
         /// <summary>
-        /// Gets the number of centiseconds (hundredths of a second), between 0 and 99 inclusive.
+        /// Gets the number of centiseconds (hundredths of a second), between 0 and 99 inclusive, or null.
         /// </summary>
-        public byte Centiseconds => (byte)(TotalCentiseconds % 100);
+        public byte Centiseconds => (byte)((TotalCentiseconds - 1) % 100);
 
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.Time;
@@ -78,7 +91,8 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Instantiates a new TIME from the given total number of centiseconds (hundredths of a second) since midnight.
         /// </summary>
-        /// <param name="totalCentiseconds"></param>
+        /// <param name="totalCentiseconds">The number of centiseconds since midnight. Note that this is not a Clarion Standard Time value.</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public TpsTime(int totalCentiseconds)
         {
             if (totalCentiseconds < 0 || totalCentiseconds > MaxTotalCentiseconds)
@@ -124,72 +138,37 @@ namespace TpsParser.Tps.Type
         }
 
         /// <summary>
-        /// Returns true if the value is not equal to <see cref="TimeSpan.Zero"/>.
+        /// Instantiates a new TIME from the given TimeSpan.
         /// </summary>
-        public Maybe<bool> ToBoolean() => Maybe.Some(TotalCentiseconds != 0);
+        /// <param name="timeSpan"></param>
+        public TpsTime(TimeSpan timeSpan)
+        {
+            if (timeSpan < TimeSpan.Zero || timeSpan > new TimeSpan(0, 23, 59, 59, 990))
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeSpan), "The TimeSpan must be between 00:00:00.00 and 23:59:59.99 inclusive.");
+            }
+
+            TotalCentiseconds =
+                (timeSpan.Hours * 60 * 60 * 100)
+                + (timeSpan.Minutes * 60 * 100)
+                + (timeSpan.Seconds * 100)
+                + (timeSpan.Milliseconds / 10);
+        }
 
         /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.Some<TimeSpan>(new TimeSpan(0, Hours, Minutes, Seconds, Centiseconds * 10));
+        public bool ToBoolean() => TotalCentiseconds != 0;
 
         /// <inheritdoc/>
-        public string ToString(string format) => ToTimeSpan().Value.ToString(format, CultureInfo.InvariantCulture);
-
-        /// Gets the number of centiseconds since midnight, or an empty <see cref="Maybe{T}"/> if the number is too large to fit the target type.
-        public Maybe<sbyte> ToSByte() =>
-            sbyte.MinValue > TotalCentiseconds || sbyte.MaxValue < TotalCentiseconds
-            ? Maybe.None<sbyte>()
-            : Maybe.Some((sbyte)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight, or an empty <see cref="Maybe{T}"/> if the number is too large to fit the target type.
-        public Maybe<byte> ToByte() =>
-            byte.MinValue > TotalCentiseconds || byte.MaxValue < TotalCentiseconds
-            ? Maybe.None<byte>()
-            : Maybe.Some((byte)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight, or an empty <see cref="Maybe{T}"/> if the number is too large to fit the target type.
-        public Maybe<short> ToInt16() =>
-            short.MinValue > TotalCentiseconds || short.MaxValue < TotalCentiseconds
-            ? Maybe.None<short>()
-            : Maybe.Some((short)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight, or an empty <see cref="Maybe{T}"/> if the number is too large to fit the target type.
-        public Maybe<ushort> ToUInt16() =>
-            ushort.MinValue > TotalCentiseconds || ushort.MaxValue < TotalCentiseconds
-            ? Maybe.None<ushort>()
-            : Maybe.Some((ushort)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<int> ToInt32() => Maybe.Some(TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<uint> ToUInt32() => Maybe.Some((uint)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<long> ToInt64() => Maybe.Some((long)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<ulong> ToUInt64() => Maybe.Some((ulong)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<float> ToFloat() => Maybe.Some((float)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<double> ToDouble() => Maybe.Some((double)TotalCentiseconds);
-
-        /// Gets the number of centiseconds since midnight.
-        public Maybe<decimal> ToDecimal() => Maybe.Some((decimal)TotalCentiseconds);
-
-        /// <inheritdoc/>
-        public Maybe<DateTime?> ToDateTime() => Maybe.None<DateTime?>();
-
-        /// <inheritdoc/>
-        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
+        public Maybe<TimeSpan?> ToTimeSpan() => Maybe.Some<TimeSpan?>(new TimeSpan(0, Hours, Minutes, Seconds, Centiseconds * 10));
 
         /// <summary>
-        /// Gets a <see cref="TpsLong"/> instance representing the Clarion Standard Time, or number of centiseconds since midnight.
+        /// Gets a <see cref="TpsLong"/> instance representing the Clarion Standard Time, or number of centiseconds since midnight plus 1.
         /// </summary>
         /// <returns></returns>
-        public Maybe<TpsLong> AsClarionStandardTime() => Maybe.Some(new TpsLong(TotalCentiseconds));
+        public Maybe<TpsLong> AsClarionStandardTime() => Maybe.Some(new TpsLong(TotalCentiseconds + 1));
+
+        /// <inheritdoc/>
+        public override string ToString() => $"{Hours:00}:{Minutes:00}:{Seconds:00}.{Centiseconds:00}";
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is TpsTime x && Equals(x);

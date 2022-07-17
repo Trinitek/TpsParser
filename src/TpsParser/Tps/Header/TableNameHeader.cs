@@ -43,7 +43,7 @@ namespace TpsParser.Tps.Header
 
             return new TableNameHeader(
                 kind: (HeaderKind)rx.ReadByte(),
-                name: rx.FixedLengthString(rx.Length - rx.Position));
+                name: rx.ReadFixedLengthString(rx.Length - rx.Position));
         }
     }
 }

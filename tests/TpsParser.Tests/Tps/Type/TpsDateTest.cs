@@ -14,7 +14,7 @@ namespace TpsParser.Tests.Tps.Type
 
             var date = rx.ReadTpsDate();
 
-            Assert.AreEqual(new DateTime(2019, 7, 16), date.Value);
+            Assert.AreEqual(new DateTime(2019, 7, 16), date.ToDateTime().Value);
         }
 
         [Test]
@@ -24,7 +24,7 @@ namespace TpsParser.Tests.Tps.Type
 
             var date = new TpsDate(dateTime);
 
-            Assert.AreEqual(dateTime, date.Value);
+            Assert.AreEqual(dateTime, date.ToDateTime().Value);
         }
     }
 }

@@ -127,7 +127,7 @@ namespace TpsParser.Tps
                 headerSize: headerSize,
                 fileLength1: headerReader.ReadLongLE(),
                 fileLength2: headerReader.ReadLongLE(),
-                magicNumber: headerReader.FixedLengthString(4),
+                magicNumber: headerReader.ReadFixedLengthString(4),
                 zeroes: headerReader.ReadShortLE(),
                 lastIssuedRow: headerReader.ReadLongBE(),
                 changes: headerReader.ReadLongLE(),

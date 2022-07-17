@@ -356,6 +356,6 @@ namespace TpsParser.Tps
         }
 
         private TpsReader Merge(IEnumerable<TpsRecord> records) =>
-            new TpsReader(records.SelectMany(r => r.Data.GetRemainder()).ToArray());
+            new TpsReader(records.SelectMany(r => r.Data.GetRemainderAsByteArray()).ToArray());
     }
 }

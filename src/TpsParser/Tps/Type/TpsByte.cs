@@ -6,7 +6,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a byte.
     /// </summary>
-    public readonly struct TpsByte : ISimple, IEquatable<TpsByte>
+    public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.Byte;
@@ -22,7 +22,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0);
+        public bool ToBoolean() => Value != 0;
 
         /// <inheritdoc/>
         public Maybe<sbyte> ToSByte() =>
@@ -52,19 +52,13 @@ namespace TpsParser.Tps.Type
         public Maybe<long> ToInt64() => Maybe.Some<long>(Value);
 
         /// <inheritdoc/>
-        public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
-
-        /// <inheritdoc/>
         public Maybe<float> ToFloat() => Maybe.Some<float>(Value);
 
         /// <inheritdoc/>
         public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
 
         /// <inheritdoc/>
-        public Maybe<DateTime?> ToDateTime() => Maybe.None<DateTime?>();
-
-        /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
+        public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
 
         /// <inheritdoc/>
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);

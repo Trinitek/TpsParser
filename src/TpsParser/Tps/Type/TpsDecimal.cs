@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 
 namespace TpsParser.Tps.Type
@@ -10,12 +8,12 @@ namespace TpsParser.Tps.Type
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The native value of this type is a <see cref="ValueTuple"/> that contains two <see cref="ulong"/> values
-    /// that represent the digits and a <see cref="byte"/> for the number of digits in the fractional portion.
+    /// The native value of this type consists of two <see cref="ulong"/> values
+    /// that represent the digits--one digit being 4 bits wide--and a <see cref="byte"/> for the number of digits in the fractional portion.
     /// </para>
     /// <para>
     /// The 31 digits are contained in the lower 124 bits, where <see cref="ValueHigh"/> and <see cref="ValueLow"/> are treated
-    /// as a contiguous 128-bit value, and the most significant 4 bits represent the sign: 0 is positive,
+    /// as a contiguous 128-bit value, and the most significant 4 bits represent the sign, where 0 is positive
     /// and every other value is negative.
     /// </para>
     /// <para>
@@ -23,7 +21,7 @@ namespace TpsParser.Tps.Type
     /// If you need to handle values with more than 27 digits, consider using <see cref="ToString()"/> instead.
     /// </para>
     /// </remarks>
-    public readonly struct TpsDecimal : ITpsObject, IEquatable<TpsDecimal>
+    public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
     {
         /// <summary>
         /// The maximum allowable number of decimal digits.
@@ -246,7 +244,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public Maybe<bool> ToBoolean() => Maybe.Some(!IsZero);
+        public bool ToBoolean() => !IsZero;
 
         /// <inheritdoc/>
         public Maybe<sbyte> ToSByte()
@@ -267,15 +265,6 @@ namespace TpsParser.Tps.Type
         }
 
         /// <inheritdoc/>
-        public Maybe<ushort> ToUInt16()
-        {
-            decimal d = ToDecimal().Value;
-            return ushort.MinValue > d || ushort.MaxValue < d
-                ? Maybe.None<ushort>()
-                : Maybe.Some((ushort)d);
-        }
-
-        /// <inheritdoc/>
         public Maybe<short> ToInt16()
         {
             decimal d = ToDecimal().Value;
@@ -285,12 +274,12 @@ namespace TpsParser.Tps.Type
         }
 
         /// <inheritdoc/>
-        public Maybe<uint> ToUInt32()
+        public Maybe<ushort> ToUInt16()
         {
             decimal d = ToDecimal().Value;
-            return uint.MinValue > d || uint.MaxValue < d
-                ? Maybe.None<uint>()
-                : Maybe.Some((uint)d);
+            return ushort.MinValue > d || ushort.MaxValue < d
+                ? Maybe.None<ushort>()
+                : Maybe.Some((ushort)d);
         }
 
         /// <inheritdoc/>
@@ -303,12 +292,12 @@ namespace TpsParser.Tps.Type
         }
 
         /// <inheritdoc/>
-        public Maybe<ulong> ToUInt64()
+        public Maybe<uint> ToUInt32()
         {
             decimal d = ToDecimal().Value;
-            return ulong.MinValue > d || ulong.MaxValue < d
-                ? Maybe.None<ulong>()
-                : Maybe.Some((ulong)d);
+            return uint.MinValue > d || uint.MaxValue < d
+                ? Maybe.None<uint>()
+                : Maybe.Some((uint)d);
         }
 
         /// <inheritdoc/>
@@ -320,18 +309,31 @@ namespace TpsParser.Tps.Type
                 : Maybe.Some((long)d);
         }
 
-        /// <summary>
-        /// Gets the value as a <see cref="decimal"/>. This type allows values up to 31 figures which exceeds <see cref="decimal"/>'s 29, so precision loss is possible.
-        /// </summary>
+        /// <inheritdoc/>
+        public Maybe<ulong> ToUInt64()
+        {
+            decimal d = ToDecimal().Value;
+            return ulong.MinValue > d || ulong.MaxValue < d
+                ? Maybe.None<ulong>()
+                : Maybe.Some((ulong)d);
+        }
+
+        /// <inheritdoc/>
         public Maybe<decimal> ToDecimal() =>
-            (Scale <= 28 && true)
-                ? Maybe.Some(new decimal(
+            (Scale > 28 && (ValueHigh & 0x0FFFF_0000_0000_0000) > 0ul)
+                ? Maybe.None<decimal>()
+                : Maybe.Some(new decimal(
                     lo: 0,
                     mid: 0,
                     hi: 0,
                     isNegative: IsNegative,
-                    scale: Scale))
-                : Maybe.None<decimal>();
+                    scale: Scale));
+
+        /// <inheritdoc/>
+        public Maybe<float> ToFloat() => ToDecimal().ConvertSome(d => (float)d);
+
+        /// <inheritdoc/>
+        public Maybe<double> ToDouble() => ToDecimal().ConvertSome(d => (double)d);
 
         /// <summary>
         /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.
@@ -345,31 +347,14 @@ namespace TpsParser.Tps.Type
                 : Maybe.None<DateTime?>();
         }
 
-        /// <summary>
-        /// Gets a string representation of the type returned by <see cref="ToDecimal"/>.
-        /// </summary>
-        public string ToString(string format) => ToDecimal().Value.ToString(format, CultureInfo.InvariantCulture);
-
-        /// <inheritdoc/>
-        public Maybe<float> ToFloat() => ToDecimal().ConvertSome(d => (float)d);
-
-        /// <inheritdoc/>
-        public Maybe<double> ToDouble() => ToDecimal().ConvertSome(d => (double)d);
-
-        /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
-
-        /// <inheritdoc/>
-        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
-
-        /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is TpsDecimal x && Equals(x);
-
         /// <inheritdoc/>
         public bool Equals(TpsDecimal other) =>
             ValueHigh == other.ValueHigh
             && ValueLow == other.ValueLow
             && Scale == other.Scale;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is TpsDecimal x && Equals(x);
 
         /// <inheritdoc/>
         public override int GetHashCode()

@@ -1,25 +1,29 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace TpsParser.Tps.Type
 {
     /// <summary>
-    /// Represents a compound data structure composed of one or more <see cref="TpsObject"/> instances.
+    /// Represents a compound data structure composed of one or more <see cref="ITpsObject"/> instances.
     /// </summary>
-    public sealed class TpsGroup : TpsObject<IReadOnlyList<TpsObject>>
+    public sealed class TpsGroup : IComplex
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.Group;
+        public TpsTypeCode TypeCode => TpsTypeCode.Group;
+
+        /// <summary>
+        /// Gets the list of objects in this group.
+        /// </summary>
+        public IReadOnlyList<ITpsObject> Objects { get; }
 
         /// <summary>
         /// Instantiates a new group that encapsulates the given values.
         /// </summary>
-        public TpsGroup(IReadOnlyList<TpsObject> values)
+        public TpsGroup(IReadOnlyList<ITpsObject> values)
         {
-            Value = values ?? throw new ArgumentNullException(nameof(values));
+            Objects = values ?? throw new ArgumentNullException(nameof(values));
         }
 
         /// <summary>
@@ -42,7 +46,7 @@ namespace TpsParser.Tps.Type
                 throw new ArgumentNullException(nameof(enumerator));
             }
 
-            var values = new List<TpsObject>();
+            var values = new List<ITpsObject>();
 
             var groupDefinition = enumerator.Current;
             int expectedGroupLength = groupDefinition.Length / groupDefinition.ElementCount;
@@ -57,7 +61,7 @@ namespace TpsParser.Tps.Type
                     throw new TpsParserException($"The expected length of the group ({expectedGroupLength}) and the following fields ({sumOfFollowingLengths}) do not match.");
                 }
 
-                values.Add(ParseField(rx, encoding, enumerator));
+                values.Add(TpsObject.ParseField(rx, encoding, enumerator));
 
                 if (sumOfFollowingLengths == expectedGroupLength)
                 {
@@ -67,10 +71,5 @@ namespace TpsParser.Tps.Type
 
             return new TpsGroup(values);
         }
-
-        /// <summary>
-        /// Returns true if the data size is not zero.
-        /// </summary>
-        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value.Any(v => v.ToBoolean().Value));
     }
 }

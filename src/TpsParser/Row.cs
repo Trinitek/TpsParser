@@ -26,7 +26,7 @@ namespace TpsParser
         /// This contains data fields as well as any associated MEMOs or BLOBs.
         /// </para>
         /// </summary>
-        public IReadOnlyDictionary<string, TpsObject> Values { get; }
+        public IReadOnlyDictionary<string, ITpsObject> Values { get; }
 
         private DeserializerContext DeserializerContext { get; }
 
@@ -36,7 +36,7 @@ namespace TpsParser
         /// <param name="deserializerContext">The deserializer context.</param>
         /// <param name="recordNumber">The record number of the row.</param>
         /// <param name="values">The values in the row, keyed by their column names.</param>
-        internal Row(DeserializerContext deserializerContext, int recordNumber, IReadOnlyDictionary<string, TpsObject> values)
+        internal Row(DeserializerContext deserializerContext, int recordNumber, IReadOnlyDictionary<string, ITpsObject> values)
         {
             DeserializerContext = deserializerContext ?? throw new ArgumentNullException(nameof(deserializerContext));
             Id = recordNumber;
@@ -48,7 +48,7 @@ namespace TpsParser
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
-        public TpsObject GetValue(string column) =>  Values[column];
+        public ITpsObject GetValue(string column) =>  Values[column];
 
         /// <summary>
         /// Gets the field, memo, or blob value associated with the given column name.
@@ -57,7 +57,7 @@ namespace TpsParser
         /// <param name="column">The case insensitive name of the column.</param>
         /// <param name="isRequired">Indicates that the requested field must be present, or an exception is thrown.</param>
         /// <returns></returns>
-        public TpsObject GetValueCaseInsensitive(string column, bool isRequired)
+        public ITpsObject GetValueCaseInsensitive(string column, bool isRequired)
         {
             var matchingKey = Values.Keys.FirstOrDefault(k => k.Equals(column, StringComparison.OrdinalIgnoreCase));
 
@@ -135,7 +135,7 @@ namespace TpsParser
                 else
                 {
                     string tpsFieldName = member.FieldAttribute.FieldName;
-                    TpsObject tpsFieldValue = GetRowValue(tpsFieldName, member.FieldAttribute.IsRequired);
+                    ITpsObject tpsFieldValue = GetRowValue(tpsFieldName, member.FieldAttribute.IsRequired);
                     //object clrValue = member.FieldAttribute.InterpretValue(member.MemberInfo, tpsFieldValue);
 
                     try
@@ -155,7 +155,7 @@ namespace TpsParser
             }
         }
 
-        private TpsObject GetRowValue(string fieldName, bool isRequired)
+        private ITpsObject GetRowValue(string fieldName, bool isRequired)
         {
             try
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TpsParser.Tps.Header;
+using TpsParser.Tps.Type;
 
 namespace TpsParser.Tps.Record
 {
@@ -19,7 +20,7 @@ namespace TpsParser.Tps.Record
         /// <summary>
         /// Gets the values for the record. The order of the values matches the order of <see cref="ITableDefinitionRecord.Fields"/>.
         /// </summary>
-        IReadOnlyList<TpsObject> Values { get; }
+        IReadOnlyList<ITpsObject> Values { get; }
 
         /// <summary>
         /// Gets the low level representation of the record in the file.
@@ -29,13 +30,13 @@ namespace TpsParser.Tps.Record
         /// <summary>
         /// Gets the record number.
         /// </summary>
-        int RecordNumber { get; }
+        uint RecordNumber { get; }
 
         /// <summary>
         /// Gets a dictionary of field names and their associated values.
         /// </summary>
         /// <returns></returns>
-        IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs();
+        IReadOnlyDictionary<string, ITpsObject> GetFieldValuePairs();
     }
 
     internal sealed class DataRecord : IDataRecord
@@ -44,11 +45,11 @@ namespace TpsParser.Tps.Record
 
         public ITableDefinitionRecord TableDefinition { get; }
 
-        public IReadOnlyList<TpsObject> Values { get; }
+        public IReadOnlyList<ITpsObject> Values { get; }
 
         public TpsRecord Record { get; }
 
-        public int RecordNumber => Header.RecordNumber;
+        public uint RecordNumber => Header.RecordNumber;
 
         /// <summary>
         /// Instantiates a new data record.
@@ -60,10 +61,10 @@ namespace TpsParser.Tps.Record
             Record = tpsRecord ?? throw new ArgumentNullException(nameof(tpsRecord));
             TableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));
             Header = (DataHeader)Record.Header;
-            Values = TableDefinition.Parse(tpsRecord.Data.GetRemainder());
+            Values = TableDefinition.Parse(tpsRecord.Data.GetRemainderAsByteArray());
         }
 
-        public IReadOnlyDictionary<string, TpsObject> GetFieldValuePairs() =>
+        public IReadOnlyDictionary<string, ITpsObject> GetFieldValuePairs() =>
             TableDefinition.Fields
                 .Where(f => f.OwnerGroup is null)
                 .Zip(Values, (field, value) => (field, value))

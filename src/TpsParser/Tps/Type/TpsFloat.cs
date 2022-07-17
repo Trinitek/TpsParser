@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Globalization;
 
 namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a single-precision floating point number.
     /// </summary>
-    public readonly struct TpsFloat : ISimple, IEquatable<TpsFloat>
+    public readonly struct TpsFloat : INumeric, IEquatable<TpsFloat>
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.SReal;
@@ -26,19 +27,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0.0f);
-
-        /// <inheritdoc/>
-        public Maybe<float> ToFloat() => Maybe.Some(Value);
-
-        /// <inheritdoc/>
-        public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
-
-        /// <inheritdoc/>
-        public Maybe<decimal> ToDecimal() =>
-            IsNotNumeric || (float)decimal.MinValue > Value || (float)decimal.MaxValue < Value
-            ? Maybe.None<decimal>()
-            : Maybe.Some((decimal)Value);
+        public bool ToBoolean() => Value != 0.0f;
 
         /// <inheritdoc/>
         public Maybe<sbyte> ToSByte() =>
@@ -89,10 +78,19 @@ namespace TpsParser.Tps.Type
             : Maybe.Some((ulong)Value);
 
         /// <inheritdoc/>
-        public Maybe<DateTime?> ToDateTime() => Maybe.None<DateTime?>();
+        public Maybe<float> ToFloat() => Maybe.Some(Value);
 
         /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
+        public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
+
+        /// <inheritdoc/>
+        public Maybe<decimal> ToDecimal() =>
+            IsNotNumeric || (float)decimal.MinValue > Value || (float)decimal.MaxValue < Value
+            ? Maybe.None<decimal>()
+            : Maybe.Some((decimal)Value);
+
+        /// <inheritdoc/>
+        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
         /// <inheritdoc/>
         public bool Equals(TpsFloat other) =>

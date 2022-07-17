@@ -20,7 +20,7 @@ namespace TpsParser.Tps.Record
         /// </summary>
         /// <param name="memoDefinitionRecord"></param>
         /// <returns></returns>
-        TpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord);
+        ITpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord);
     }
 
     /// <inheritdoc/>
@@ -43,7 +43,7 @@ namespace TpsParser.Tps.Record
         }
 
         /// <inheritdoc/>
-        public TpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord)
+        public ITpsObject GetValue(IMemoDefinitionRecord memoDefinitionRecord)
         {
             if (memoDefinitionRecord == null)
             {
@@ -52,11 +52,11 @@ namespace TpsParser.Tps.Record
 
             if (memoDefinitionRecord.IsBlob)
             {
-                return new TpsBlob(Data);
+                return Data.ReadBlob();
             }
             else
             {
-                return Data.ReadTpsString(Parser.DefaultEncoding);
+                return Data.ReadMemo();
             }
         }
     }

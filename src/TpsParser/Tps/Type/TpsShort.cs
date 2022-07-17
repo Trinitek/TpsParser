@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace TpsParser.Tps.Type
@@ -7,7 +6,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a signed short.
     /// </summary>
-    public readonly struct TpsShort : ISimple, IEquatable<TpsShort>
+    public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.Short;
@@ -23,7 +22,19 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0);
+        public bool ToBoolean() => Value != 0;
+
+        /// <inheritdoc/>
+        public Maybe<sbyte> ToSByte() =>
+            sbyte.MinValue > Value || sbyte.MaxValue < Value
+            ? Maybe.None<sbyte>()
+            : Maybe.Some((sbyte)Value);
+
+        /// <inheritdoc/>
+        public Maybe<byte> ToByte() =>
+            byte.MinValue > Value || byte.MaxValue < Value
+            ? Maybe.None<byte>()
+            : Maybe.Some((byte)Value);
 
         /// <inheritdoc/>
         public Maybe<ushort> ToUInt16() =>
@@ -56,40 +67,13 @@ namespace TpsParser.Tps.Type
         public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
 
         /// <inheritdoc/>
-        public Maybe<sbyte> ToSByte() =>
-            sbyte.MinValue > Value || sbyte.MaxValue < Value
-            ? Maybe.None<sbyte>()
-            : Maybe.Some((sbyte)Value);
-
-        /// <inheritdoc/>
-        public Maybe<byte> ToByte() =>
-            byte.MinValue > Value || byte.MaxValue < Value
-            ? Maybe.None<byte>()
-            : Maybe.Some((byte)Value);
-
-        /// <inheritdoc/>
         public Maybe<float> ToFloat() => Maybe.Some<float>(Value);
 
         /// <inheritdoc/>
         public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
 
         /// <inheritdoc/>
-        public Maybe<DateTime?> ToDateTime() => Maybe.None<DateTime?>();
-
-        /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
-
-        /// <inheritdoc/>
-        public Maybe<IReadOnlyList<ITpsObject>> ToArray()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc/>
         public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
-
-        /// <inheritdoc/>
-        public string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is TpsShort x && Equals(x);

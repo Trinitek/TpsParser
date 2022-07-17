@@ -26,86 +26,83 @@ namespace TpsParser.Tps.Type
         /// For all string types, this will be true for strings that have a length greater than zero and do not consist entirely of "blank" padding characters (ASCII 0x20, i.e. space).
         /// </summary>
         /// <returns></returns>
-        Maybe<bool> ToBoolean();
+        bool ToBoolean();
+    }
 
+    /// <summary>
+    /// Represents a numeric Clarion type.
+    /// </summary>
+    public interface INumeric : ISimple
+    {
         /// <summary>
-        /// Gets an <see cref="sbyte"/> representation of the value.
+        /// Gets an <see cref="sbyte"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<sbyte> ToSByte();
-        
+
         /// <summary>
-        /// Gets a <see cref="byte"/> representation of the value.
+        /// Gets a <see cref="byte"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<byte> ToByte();
 
         /// <summary>
-        /// Gets a <see cref="short"/> representation of the value.
+        /// Gets a <see cref="short"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<short> ToInt16();
 
         /// <summary>
-        /// Gets a <see cref="uint"/> representation of the value.
+        /// Gets a <see cref="uint"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<ushort> ToUInt16();
 
         /// <summary>
-        /// Gets an <see cref="int"/> representation of the value.
+        /// Gets an <see cref="int"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<int> ToInt32();
 
         /// <summary>
-        /// Gets a <see cref="uint"/> representation of the value.
+        /// Gets a <see cref="uint"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<uint> ToUInt32();
 
         /// <summary>
-        /// Gets a <see cref="long"/> representation of the value.
+        /// Gets a <see cref="long"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<long> ToInt64();
 
         /// <summary>
-        /// Gets a <see cref="ulong"/> representation of the value.
+        /// Gets a <see cref="ulong"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<ulong> ToUInt64();
 
         /// <summary>
-        /// Gets a <see cref="float"/> representation of the value.
+        /// Gets a <see cref="float"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<float> ToFloat();
 
         /// <summary>
-        /// Gets a <see cref="double"/> representation of the value.
+        /// Gets a <see cref="double"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<double> ToDouble();
 
         /// <summary>
-        /// Gets a <see cref="decimal"/> representation of the value.
+        /// Gets a <see cref="decimal"/> representation of the value, if it can be converted.
         /// </summary>
         /// <returns></returns>
         Maybe<decimal> ToDecimal();
+    }
 
-        /// <summary>
-        /// Gets a <see cref="DateTime"/> representation of the value. A null value is used to represent the Clarion date 0000-00-00.
-        /// </summary>
-        /// <returns></returns>
-        Maybe<DateTime?> ToDateTime();
-
-        /// <summary>
-        /// Gets a <see cref="TimeSpan"/> representation of the value.
-        /// </summary>
-        /// <returns></returns>
-        Maybe<TimeSpan> ToTimeSpan();
-
+    internal static class TpsObject
+    {
         /// <summary>
         /// Builds a <see cref="ITpsObject"/> from the given binary reader and field definition information.
         /// </summary>
@@ -192,7 +189,7 @@ namespace TpsParser.Tps.Type
                 case TpsTypeCode.Decimal:
                     return rx.ReadTpsDecimal(length, current.BcdDigitsAfterDecimalPoint);
                 case TpsTypeCode.String:
-                    return rx.ReadTpsString(encoding, length);
+                    return rx.ReadTpsString(length, encoding);
                 case TpsTypeCode.CString:
                     return rx.ReadTpsCString(encoding);
                 case TpsTypeCode.PString:
@@ -210,4 +207,44 @@ namespace TpsParser.Tps.Type
     /// </summary>
     public interface IComplex : ITpsObject
     { }
+
+    /// <summary>
+    /// Represents a Clarion string type.
+    /// </summary>
+    public interface IString : ISimple
+    {
+        /// <summary>
+        /// Gets the string value.
+        /// </summary>
+        string Value { get; }
+    }
+
+    /// <summary>
+    /// Represents a Clarion type that can be interpreted as a point in time.
+    /// </summary>
+    public interface ITime : ITpsObject
+    {
+        /// <summary>
+        /// Gets a <see cref="TimeSpan"/> representation of the value, if it can be converted.
+        /// </summary>
+        /// <returns></returns>
+        Maybe<TimeSpan?> ToTimeSpan();
+    }
+
+    /// <summary>
+    /// Represents a Clarion type that can be interpreted as a date.
+    /// </summary>
+    public interface IDate : ITpsObject
+    {
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representation of the value, if it can be converted.
+        /// </summary>
+        /// <returns></returns>
+        Maybe<DateTime?> ToDateTime();
+    }
+
+    //public interface IAny : ITpsObject, ISimple, IComplex, IString, ITime, IDate
+    //{
+    //
+    //}
 }

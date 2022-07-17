@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace TpsParser.Tps.Type
 {
@@ -7,28 +7,24 @@ namespace TpsParser.Tps.Type
     /// Represents an arbitrary array of bytes. Unlike <see cref="TpsMemo"/>,
     /// a BLOB can be larger than 65,536 bytes.
     /// </summary>
-    public sealed class TpsBlob : TpsObject<byte[]>
+    public sealed class TpsBlob : ITpsObject
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.None;
 
         /// <summary>
-        /// Instantiates a new BLOB.
+        /// Gets the byte array backing this type.
         /// </summary>
-        /// <param name="rx"></param>
-        public TpsBlob(TpsReader rx)
-        {
-            if (rx == null)
-            {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            Value = rx.ReadBytes(rx.ReadLongLE());
-        }
+        public IReadOnlyList<byte> Value => _value;
+        private readonly byte[] _value;
 
         /// <summary>
-        /// Returns true if the size of the blob is not zero.
+        /// Instantiates a new BLOB.
         /// </summary>
-        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value.Any());
+        /// <param name="value"></param>
+        public TpsBlob(byte[] value)
+        {
+            _value = value ?? throw new ArgumentNullException(nameof(value));
+        }
     }
 }

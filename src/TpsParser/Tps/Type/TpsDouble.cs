@@ -1,14 +1,19 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 namespace TpsParser.Tps.Type
 {
     /// <summary>
     /// Represents a double-precision floating point number.
     /// </summary>
-    public sealed class TpsDouble : TpsObject<double>
+    public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
     {
         /// <inheritdoc/>
-        public override TpsTypeCode TypeCode => TpsTypeCode.Real;
+        public TpsTypeCode TypeCode => TpsTypeCode.Real;
+
+        private double Value { get; }
+
+        private bool IsNotNumeric => double.IsNaN(Value) || double.IsInfinity(Value);
 
         /// <summary>
         /// Instantiates a new REAL.
@@ -22,15 +27,88 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public override Maybe<bool> ToBoolean() => new Maybe<bool>(Value != 0.0);
+        public bool ToBoolean() => Value != 0.0;
 
         /// <inheritdoc/>
-        public override Maybe<double> ToDouble() => new Maybe<double>(Value);
+        public Maybe<sbyte> ToSByte() =>
+            IsNotNumeric || sbyte.MinValue > Value || sbyte.MaxValue < Value
+            ? Maybe.None<sbyte>()
+            : Maybe.Some((sbyte)Value);
 
         /// <inheritdoc/>
-        public override Maybe<decimal> ToDecimal() => new Maybe<decimal>((decimal)Value);
+        public Maybe<byte> ToByte() =>
+            IsNotNumeric || byte.MinValue > Value || byte.MaxValue < Value
+            ? Maybe.None<byte>()
+            : Maybe.Some((byte)Value);
 
         /// <inheritdoc/>
-        public override string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
+        public Maybe<short> ToInt16() =>
+            IsNotNumeric || short.MinValue > Value || short.MaxValue < Value
+            ? Maybe.None<short>()
+            : Maybe.Some((short)Value);
+
+        /// <inheritdoc/>
+        public Maybe<ushort> ToUInt16() =>
+            IsNotNumeric || ushort.MinValue > Value || ushort.MaxValue < Value
+            ? Maybe.None<ushort>()
+            : Maybe.Some((ushort)Value);
+
+        /// <inheritdoc/>
+        public Maybe<int> ToInt32() =>
+            IsNotNumeric || int.MinValue > Value || int.MaxValue < Value
+            ? Maybe.None<int>()
+            : Maybe.Some((int)Value);
+
+        /// <inheritdoc/>
+        public Maybe<uint> ToUInt32() =>
+            IsNotNumeric || uint.MinValue > Value || uint.MaxValue < Value
+            ? Maybe.None<uint>()
+            : Maybe.Some((uint)Value);
+
+        /// <inheritdoc/>
+        public Maybe<long> ToInt64() =>
+            IsNotNumeric || long.MinValue > Value || long.MaxValue < Value
+            ? Maybe.None<long>()
+            : Maybe.Some((long)Value);
+
+        /// <inheritdoc/>
+        public Maybe<ulong> ToUInt64() =>
+            IsNotNumeric || ulong.MinValue > Value || ulong.MaxValue < Value
+            ? Maybe.None<ulong>()
+            : Maybe.Some((ulong)Value);
+
+        /// <inheritdoc/>
+        public Maybe<float> ToFloat() => Maybe.Some((float)Value);
+
+        /// <inheritdoc/>
+        public Maybe<double> ToDouble() => new Maybe<double>(Value);
+
+        /// <inheritdoc/>
+        public Maybe<decimal> ToDecimal() =>
+            IsNotNumeric || (double)decimal.MinValue > Value || (double)decimal.MaxValue < Value
+            ? Maybe.None<decimal>()
+            : Maybe.Some((decimal)Value);
+
+        /// <inheritdoc/>
+        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
+
+        /// <inheritdoc/>
+        public bool Equals(TpsDouble other) =>
+            Value == other.Value;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is TpsDouble x && Equals(x);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return -1937169414 + Value.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public static bool operator ==(TpsDouble left, TpsDouble right) => left.Equals(right);
+
+        /// <inheritdoc/>
+        public static bool operator !=(TpsDouble left, TpsDouble right) => !(left == right);
     }
 }

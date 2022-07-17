@@ -12,12 +12,12 @@ namespace TpsParser.Tps
         /// <summary>
         /// Gets the length of the record in bytes.
         /// </summary>
-        public int RecordLength { get; }
+        public ushort RecordLength { get; }
 
         /// <summary>
         /// Gets the length of the header in bytes.
         /// </summary>
-        public int HeaderLength { get; }
+        public ushort HeaderLength { get; }
         public TpsReader Data { get; }
         public IHeader Header { get; private set; }
 
@@ -39,8 +39,8 @@ namespace TpsParser.Tps
                 throw new ArgumentException($"Cannot construct a TpsRecord without record lengths (0x{StringUtils.ToHex2(Flags)})");
             }
 
-            RecordLength = rx.ReadShortLE();
-            HeaderLength = rx.ReadShortLE();
+            RecordLength = rx.ReadUnsignedShortLE();
+            HeaderLength = rx.ReadUnsignedShortLE();
 
             Data = rx.Read(RecordLength);
 
@@ -68,7 +68,7 @@ namespace TpsParser.Tps
 
             if ((Flags & 0x80) != 0)
             {
-                RecordLength = rx.ReadShortLE();
+                RecordLength = rx.ReadUnsignedShortLE();
             }
             else
             {
@@ -77,7 +77,7 @@ namespace TpsParser.Tps
 
             if ((Flags & 0x40) != 0)
             {
-                HeaderLength = rx.ReadShortLE();
+                HeaderLength = rx.ReadUnsignedShortLE();
             }
             else
             {

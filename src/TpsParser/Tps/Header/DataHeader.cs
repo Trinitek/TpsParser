@@ -10,7 +10,7 @@ namespace TpsParser.Tps.Header
         /// <summary>
         /// Gets the record number of the data entry this header describes.
         /// </summary>
-        public int RecordNumber { get; }
+        public uint RecordNumber { get; }
 
         /// <summary>
         /// Instantiates a new header.
@@ -18,7 +18,7 @@ namespace TpsParser.Tps.Header
         /// <param name="tableNumber"></param>
         /// <param name="kind"></param>
         /// <param name="recordNumber"></param>
-        public DataHeader(int tableNumber, HeaderKind kind, int recordNumber)
+        public DataHeader(int tableNumber, HeaderKind kind, uint recordNumber)
             : base(tableNumber, kind)
         {
             AssertIsType(HeaderKind.Data);
@@ -45,7 +45,7 @@ namespace TpsParser.Tps.Header
             return new DataHeader(
                 tableNumber: rx.ReadLongBE(),
                 kind: (HeaderKind)rx.ReadByte(),
-                recordNumber: rx.ReadLongBE());
+                recordNumber: rx.ReadUnsignedLongBE());
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
@@ -47,7 +48,7 @@ namespace TpsParser
             FieldName = fieldName;
         }
 
-        internal virtual object InterpretValue(Type memberType, TpsObject sourceObject)
+        internal virtual object InterpretValue(Type memberType, ITpsObject sourceObject)
         {
             if (memberType is null)
             {
@@ -70,112 +71,114 @@ namespace TpsParser
             return CoerceFallback(interpretedValue);
         }
         
-        private static object InterpretValuePrivate(Type memberType, TpsObject sourceObject)
+        private static object InterpretValuePrivate(Type memberType, ITpsObject sourceObject)
         {
-            if (memberType == typeof(DateTime))
-            {
-                return sourceObject.ToDateTime().Value ?? default;
-            }
-            else if (memberType == typeof(DateTime?))
-            {
-                return sourceObject.ToDateTime().Value;
-            }
-            else if (memberType == typeof(TimeSpan))
-            {
-                return sourceObject.ToTimeSpan().Value;
-            }
-            else if (memberType == typeof(TimeSpan?))
-            {
-                return sourceObject.ToTimeSpan().AsNullable();
-            }
-            else if (memberType == typeof(bool))
-            {
-                return sourceObject.ToBoolean().Value;
-            }
-            else if (memberType == typeof(bool?))
-            {
-                return sourceObject.ToBoolean().AsNullable();
-            }
-            else if (memberType == typeof(string))
-            {
-                return sourceObject.ToString();
-            }
-            else if (memberType == typeof(decimal))
-            {
-                return sourceObject.ToDecimal().Value;
-            }
-            else if (memberType == typeof(decimal?))
-            {
-                return sourceObject.ToDecimal().AsNullable();
-            }
-            else if (memberType == typeof(int))
-            {
-                return sourceObject.ToInt32().Value;
-            }
-            else if (memberType == typeof(int?))
-            {
-                return sourceObject.ToInt32().AsNullable();
-            }
-            else if (memberType == typeof(short))
-            {
-                return sourceObject.ToInt16().Value;
-            }
-            else if (memberType == typeof(short?))
-            {
-                return sourceObject.ToInt16().AsNullable();
-            }
-            else if (memberType == typeof(long))
-            {
-                return sourceObject.ToInt64().Value;
-            }
-            else if (memberType == typeof(long?))
-            {
-                return sourceObject.ToInt64().AsNullable();
-            }
-            else if (memberType == typeof(sbyte))
-            {
-                return sourceObject.ToSByte().Value;
-            }
-            else if (memberType == typeof(sbyte?))
-            {
-                return sourceObject.ToSByte().AsNullable();
-            }
-            else if (memberType == typeof(uint))
-            {
-                return sourceObject.ToUInt32().Value;
-            }
-            else if (memberType == typeof(uint?))
-            {
-                return sourceObject.ToUInt32().AsNullable();
-            }
-            else if (memberType == typeof(ushort))
-            {
-                return sourceObject.ToUInt16().Value;
-            }
-            else if (memberType == typeof(ushort?))
-            {
-                return sourceObject.ToUInt16().AsNullable();
-            }
-            else if (memberType == typeof(ulong))
-            {
-                return sourceObject.ToUInt64().Value;
-            }
-            else if (memberType == typeof(ulong?))
-            {
-                return sourceObject.ToUInt64().AsNullable();
-            }
-            else if (memberType == typeof(byte))
-            {
-                return sourceObject.ToByte().Value;
-            }
-            else if (memberType == typeof(byte?))
-            {
-                return sourceObject.ToByte().AsNullable();
-            }
-            else
-            {
-                return sourceObject?.Value;
-            }
+            return null;
+
+            //if (memberType == typeof(DateTime))
+            //{
+            //    return sourceObject.ToDateTime().Value ?? default;
+            //}
+            //else if (memberType == typeof(DateTime?))
+            //{
+            //    return sourceObject.ToDateTime().Value;
+            //}
+            //else if (memberType == typeof(TimeSpan))
+            //{
+            //    return sourceObject.ToTimeSpan().Value;
+            //}
+            //else if (memberType == typeof(TimeSpan?))
+            //{
+            //    return sourceObject.ToTimeSpan().AsNullable();
+            //}
+            //else if (memberType == typeof(bool))
+            //{
+            //    return sourceObject.ToBoolean().Value;
+            //}
+            //else if (memberType == typeof(bool?))
+            //{
+            //    return sourceObject.ToBoolean().AsNullable();
+            //}
+            //else if (memberType == typeof(string))
+            //{
+            //    return sourceObject.ToString();
+            //}
+            //else if (memberType == typeof(decimal))
+            //{
+            //    return sourceObject.ToDecimal().Value;
+            //}
+            //else if (memberType == typeof(decimal?))
+            //{
+            //    return sourceObject.ToDecimal().AsNullable();
+            //}
+            //else if (memberType == typeof(int))
+            //{
+            //    return sourceObject.ToInt32().Value;
+            //}
+            //else if (memberType == typeof(int?))
+            //{
+            //    return sourceObject.ToInt32().AsNullable();
+            //}
+            //else if (memberType == typeof(short))
+            //{
+            //    return sourceObject.ToInt16().Value;
+            //}
+            //else if (memberType == typeof(short?))
+            //{
+            //    return sourceObject.ToInt16().AsNullable();
+            //}
+            //else if (memberType == typeof(long))
+            //{
+            //    return sourceObject.ToInt64().Value;
+            //}
+            //else if (memberType == typeof(long?))
+            //{
+            //    return sourceObject.ToInt64().AsNullable();
+            //}
+            //else if (memberType == typeof(sbyte))
+            //{
+            //    return sourceObject.ToSByte().Value;
+            //}
+            //else if (memberType == typeof(sbyte?))
+            //{
+            //    return sourceObject.ToSByte().AsNullable();
+            //}
+            //else if (memberType == typeof(uint))
+            //{
+            //    return sourceObject.ToUInt32().Value;
+            //}
+            //else if (memberType == typeof(uint?))
+            //{
+            //    return sourceObject.ToUInt32().AsNullable();
+            //}
+            //else if (memberType == typeof(ushort))
+            //{
+            //    return sourceObject.ToUInt16().Value;
+            //}
+            //else if (memberType == typeof(ushort?))
+            //{
+            //    return sourceObject.ToUInt16().AsNullable();
+            //}
+            //else if (memberType == typeof(ulong))
+            //{
+            //    return sourceObject.ToUInt64().Value;
+            //}
+            //else if (memberType == typeof(ulong?))
+            //{
+            //    return sourceObject.ToUInt64().AsNullable();
+            //}
+            //else if (memberType == typeof(byte))
+            //{
+            //    return sourceObject.ToByte().Value;
+            //}
+            //else if (memberType == typeof(byte?))
+            //{
+            //    return sourceObject.ToByte().AsNullable();
+            //}
+            //else
+            //{
+            //    return sourceObject?.Value;
+            //}
         }
 
         private object CoerceFallback(object value) => value is null ? FallbackValue : value;

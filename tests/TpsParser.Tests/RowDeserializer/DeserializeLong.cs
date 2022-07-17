@@ -20,7 +20,7 @@ namespace TpsParser.Tests.RowDeserializer
         }
 
         [TestCaseSource(typeof(BadFieldObjectData), nameof(BadFieldObjectData.Data))]
-        public void ShouldThrowWhenDeserializing(TpsObject tpsObject)
+        public void ShouldThrowWhenDeserializing(ITpsObject tpsObject)
         {
             var row = BuildRow(1, ("Count", tpsObject));
 
@@ -29,7 +29,7 @@ namespace TpsParser.Tests.RowDeserializer
 
         private class BadFieldObjectData
         {
-            public static IEnumerable<TpsObject> Data
+            public static IEnumerable<ITpsObject> Data
             {
                 get
                 {

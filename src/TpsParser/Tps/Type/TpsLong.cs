@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace TpsParser.Tps.Type
@@ -7,7 +6,7 @@ namespace TpsParser.Tps.Type
     /// <summary>
     /// Represents a signed 32-bit integer.
     /// </summary>
-    public readonly struct TpsLong : ITpsObject, IEquatable<TpsLong>
+    public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
     {
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.Long;
@@ -26,43 +25,7 @@ namespace TpsParser.Tps.Type
         /// <summary>
         /// Returns true if the value is not zero.
         /// </summary>
-        public Maybe<bool> ToBoolean() => Maybe.Some(Value != 0);
-
-        /// <summary>
-        /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.
-        /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
-        /// </summary>
-        public Maybe<DateTime?> ToDateTime() => Maybe.Some<DateTime?>(TpsDate.ClarionEpoch.AddDays(Value));
-
-        /// <summary>
-        /// Gets a <see cref="TimeSpan"/> by treating the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight.
-        /// For more information about the Clarion Standard Time, see the remarks section of <see cref="TpsTime"/>.
-        /// </summary>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.Some(new TimeSpan(0, 0, 0, 0, Value * 10));
-
-        /// <inheritdoc/>
-        public Maybe<uint> ToUInt32() =>
-            Value < 0
-            ? Maybe.None<uint>()
-            : Maybe.Some((uint)Value);
-
-        /// <inheritdoc/>
-        public Maybe<int> ToInt32() => Maybe.Some(Value);
-
-        /// <inheritdoc/>
-        public Maybe<ulong> ToUInt64() =>
-            Value < 0
-            ? Maybe.None<ulong>()
-            : Maybe.Some((ulong)Value);
-
-        /// <inheritdoc/>
-        public Maybe<long> ToInt64() => Maybe.Some<long>(Value);
-
-        /// <inheritdoc/>
-        public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
-
-        /// <inheritdoc/>
-        public string ToString(string format) => Value.ToString(format, CultureInfo.InvariantCulture);
+        public bool ToBoolean() => Value != 0;
 
         /// <inheritdoc/>
         public Maybe<sbyte> ToSByte() =>
@@ -89,14 +52,65 @@ namespace TpsParser.Tps.Type
             : Maybe.Some((ushort)Value);
 
         /// <inheritdoc/>
+        public Maybe<int> ToInt32() => Maybe.Some(Value);
+
+        /// <inheritdoc/>
+        public Maybe<uint> ToUInt32() =>
+            uint.MinValue > Value
+            ? Maybe.None<uint>()
+            : Maybe.Some((uint)Value);
+
+        /// <inheritdoc/>
+        public Maybe<long> ToInt64() => Maybe.Some<long>(Value);
+
+        /// <inheritdoc/>
+        public Maybe<ulong> ToUInt64() =>
+            0 > Value
+            ? Maybe.None<ulong>()
+            : Maybe.Some((ulong)Value);
+
+        /// <inheritdoc/>
+        public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
+
+        /// <inheritdoc/>
         public Maybe<float> ToFloat() => Maybe.Some((float)Value);
 
         /// <inheritdoc/>
         public Maybe<double> ToDouble() => Maybe.Some((double)Value);
 
-        /// <inheritdoc/>
-        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> by interpreting the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/> plus 4 days.
+        /// For more information about the Clarion Standard Date and the valid ranges, see the remarks section of <see cref="TpsDate"/>. Values outside of the valid range
+        /// will return <see cref="Maybe.None{T}"/>.
+        /// </summary>
+        public Maybe<DateTime?> ToDateTime() =>
+            TpsDate.ClarionStandardDateMinValue < Value || TpsDate.ClarionStandardDateMaxValue > Value
+            ? Maybe.None<DateTime?>()
+            : Maybe.Some<DateTime?>(TpsDate.ClarionEpoch.AddDays(Value));
 
+        /// <summary>
+        /// Gets a <see cref="TimeSpan"/> by interpreting the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight plus 1 centisecond.
+        /// For more information about the Clarion Standard Time and the valid ranges, see the remarks section of <see cref="TpsTime"/>. Values that are zero will return null per
+        /// the Standard Time rules, and every other value outside of the valid range will return <see cref="Maybe.None{T}"/>.
+        /// </summary>
+        public Maybe<TimeSpan?> ToTimeSpan()
+        {
+            if (Value == 0)
+            {
+                return Maybe.Some<TimeSpan?>(null);
+            }
+            else if (TpsTime.ClarionStandardTimeMinValue < Value || TpsTime.ClarionStandardTimeMaxValue > Value)
+            {
+                return Maybe.None<TimeSpan?>();
+            }
+            else
+            {
+                return Maybe.Some<TimeSpan?>(new TimeSpan(0, 0, 0, 0, (Value * 10) - 1));
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is TpsLong x && Equals(x);

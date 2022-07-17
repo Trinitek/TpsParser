@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
@@ -34,70 +35,72 @@ namespace TpsParser
 
         /// <inheritdoc/>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0041:Use 'is null' check", Justification = "Cannot use pattern-matching operators in expression trees.")]
-        protected internal override Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
+        protected internal override Expression<Func<ITpsObject, object>> CreateValueInterpreter(object fallbackValue)
         {
-            if (Format is null)
-            {
-                if (TrimStart && !TrimEnd)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString().NullTrimStart(), fallbackValue);
-                }
-                else if (!TrimStart && TrimEnd)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString().NullTrimEnd(), fallbackValue);
-                }
-                else if (TrimStart && TrimEnd)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString().NullTrim(), fallbackValue);
-                }
-                else
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString(), fallbackValue);
-                }
-            }
-            else
-            {
-                if (TrimStart && !TrimEnd)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString(Format).NullTrimStart(), fallbackValue);
-                }
-                else if (!TrimStart && TrimEnd)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString(Format).NullTrimEnd(), fallbackValue);
-                }
-                else if (TrimStart && TrimEnd)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString(Format).NullTrim(), fallbackValue);
-                }
-                else
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : ValueOrFallback(x.ToString(Format), fallbackValue);
-                }
-            }
+            return null;
+
+            //if (Format is null)
+            //{
+            //    if (TrimStart && !TrimEnd)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString().NullTrimStart(), fallbackValue);
+            //    }
+            //    else if (!TrimStart && TrimEnd)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString().NullTrimEnd(), fallbackValue);
+            //    }
+            //    else if (TrimStart && TrimEnd)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString().NullTrim(), fallbackValue);
+            //    }
+            //    else
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString(), fallbackValue);
+            //    }
+            //}
+            //else
+            //{
+            //    if (TrimStart && !TrimEnd)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString(Format).NullTrimStart(), fallbackValue);
+            //    }
+            //    else if (!TrimStart && TrimEnd)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString(Format).NullTrimEnd(), fallbackValue);
+            //    }
+            //    else if (TrimStart && TrimEnd)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString(Format).NullTrim(), fallbackValue);
+            //    }
+            //    else
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : ValueOrFallback(x.ToString(Format), fallbackValue);
+            //    }
+            //}
         }
     }
 }

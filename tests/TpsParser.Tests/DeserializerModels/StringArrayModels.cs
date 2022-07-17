@@ -6,13 +6,13 @@ namespace TpsParser.Tests.DeserializerModels
     public class TpsObjectIEnumerableStringModel
     {
         [TpsField("BArray")]
-        public IEnumerable<TpsObject> Strings { get; set; }
+        public IEnumerable<IString> Strings { get; set; }
     }
 
     public class TpsObjectIReadOnlyListStringModel
     {
         [TpsField("BArray")]
-        public IReadOnlyList<TpsObject> Strings { get; set; }
+        public IReadOnlyList<IString> Strings { get; set; }
     }
 
     public class TpsStringIEnumerableStringModel

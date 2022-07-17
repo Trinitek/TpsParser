@@ -246,6 +246,23 @@ namespace TpsParser
         }
 
         /// <summary>
+        /// Reads a big endian unsigned short and advances the current position.
+        /// </summary>
+        /// <returns></returns>
+        public ushort ReadUnsignedShortBE()
+        {
+            AssertSpace(2);
+
+            ushort result =
+                (ushort)(Data[AbsolutePosition + 1] & 0xFF
+                | (Data[AbsolutePosition + 0] & 0xFF) << 8);
+
+            Position += 2;
+
+            return result;
+        }
+
+        /// <summary>
         /// Reads a byte and advances the current position.
         /// </summary>
         /// <returns></returns>
@@ -299,25 +316,13 @@ namespace TpsParser
         /// Reads a fixed length string and advances the current position.
         /// </summary>
         /// <param name="length">The length of the string to read.</param>
-        /// <returns></returns>
-        public string FixedLengthString(int length) => ReadFixedLengthString(length, Parser.DefaultEncoding);
-
-        /// <summary>
-        /// Reads a fixed length string and advances the current position.
-        /// </summary>
-        /// <param name="length">The length of the string to read.</param>
         /// <param name="encoding">The encoding of the string.</param>
         /// <returns></returns>
-        public string ReadFixedLengthString(int length, Encoding encoding)
+        public string ReadFixedLengthString(int length, Encoding encoding = null)
         {
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
             AssertSpace(length);
 
-            string result = encoding.GetString(Data.ToArray(), AbsolutePosition, length);
+            string result = (encoding ?? Parser.DefaultEncoding).GetString(Data.ToArray(), AbsolutePosition, length);
 
             Position += length;
 
@@ -331,8 +336,6 @@ namespace TpsParser
         /// <returns></returns>
         public string ReadZeroTerminatedString(Encoding encoding = null)
         {
-            encoding = encoding ?? Parser.DefaultEncoding;
-
             var bytes = new List<byte>();
 
             byte value;
@@ -348,7 +351,7 @@ namespace TpsParser
             }
             while (value != 0);
 
-            return encoding.GetString(bytes.ToArray());
+            return (encoding ?? Parser.DefaultEncoding).GetString(bytes.ToArray());
         }
 
         /// <summary>
@@ -356,13 +359,8 @@ namespace TpsParser
         /// </summary>
         /// <param name="encoding">The encoding of the string.</param>
         /// <returns></returns>
-        public string ReadPascalString(Encoding encoding)
+        public string ReadPascalString(Encoding encoding = null)
         {
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
             int length = ReadByte();
 
             var bytes = new List<byte>();
@@ -372,7 +370,7 @@ namespace TpsParser
                 bytes.Add(ReadByte());
             }
 
-            return encoding.GetString(bytes.ToArray());
+            return (encoding ?? Parser.DefaultEncoding).GetString(bytes.ToArray());
         }
 
         /// <summary>
@@ -541,7 +539,7 @@ namespace TpsParser
         /// Gets an array of the remaining unread data array.
         /// </summary>
         /// <returns></returns>
-        public byte[] GetRemainder()
+        public byte[] GetRemainderAsByteArray()
         {
             byte[] result = new byte[Length - Position];
 
@@ -554,6 +552,16 @@ namespace TpsParser
 
             return result;
         }
+
+        /// <summary>
+        /// Gets a new reader instance for the remainder of the unread data.
+        /// </summary>
+        /// <returns></returns>
+        public TpsReader GetReaderForRemainder() =>
+            new TpsReader(
+                existing: this,
+                additiveOffset: Position,
+                length: Length - Position);
 
         /// <summary>
         /// Gets the absolute position of the given page by its reference number.
@@ -800,28 +808,19 @@ namespace TpsParser
         /// </summary>
         /// <param name="encoding"></param>
         /// <returns></returns>
-        public TpsString ReadTpsString(Encoding encoding)
+        public TpsString ReadTpsString(Encoding encoding = null)
         {
-            if (encoding is null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            return new TpsString(encoding.GetString(GetData()));
+            return new TpsString((encoding ?? Parser.DefaultEncoding).GetString(GetData()));
         }
 
         /// <summary>
         /// Reads a <see cref="TpsString"/> and advances the current position.
         /// </summary>
-        /// <param name="encoding"></param>
         /// <param name="length">The length of the string in bytes.</param>
+        /// <param name="encoding"></param>
         /// <returns></returns>
-        public TpsString ReadTpsString(Encoding encoding, int length)
+        public TpsString ReadTpsString(int length, Encoding encoding = null)
         {
-            if (encoding is null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
             if (length < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "String length must not be negative.");
@@ -834,12 +833,30 @@ namespace TpsParser
         /// Reads a <see cref="TpsCString"/> and advances the current position.
         /// </summary>
         /// <returns></returns>
-        public TpsCString ReadTpsCString(Encoding encoding) => new TpsCString(ReadZeroTerminatedString(encoding));
+        public TpsCString ReadTpsCString(Encoding encoding = null) => new TpsCString(ReadZeroTerminatedString(encoding));
 
         /// <summary>
         /// Reads a <see cref="TpsPString"/> and advances the current position.
         /// </summary>
         /// <returns></returns>
-        public TpsPString ReadTpsPString(Encoding encoding) => new TpsPString(ReadPascalString(encoding));
+        public TpsPString ReadTpsPString(Encoding encoding = null) => new TpsPString(ReadPascalString(encoding));
+
+        /// <summary>
+        /// Reads a <see cref="TpsMemo"/> and consumes the entire data array.
+        /// </summary>
+        /// <returns></returns>
+        public TpsMemo ReadMemo(Encoding encoding = null) => new TpsMemo(ReadTpsString(encoding).Value);
+
+        /// <summary>
+        /// Reads a <see cref="TpsBlob"/> and advances the current position.
+        /// </summary>
+        /// <returns></returns>
+        public TpsBlob ReadBlob()
+        {
+            int length = ReadLongLE();
+            var bytes = ReadBytes(length);
+
+            return new TpsBlob(bytes);
+        }
     }
 }

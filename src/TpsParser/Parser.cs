@@ -93,16 +93,16 @@ namespace TpsParser
             TpsFile = new RandomAccessTpsFile(Stream, new Key(password), encoding ?? DefaultEncoding);
         }
 
-        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
             var dataRecords = TpsFile.GetDataRecords(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
 
-            return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
+            return (IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>>)dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
         }
 
-        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+        private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
         {
-            return Enumerable.Range(0, tableDefinitionRecord.Memos.Count)
+            return (IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>>)Enumerable.Range(0, tableDefinitionRecord.Memos.Count)
                 .SelectMany(index =>
                 {
                     var definition = tableDefinitionRecord.Memos[index];
@@ -113,7 +113,7 @@ namespace TpsParser
                 .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
                 .ToDictionary(
                     groupedPair => groupedPair.Key,
-                    groupedPair => (IReadOnlyDictionary<string, TpsObject>)groupedPair
+                    groupedPair => (IReadOnlyDictionary<string, ITpsObject>)groupedPair
                         .ToDictionary(pair => pair.name, pair => pair.value));
         }
 
@@ -133,7 +133,7 @@ namespace TpsParser
             var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
             var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
 
-            var unifiedRecords = new Dictionary<int, Dictionary<string, TpsObject>>();
+            var unifiedRecords = new Dictionary<int, Dictionary<string, ITpsObject>>();
 
             foreach (var dataKvp in dataRecords)
             {
@@ -196,7 +196,7 @@ namespace TpsParser
 
             foreach (var dataRecord in dataRecords)
             {
-                int recordNumber = dataRecord.Key;
+                uint recordNumber = dataRecord.Key;
                 var values = dataRecord.Value;
 
                 T target = new T();
@@ -207,7 +207,7 @@ namespace TpsParser
                 {
                     if (member.IsRecordNumber)
                     {
-                        member.SetMember(target, new TpsLong(recordNumber));
+                        member.SetMember(target, new TpsUnsignedLong(recordNumber));
                     }
                     else
                     {
@@ -219,8 +219,8 @@ namespace TpsParser
                             //member.SetMember(target, interpretedValue);
                             member.SetMember(target, values[index]);
                         }
-                        else if (memoRecords.TryGetValue(recordNumber, out var fieldValueDictionary)
-                            && fieldValueDictionary.ToDictionary(fv => fv.Key.ToUpperInvariant(), fv => fv.Value).TryGetValue(requestedField, out TpsObject value))
+                        else if (memoRecords.TryGetValue((int)recordNumber, out var fieldValueDictionary)
+                            && fieldValueDictionary.ToDictionary(fv => fv.Key.ToUpperInvariant(), fv => fv.Value).TryGetValue(requestedField, out ITpsObject value))
                         {
                             //object interpretedValue = member.FieldAttribute.InterpretValue(member.MemberType, value);
                             //member.SetMember(target, interpretedValue);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace TpsParser.Tps.Type
@@ -31,22 +30,36 @@ namespace TpsParser.Tps.Type
     /// </list>
     /// </para>
     /// <para>
-    /// In the Clarion programming language, when a DATE value is used in an expression, it is implicitly converted to a
-    /// LONG (<see cref="TpsLong"/>). This is called a Clarion Standard Date value. This value is the number of days since December 28, 1800.
-    /// The valid Clarion Standard Date range is January 1, 1801 through December 31, 9999.
+    /// In the Clarion documentation, this type is often referred to as a Btrieve date, referring to the historical
+    /// <see href="https://en.wikipedia.org/wiki/Btrieve">Btrieve Record Manager</see> and is designed for interoperability with that and
+    /// other external systems.
     /// </para>
     /// <para>
-    /// Clarion documentation recommends that the 4-byte DATE type be used when communicating with external applications. However, because
-    /// TopSpeed files are typically only used by Clarion applications exclusively, the field may sometimes be defined as a LONG in
-    /// order to avoid repetitive casting.
+    /// The native date type used in the Clarion programming language when performing calculations is a LONG (<see cref="TpsLong"/>).
+    /// This is called a Clarion Standard Date value and counts the number of days since December 28, 1800.
+    /// The valid Clarion Standard Date range is January 1, 1801 through December 31, 9999, that is, an inclusive numerical range from 4
+    /// to 2,994,626. However, the <see cref="TpsDate"/> type is not subject to this restriction and can represent any date between
+    /// 0001-01-01 and 9999-12-31, with 0000-00-00 used to represent a null value. Unlike a Clarion Standard Time (see <see cref="TpsTime"/>),
+    /// a Clarion Standard Date does not have a null-equivalent value, and the documentation only says that values outside of the valid range
+    /// will yield undefined behavior when used with date functions.
     /// </para>
     /// </remarks>
-    public readonly struct TpsDate : ITpsObject, IEquatable<TpsDate>
+    public readonly struct TpsDate : IDate, IEquatable<TpsDate>
     {
         /// <summary>
-        /// Gets a <see cref="DateTime"/> representing December 28, 1800, which is the start date of the Clarion Standard Date.
+        /// Gets a <see cref="DateTime"/> representing December 28, 1800, which is the reference date for Clarion Standard Date values.
         /// </summary>
-        public static DateTime ClarionEpoch => new DateTime(1800, 12, 28);
+        public static readonly DateTime ClarionEpoch = new DateTime(1800, 12, 28);
+
+        /// <summary>
+        /// Gets the minimum valid value of a Clarion Standard Date, January 1, 1801. This is 4 days after <see cref="ClarionEpoch"/>.
+        /// </summary>
+        public static readonly int ClarionStandardDateMinValue = 4;
+
+        /// <summary>
+        /// Gets the maximum valid value of a Clarion Standard Date, December 31, 9999.
+        /// </summary>
+        public static readonly int ClarionStandardDateMaxValue = 2994626;
 
         /// <inheritdoc/>
         public TpsTypeCode TypeCode => TpsTypeCode.Date;
@@ -86,51 +99,13 @@ namespace TpsParser.Tps.Type
         /// <inheritdoc/>
         public Maybe<DateTime?> ToDateTime() => Maybe.Some(Value);
 
-        /// <inheritdoc/>
-        public Maybe<sbyte> ToSByte() => Maybe.None<sbyte>();
-
-        /// <inheritdoc/>
-        public Maybe<byte> ToByte() => Maybe.None<byte>();
-
-        /// <inheritdoc/>
-        public Maybe<short> ToInt16() => Maybe.None<short>();
-
-        /// <inheritdoc/>
-        public Maybe<ushort> ToUInt16() => Maybe.None<ushort>();
-
-        /// <inheritdoc/>
-        public Maybe<int> ToInt32() => Maybe.None<int>();
-
-        /// <inheritdoc/>
-        public Maybe<uint> ToUInt32() => Maybe.None<uint>();
-
-        /// <inheritdoc/>
-        public Maybe<long> ToInt64() => Maybe.None<long>();
-
-        /// <inheritdoc/>
-        public Maybe<ulong> ToUInt64() => Maybe.None<ulong>();
-
-        /// <inheritdoc/>
-        public Maybe<float> ToFloat() => Maybe.None<float>();
-
-        /// <inheritdoc/>
-        public Maybe<double> ToDouble() => Maybe.None<double>();
-
-        /// <inheritdoc/>
-        public Maybe<decimal> ToDecimal() => Maybe.None<decimal>();
-
-        /// <inheritdoc/>
-        public Maybe<TimeSpan> ToTimeSpan() => Maybe.None<TimeSpan>();
-
-        /// <inheritdoc/>
-        public Maybe<IReadOnlyList<ITpsObject>> ToArray() => Maybe.None<IReadOnlyList<ITpsObject>>();
-
         /// <summary>
         /// Gets a <see cref="TpsLong"/> instance representing the Clarion Standard Date, or number of days since December 28, 1800.
+        /// For dates before January 1, 1801 (four days after <see cref="ClarionEpoch"/>), this returns <see cref="Maybe.None{T}"/>.
         /// </summary>
         /// <returns></returns>
         public Maybe<TpsLong> AsClarionStandardDate() =>
-            Value is null
+            Value is null || Value < ClarionEpoch.AddDays(ClarionStandardDateMinValue)
             ? Maybe.None<TpsLong>()
             : Maybe.Some(new TpsLong((Value.Value - ClarionEpoch).Days));
 
@@ -138,14 +113,11 @@ namespace TpsParser.Tps.Type
         public override string ToString() => Value?.ToString(CultureInfo.InvariantCulture);
 
         /// <inheritdoc/>
-        public string ToString(string format) => Value?.ToString(format, CultureInfo.InvariantCulture);
+        public bool Equals(TpsDate other) =>
+            Value == other.Value;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is TpsDate x && Equals(x);
-
-        /// <inheritdoc/>
-        public bool Equals(TpsDate other) =>
-            Value == other.Value;
 
         /// <inheritdoc/>
         public override int GetHashCode()

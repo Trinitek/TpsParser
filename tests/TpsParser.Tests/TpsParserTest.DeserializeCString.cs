@@ -47,7 +47,7 @@ namespace TpsParser.Tests
                 return mock.Object;
             }
 
-            private static IMemoRecord BuildMemoRecord(int owningRecord, string name, TpsCString value)
+            private static IMemoRecord BuildMemoRecord(uint owningRecord, string name, TpsCString value)
             {
                 var mock = new Mock<IMemoRecord>();
 
@@ -65,7 +65,7 @@ namespace TpsParser.Tests
                 return mock.Object;
             }
 
-            private static IDataRecord BuildDataRecord(int recordNumber, ITableDefinitionRecord tableDefinitionRecord, IEnumerable<TpsObject> values)
+            private static IDataRecord BuildDataRecord(uint recordNumber, ITableDefinitionRecord tableDefinitionRecord, IEnumerable<ITpsObject> values)
             {
                 var mock = new Mock<IDataRecord>();
 
@@ -113,7 +113,7 @@ namespace TpsParser.Tests
                     fields.Select(tuple => BuildFieldDefinitionRecord(tuple.name, tuple.typeCode)).ToList(),
                     memoNames.Select(name => BuildMemoDefinitionRecord(name)).ToList());
 
-            private static TpsFile BuildTpsFile((string name, TpsObject value)[] fieldValues, (string name, TpsCString value)[] memoValues)
+            private static TpsFile BuildTpsFile((string name, ITpsObject value)[] fieldValues, (string name, TpsCString value)[] memoValues)
             {
                 var tableDefinitionRecord = BuildTableDefinitionRecord(
                     fieldValues.Select(value => (value.name, value.value.TypeCode)).ToList(),
@@ -128,7 +128,7 @@ namespace TpsParser.Tests
             [Test]
             public void ShouldDeserializeString()
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(" Hello world!     ")) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(" Hello world!     ")) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -143,7 +143,7 @@ namespace TpsParser.Tests
             {
                 string expected = " Hello world!     ";
 
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -158,7 +158,7 @@ namespace TpsParser.Tests
             {
                 string expected = " Hello world!     ";
 
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(expected)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -177,7 +177,7 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanTpsFieldAttribute(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -196,7 +196,7 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanTpsBooleanFieldAttribute(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -215,7 +215,7 @@ namespace TpsParser.Tests
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanTrueCondition(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -234,7 +234,7 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFalseCondition(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -253,7 +253,7 @@ namespace TpsParser.Tests
             [TestCase("?", true)]
             public void ShouldDeserializeStringAsBooleanFallbackTrue(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -272,7 +272,7 @@ namespace TpsParser.Tests
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanFallbackFalse(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {
@@ -291,7 +291,7 @@ namespace TpsParser.Tests
             [TestCase("?", false)]
             public void ShouldDeserializeStringAsBooleanFallbackDefault(string value, bool expected)
             {
-                var file = BuildTpsFile(new (string, TpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
+                var file = BuildTpsFile(new (string, ITpsObject)[] { ("Notes", new TpsCString(value)) }, new (string, TpsCString)[] { });
 
                 using (var parser = new Parser(file))
                 {

@@ -11,12 +11,12 @@ namespace TpsParser.Tps.Header
         /// <summary>
         /// Gets the number of the <see cref="IDataRecord"/> that owns this memo.
         /// </summary>
-        int OwningRecord { get; }
+        uint OwningRecord { get; }
 
         /// <summary>
         /// Gets the sequence number of the memo when the memo is segmented into multiple records. The first segment is 0.
         /// </summary>
-        short SequenceNumber { get; }
+        ushort SequenceNumber { get; }
 
         /// <summary>
         /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="ITableDefinitionRecord.Memos"/>.
@@ -28,10 +28,10 @@ namespace TpsParser.Tps.Header
     public sealed class MemoHeader : HeaderBase, IMemoHeader
     {
         /// <inheritdoc/>
-        public int OwningRecord { get; }
+        public uint OwningRecord { get; }
 
         /// <inheritdoc/>
-        public short SequenceNumber { get; }
+        public ushort SequenceNumber { get; }
 
         /// <inheritdoc/>
         public byte MemoIndex { get; }
@@ -44,7 +44,7 @@ namespace TpsParser.Tps.Header
         /// <param name="owningRecord"></param>
         /// <param name="sequenceNumber"></param>
         /// <param name="memoIndex"></param>
-        public MemoHeader(int tableNumber, HeaderKind kind, int owningRecord, short sequenceNumber, byte memoIndex)
+        public MemoHeader(int tableNumber, HeaderKind kind, uint owningRecord, ushort sequenceNumber, byte memoIndex)
             : base(tableNumber, kind)
         {
             AssertIsType(HeaderKind.Memo);
@@ -73,9 +73,9 @@ namespace TpsParser.Tps.Header
             return new MemoHeader(
                 tableNumber: rx.ReadLongBE(),
                 kind: (HeaderKind)rx.ReadByte(),
-                owningRecord: rx.ReadLongBE(),
+                owningRecord: rx.ReadUnsignedLongBE(),
                 memoIndex: rx.ReadByte(),
-                sequenceNumber: rx.ReadShortBE());
+                sequenceNumber: rx.ReadUnsignedShortBE());
         }
     }
 }

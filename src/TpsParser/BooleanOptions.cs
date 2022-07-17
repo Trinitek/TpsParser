@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using TpsParser.Tps.Type;
 
 namespace TpsParser
 {
@@ -41,83 +42,85 @@ namespace TpsParser
         /// <inheritdoc/>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0041:Use 'is null' check", Justification = "Cannot use pattern-matching operators in expression trees.")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0075:Simplify conditional expression", Justification = "Nested ternaries have better readability, comparatively.")]
-        protected internal override Expression<Func<TpsObject, object>> CreateValueInterpreter(object fallbackValue)
+        protected internal override Expression<Func<ITpsObject, object>> CreateValueInterpreter(object fallbackValue)
         {
-            fallbackValue =
-                fallbackValue == UnsetValue
-                ? this.FallbackValue
-                : fallbackValue;
+            return null;
 
-            Expression<Func<TpsObject, object>> asBooleanOrFallbackExpr =
-                x => ReferenceEquals(x, null) ? fallbackValue : x.ToBoolean().Value;
-
-            if (TrueValue != UnsetValue && FalseValue == UnsetValue)
-            {
-                if (TrueValue is string trueString)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : string.Equals(x.ToString().NullTrim(), trueString, ComparisonMode);
-                }
-                else
-                {
-                    return asBooleanOrFallbackExpr;
-                }
-            }
-            else if (TrueValue == UnsetValue && FalseValue != UnsetValue)
-            {
-                if (FalseValue is string falseString)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        :
-                            string.Equals(x.ToString().NullTrim(), falseString, ComparisonMode)
-                            ? false
-                            : x.ToBoolean().Value;
-                }
-                else
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        : !Equals(x.Value, FalseValue);
-                }
-            }
-            else if (TrueValue != UnsetValue && FalseValue != UnsetValue)
-            {
-                if (TrueValue is string trueString && FalseValue is string falseString)
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        :
-                            string.Equals(x.ToString().NullTrim(), trueString, ComparisonMode)
-                            ? true
-                            :
-                                string.Equals(x.ToString().NullTrim(), falseString, ComparisonMode)
-                                ? false
-                                : fallbackValue;
-                }
-                else
-                {
-                    return x =>
-                        ReferenceEquals(x, null)
-                        ? fallbackValue
-                        :
-                            x.Value.Equals(TrueValue)
-                            ? true
-                            :
-                                x.Value.Equals(FalseValue)
-                                ? false
-                                : fallbackValue;
-                }
-            }
-            else
-            {
-                return asBooleanOrFallbackExpr;
-            }
+            //fallbackValue =
+            //    fallbackValue == UnsetValue
+            //    ? this.FallbackValue
+            //    : fallbackValue;
+            //
+            //Expression<Func<ITpsObject, object>> asBooleanOrFallbackExpr =
+            //    x => ReferenceEquals(x, null) ? fallbackValue : ((ISimple)x).ToBoolean();
+            //
+            //if (TrueValue != UnsetValue && FalseValue == UnsetValue)
+            //{
+            //    if (TrueValue is string trueString)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : string.Equals(x.ToString().NullTrim(), trueString, ComparisonMode);
+            //    }
+            //    else
+            //    {
+            //        return asBooleanOrFallbackExpr;
+            //    }
+            //}
+            //else if (TrueValue == UnsetValue && FalseValue != UnsetValue)
+            //{
+            //    if (FalseValue is string falseString)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            :
+            //                string.Equals(x.ToString().NullTrim(), falseString, ComparisonMode)
+            //                ? false
+            //                : x.ToBoolean().Value;
+            //    }
+            //    else
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            : !Equals(x.Value, FalseValue);
+            //    }
+            //}
+            //else if (TrueValue != UnsetValue && FalseValue != UnsetValue)
+            //{
+            //    if (TrueValue is string trueString && FalseValue is string falseString)
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            :
+            //                string.Equals(x.ToString().NullTrim(), trueString, ComparisonMode)
+            //                ? true
+            //                :
+            //                    string.Equals(x.ToString().NullTrim(), falseString, ComparisonMode)
+            //                    ? false
+            //                    : fallbackValue;
+            //    }
+            //    else
+            //    {
+            //        return x =>
+            //            ReferenceEquals(x, null)
+            //            ? fallbackValue
+            //            :
+            //                x.Value.Equals(TrueValue)
+            //                ? true
+            //                :
+            //                    x.Value.Equals(FalseValue)
+            //                    ? false
+            //                    : fallbackValue;
+            //    }
+            //}
+            //else
+            //{
+            //    return asBooleanOrFallbackExpr;
+            //}
         }
     }
 }

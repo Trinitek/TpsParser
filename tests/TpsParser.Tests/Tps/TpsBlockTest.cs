@@ -10,7 +10,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldReadTwoBlocks()
         {
-            var rx = new RandomAccess(new byte[4 * 256]);
+            var rx = new TpsReader(new byte[4 * 256]);
 
             rx.WriteLongLE(0);
             rx.WriteLongLE(0x200);
@@ -31,7 +31,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldReadTwoBlocksWithGap()
         {
-            var rx = new RandomAccess(new byte[4 * 256]);
+            var rx = new TpsReader(new byte[4 * 256]);
 
             rx.WriteLongLE(0);
             rx.WriteLongLE(0x100);
@@ -52,7 +52,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldSkipPartiallyOverwrittenBlock()
         {
-            var rx = new RandomAccess(new byte[4 * 256]);
+            var rx = new TpsReader(new byte[4 * 256]);
 
             rx.WriteLongLE(0);
             rx.WriteLongLE(0x300);

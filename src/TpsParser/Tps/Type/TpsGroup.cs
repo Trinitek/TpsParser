@@ -18,7 +18,7 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="rx"></param>
         /// <param name="length"></param>
-        public TpsGroup(RandomAccess rx, int length)
+        public TpsGroup(TpsReader rx, int length)
         {
             if (rx == null)
             {

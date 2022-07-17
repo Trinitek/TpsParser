@@ -62,7 +62,7 @@ namespace TpsParser.Tps.Type
         /// </list>
         /// </remarks>
         /// <param name="rx"></param>
-        public TpsTime(RandomAccess rx)
+        public TpsTime(TpsReader rx)
         {
             if (rx == null)
             {

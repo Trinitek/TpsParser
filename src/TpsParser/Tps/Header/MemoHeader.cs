@@ -40,7 +40,7 @@ namespace TpsParser.Tps.Header
         /// Instantiates a new header.
         /// </summary>
         /// <param name="rx"></param>
-        public MemoHeader(RandomAccess rx)
+        public MemoHeader(TpsReader rx)
             : base(rx)
         {
             AssertIsType(0xFC);

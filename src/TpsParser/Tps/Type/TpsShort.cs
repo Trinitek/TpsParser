@@ -15,7 +15,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new SHORT.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsShort(RandomAccess rx)
+        public TpsShort(TpsReader rx)
         {
             if (rx == null)
             {

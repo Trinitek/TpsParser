@@ -43,7 +43,7 @@ namespace TpsParser
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            TpsFile = new RandomAccessTpsFile(Stream);
+            TpsFile = new ImplTpsFile(Stream);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace TpsParser
             : this()
         {
             Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
+            TpsFile = new ImplTpsFile(Stream, new Key(password));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace TpsParser
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
-            TpsFile = new RandomAccessTpsFile(Stream);
+            TpsFile = new ImplTpsFile(Stream);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace TpsParser
             : this()
         {
             Stream = new FileStream(filename, FileMode.Open);
-            TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
+            TpsFile = new ImplTpsFile(Stream, new Key(password));
         }
 
         private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)

@@ -16,7 +16,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             using (var stream = new FileStream("Resources/table-with-time.tps", FileMode.Open))
             {
-                var file = new RandomAccessTpsFile(stream);
+                var file = new ImplTpsFile(stream);
 
                 var tableDef = file.GetTableDefinitions(false).First().Value;
                 var record = file.GetDataRecords(1, tableDef, false).First();
@@ -29,9 +29,9 @@ namespace TpsParser.Tests.Tps.Type
         }
 
         [Test]
-        public void ShouldReadFromRandomAccess()
+        public void ShouldReadFromTpsReader()
         {
-            var rx = new RandomAccess(new byte[] { 99, 59, 59, 12 });
+            var rx = new TpsReader(new byte[] { 99, 59, 59, 12 });
 
             var time = new TpsTime(rx);
 

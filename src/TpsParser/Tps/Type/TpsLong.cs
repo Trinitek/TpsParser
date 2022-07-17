@@ -15,7 +15,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new LONG from the given binary reader.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsLong(RandomAccess rx)
+        public TpsLong(TpsReader rx)
         {
             if (rx == null)
             {

@@ -42,7 +42,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldDecryptBlock()
         {
-            var rx = new RandomAccess(ParseHex(EncryptedHeader));
+            var rx = new TpsReader(ParseHex(EncryptedHeader));
             var key = new Key("a");
 
             key.Decrypt64(rx);
@@ -56,7 +56,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldEncryptBlock()
         {
-            var rx = new RandomAccess(ParseHex(DecryptedHeader));
+            var rx = new TpsReader(ParseHex(DecryptedHeader));
             var key = new Key("a");
 
             key.Encrypt64(rx);
@@ -73,8 +73,8 @@ namespace TpsParser.Tests.Tps
             using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
             using (var fsUnencrypted = new FileStream("Resources/not-encrypted.tps", FileMode.Open))
             {
-                var encryptedFile = new RandomAccessTpsFile(fsEncrypted, new Key("a"));
-                var decryptedFile = new RandomAccessTpsFile(fsUnencrypted);
+                var encryptedFile = new ImplTpsFile(fsEncrypted, new Key("a"));
+                var decryptedFile = new ImplTpsFile(fsUnencrypted);
 
                 var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
                 var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
@@ -101,7 +101,7 @@ namespace TpsParser.Tests.Tps
         {
             using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
             {
-                var encryptedFile = new RandomAccessTpsFile(fsEncrypted);
+                var encryptedFile = new ImplTpsFile(fsEncrypted);
 
                 Assert.Throws<NotATopSpeedFileException>(() => encryptedFile.GetHeader());
             }

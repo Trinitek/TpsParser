@@ -17,7 +17,7 @@ namespace TpsParser.Tps.Type
         /// </summary>
         /// <param name="rx"></param>
         /// <param name="encoding"></param>
-        public TpsPString(RandomAccess rx, Encoding encoding)
+        public TpsPString(TpsReader rx, Encoding encoding)
         {
             if (rx == null)
             {

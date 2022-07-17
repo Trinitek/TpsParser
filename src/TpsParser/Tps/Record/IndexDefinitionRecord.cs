@@ -33,7 +33,7 @@ namespace TpsParser.Tps.Record
 
         public int FieldsInKey { get; }
 
-        public IndexDefinitionRecord(RandomAccess rx)
+        public IndexDefinitionRecord(TpsReader rx)
         {
             if (rx == null)
             {

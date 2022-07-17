@@ -239,7 +239,7 @@ namespace TpsParser.Tps.KeyRecovery
         {
             if (IsComplete)
             {
-                var rx = new RandomAccess(new byte[64]);
+                var rx = new TpsReader(new byte[64]);
 
                 foreach (var k in KeyPiece)
                 {

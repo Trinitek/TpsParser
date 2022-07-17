@@ -10,7 +10,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldParseHeader()
         {
-            var file = new RandomAccessTpsFile(new FileStream("Resources/header.dat", FileMode.Open));
+            var file = new ImplTpsFile(new FileStream("Resources/header.dat", FileMode.Open));
 
             var header = file.GetHeader();
 
@@ -25,7 +25,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldNotParseHeaderIfNotTopSpeed()
         {
-            var file = new RandomAccessTpsFile(new FileStream("Resources/bad-header.dat", FileMode.Open));
+            var file = new ImplTpsFile(new FileStream("Resources/bad-header.dat", FileMode.Open));
 
             Assert.Throws<NotATopSpeedFileException>(() => file.GetHeader());
         }

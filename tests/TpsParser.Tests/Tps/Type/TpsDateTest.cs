@@ -9,9 +9,9 @@ namespace TpsParser.Tests.Tps.Type
     public class TpsDateTest
     {
         [Test]
-        public void ShouldReadFromRandomAccess()
+        public void ShouldReadFromTpsReader()
         {
-            var rx = new RandomAccess(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
+            var rx = new TpsReader(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
 
             var date = new TpsDate(rx);
 

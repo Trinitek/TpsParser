@@ -15,7 +15,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new REAL.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsDouble(RandomAccess rx)
+        public TpsDouble(TpsReader rx)
         {
             if (rx == null)
             {

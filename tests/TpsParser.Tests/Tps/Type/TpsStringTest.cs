@@ -10,9 +10,9 @@ namespace TpsParser.Tests.Tps.Type
     public class TpsStringTest
     {
         [Test]
-        public void ShouldReadFromRandomAccess()
+        public void ShouldReadFromTpsReader()
         {
-            var rx = new RandomAccess(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F });
+            var rx = new TpsReader(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F });
 
             var str = new TpsString(rx, Encoding.ASCII);
 

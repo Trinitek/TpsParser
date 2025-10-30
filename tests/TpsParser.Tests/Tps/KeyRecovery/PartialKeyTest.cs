@@ -50,10 +50,10 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var plain = new byte[64];
             var crypt = new byte[64];
 
-            k.Encrypt64(new RandomAccess(crypt));
+            k.Encrypt64(new TpsRandomAccess(crypt));
 
-            var blockPlain = new Block(new RandomAccess(plain), isEncrypted: false);
-            var blockCrypt = new Block(new RandomAccess(crypt), isEncrypted: true);
+            var blockPlain = new Block(new TpsRandomAccess(plain), isEncrypted: false);
+            var blockCrypt = new Block(new TpsRandomAccess(crypt), isEncrypted: true);
 
             var pk = new PartialKey().Apply(index: 15, keyPiece: k.GetWord(15));
             var result = pk.PartialDecrypt(index: 15, block: blockCrypt);
@@ -69,10 +69,10 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var plain = new byte[64];
             var crypt = new byte[64];
 
-            k.Encrypt64(new RandomAccess(crypt));
+            k.Encrypt64(new TpsRandomAccess(crypt));
 
-            var blockPlain = new Block(new RandomAccess(plain), isEncrypted: false);
-            var blockCrypt = new Block(new RandomAccess(crypt), isEncrypted: true);
+            var blockPlain = new Block(new TpsRandomAccess(plain), isEncrypted: false);
+            var blockCrypt = new Block(new TpsRandomAccess(crypt), isEncrypted: true);
 
             var pk = new PartialKey().Apply(index: 15, keyPiece: k.GetWord(15));
 

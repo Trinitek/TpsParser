@@ -9,7 +9,7 @@ namespace TpsParser.Tps
     /// </summary>
     public sealed class Key
     {
-        private RandomAccess Data { get; }
+        private TpsRandomAccess Data { get; }
 
         /// <summary>
         /// Instantiates a key and initializes it using the given password.
@@ -34,7 +34,7 @@ namespace TpsParser.Tps
                 block[x] = (byte)(i + keyBytes[(i + 1) % keyBytes.Length]);
             }
 
-            Data = new RandomAccess(block);
+            Data = new TpsRandomAccess(block);
 
             // Two calls required.
 
@@ -46,7 +46,7 @@ namespace TpsParser.Tps
         /// Instantiates a key with an already initialized data state.
         /// </summary>
         /// <param name="rx"></param>
-        public Key(RandomAccess rx)
+        public Key(TpsRandomAccess rx)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
         }
@@ -90,7 +90,7 @@ namespace TpsParser.Tps
         /// Encrypts the given buffer. The buffer must be 64 bytes long.
         /// </summary>
         /// <param name="buffer">The buffer to encrypt.</param>
-        public void Encrypt64(RandomAccess buffer)
+        public void Encrypt64(TpsRandomAccess buffer)
         {
             if (buffer == null)
             {
@@ -132,7 +132,7 @@ namespace TpsParser.Tps
         /// Decrypts the given buffer. The buffer must be 64 bytes long.
         /// </summary>
         /// <param name="buffer"></param>
-        public void Decrypt64(RandomAccess buffer)
+        public void Decrypt64(TpsRandomAccess buffer)
         {
             if (buffer == null)
             {
@@ -173,7 +173,7 @@ namespace TpsParser.Tps
         /// The data must have a position of 0, and an offset and length that are divisible by 64.
         /// </summary>
         /// <param name="encrypted">The encrypted data to decrypt.</param>
-        public void Decrypt(RandomAccess encrypted)
+        public void Decrypt(TpsRandomAccess encrypted)
         {
             if (encrypted == null)
             {
@@ -197,7 +197,7 @@ namespace TpsParser.Tps
 
             for (int offset = 0; offset < encrypted.Length / 64; offset++)
             {
-                var buffer = new RandomAccess(encrypted, offset * 64, 64);
+                var buffer = new TpsRandomAccess(encrypted, offset * 64, 64);
                 Decrypt64(buffer);
             }
         }

@@ -17,7 +17,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new BLOB.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsBlob(RandomAccess rx)
+        public TpsBlob(TpsRandomAccess rx)
         {
             if (rx == null)
             {

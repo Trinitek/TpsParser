@@ -11,7 +11,7 @@ namespace TpsParser.Tests.Tps.Type
         [Test]
         public void ShouldReadFromRandomAccess()
         {
-            var rx = new RandomAccess(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
+            var rx = new TpsRandomAccess(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
 
             var date = new TpsDate(rx);
 

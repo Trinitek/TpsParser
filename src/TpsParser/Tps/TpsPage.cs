@@ -13,14 +13,14 @@ namespace TpsParser.Tps
         public int RecordCount { get; }
         public int Flags { get; }
 
-        private RandomAccess CompressedData { get; }
+        private TpsRandomAccess CompressedData { get; }
         private List<TpsRecord> Records { get; }
 
-        private RandomAccess _data;
+        private TpsRandomAccess _data;
 
         private bool IsFlushed => _data is null;
 
-        public TpsPage(RandomAccess rx)
+        public TpsPage(TpsRandomAccess rx)
         {
             if (rx == null)
             {
@@ -73,7 +73,7 @@ namespace TpsParser.Tps
             Records.Clear();
         }
 
-        public RandomAccess GetUncompressedData()
+        public TpsRandomAccess GetUncompressedData()
         {
             if (IsFlushed)
             {

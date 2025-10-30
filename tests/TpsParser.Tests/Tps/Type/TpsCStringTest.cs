@@ -12,7 +12,7 @@ namespace TpsParser.Tests.Tps.Type
         [Test]
         public void ShouldReadFromRandomAccess()
         {
-            var rx = new RandomAccess(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00 });
+            var rx = new TpsRandomAccess(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00 });
 
             var str = new TpsCString(rx, Encoding.ASCII);
 

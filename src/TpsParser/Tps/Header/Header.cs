@@ -29,7 +29,7 @@ namespace TpsParser.Tps.Header
         /// Instantiates a new header.
         /// </summary>
         /// <param name="rx"></param>
-        public Header(RandomAccess rx)
+        public Header(TpsRandomAccess rx)
             : this(rx, true)
         { }
 
@@ -38,7 +38,7 @@ namespace TpsParser.Tps.Header
         /// </summary>
         /// <param name="rx"></param>
         /// <param name="readTable"></param>
-        public Header(RandomAccess rx, bool readTable)
+        public Header(TpsRandomAccess rx, bool readTable)
         {
             if (rx == null)
             {

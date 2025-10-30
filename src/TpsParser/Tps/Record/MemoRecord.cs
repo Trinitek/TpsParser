@@ -31,14 +31,14 @@ namespace TpsParser.Tps.Record
         /// <inheritdoc/>
         public IMemoHeader Header { get; }
 
-        private RandomAccess Data { get; }
+        private TpsRandomAccess Data { get; }
 
         /// <summary>
         /// Instantiates a new record.
         /// </summary>
         /// <param name="header"></param>
         /// <param name="rx"></param>
-        public MemoRecord(IMemoHeader header, RandomAccess rx)
+        public MemoRecord(IMemoHeader header, TpsRandomAccess rx)
         {
             Header = header ?? throw new ArgumentNullException(nameof(header));
             Data = rx ?? throw new ArgumentNullException(nameof(rx));

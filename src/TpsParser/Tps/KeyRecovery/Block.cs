@@ -66,7 +66,7 @@ namespace TpsParser.Tps.KeyRecovery
         /// </summary>
         /// <param name="rx">The data stream from which to construct the block.</param>
         /// <param name="isEncrypted">The block's encryption status.</param>
-        public Block(RandomAccess rx, bool isEncrypted)
+        public Block(TpsRandomAccess rx, bool isEncrypted)
             : this(
                   offset: rx.Position,
                   values: rx.LongArrayLE(16),
@@ -300,7 +300,7 @@ namespace TpsParser.Tps.KeyRecovery
                 sequence[i] = (byte)start--;
             }
 
-            return new Block(offset: 0, values: new RandomAccess(sequence).LongArrayLE(16), isEncrypted: false);
+            return new Block(offset: 0, values: new TpsRandomAccess(sequence).LongArrayLE(16), isEncrypted: false);
         }
 
         /// <summary>

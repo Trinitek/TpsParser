@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TpsParser.Binary
 {
-    public sealed class RandomAccess
+    public sealed class TpsRandomAccess
     {
         private byte[] Data { get; }
         private Stack<int> PositionStack { get; }
@@ -29,14 +29,14 @@ namespace TpsParser.Binary
 
         public bool IsAtEnd => Position >= Length - 1;
 
-        public RandomAccess(byte[] data)
+        public TpsRandomAccess(byte[] data)
             : this(
                   data: data,
                   baseOffset: 0,
                   length: data.Length)
         { }
 
-        public RandomAccess(byte[] data, int baseOffset, int length)
+        public TpsRandomAccess(byte[] data, int baseOffset, int length)
         {
             Position = 0;
             Data = data ?? throw new ArgumentNullException(nameof(data));
@@ -46,7 +46,7 @@ namespace TpsParser.Binary
             PositionStack = new Stack<int>();
         }
 
-        public RandomAccess(RandomAccess existing, int additiveOffset, int length)
+        public TpsRandomAccess(TpsRandomAccess existing, int additiveOffset, int length)
             : this(
                   data: existing.Data,
                   baseOffset: existing.BaseOffset + additiveOffset,
@@ -372,7 +372,7 @@ namespace TpsParser.Binary
         /// </summary>
         /// <param name="offset">The new offset.</param>
         /// <returns></returns>
-        public RandomAccess JumpAbsolute(int offset)
+        public TpsRandomAccess JumpAbsolute(int offset)
         {
             Position = offset;
             return this;
@@ -383,7 +383,7 @@ namespace TpsParser.Binary
         /// </summary>
         /// <param name="offset">The relative offset.</param>
         /// <returns></returns>
-        public RandomAccess JumpRelative(int offset)
+        public TpsRandomAccess JumpRelative(int offset)
         {
             Position += offset;
             return this;
@@ -410,18 +410,18 @@ namespace TpsParser.Binary
         }
 
         /// <summary>
-        /// Gets a new <see cref="RandomAccess"/> of the given length at the current position and advances the position.
+        /// Gets a new <see cref="TpsRandomAccess"/> of the given length at the current position and advances the position.
         /// </summary>
         /// <param name="length">The length of the data array.</param>
         /// <returns></returns>
-        public RandomAccess Read(int length)
+        public TpsRandomAccess Read(int length)
         {
             CheckSpace(length);
 
             int reference = BaseOffset + Position;
             Position += length;
 
-            return new RandomAccess(Data, reference, length);
+            return new TpsRandomAccess(Data, reference, length);
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace TpsParser.Binary
         /// Unpacks a run length encoded sequence of bytes.
         /// </summary>
         /// <returns></returns>
-        public RandomAccess UnpackRunLengthEncoding()
+        public TpsRandomAccess UnpackRunLengthEncoding()
         {
             var bytes = new List<byte>();
 
@@ -497,7 +497,7 @@ namespace TpsParser.Binary
             }
             while (!IsAtEnd);
 
-            return new RandomAccess(bytes.ToArray());
+            return new TpsRandomAccess(bytes.ToArray());
         }
 
         public string ToHex8(int value) => $"{value:X8}";

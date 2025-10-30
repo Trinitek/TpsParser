@@ -6,7 +6,7 @@ namespace TpsParser.Tps.Header
     {
         public int Block { get; }
 
-        public TableDefinitionHeader(RandomAccess rx)
+        public TableDefinitionHeader(TpsRandomAccess rx)
             : base(rx)
         {
             AssertIsType(0xFA);

@@ -57,7 +57,7 @@ namespace TpsParser.Tps.Record
 
         private Encoding Encoding { get; }
 
-        public TableDefinitionRecord(RandomAccess rx, Encoding encoding)
+        public TableDefinitionRecord(TpsRandomAccess rx, Encoding encoding)
         {
             if (rx == null)
             {
@@ -130,7 +130,7 @@ namespace TpsParser.Tps.Record
                 throw new ArgumentNullException(nameof(record));
             }
 
-            var rx = new RandomAccess(record);
+            var rx = new TpsRandomAccess(record);
             var values = new List<TpsObject>(Fields.Count());
 
             foreach (var field in Fields)
@@ -153,7 +153,7 @@ namespace TpsParser.Tps.Record
             return values.AsReadOnly();
         }
 
-        private TpsObject ParseField(TpsTypeCode type, int length, IFieldDefinitionRecord fieldDefinitionRecord, RandomAccess rx)
+        private TpsObject ParseField(TpsTypeCode type, int length, IFieldDefinitionRecord fieldDefinitionRecord, TpsRandomAccess rx)
         {
             if (fieldDefinitionRecord == null)
             {

@@ -12,9 +12,9 @@ namespace TpsParser.Tps
 
         private int Start { get; }
         private int End { get; }
-        private RandomAccess Data { get; }
+        private TpsRandomAccess Data { get; }
 
-        public TpsBlock(RandomAccess rx, int start, int end, bool ignorePageErrors)
+        public TpsBlock(TpsRandomAccess rx, int start, int end, bool ignorePageErrors)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
             Start = start;

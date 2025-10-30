@@ -21,7 +21,7 @@ namespace TpsParser.Tests.Tps.Type
         [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
         public void ShouldReadFromRandomAccess(string value, int bcdLength, int bcdDigitsAfterDecimal, byte[] data)
         {
-            var rx = new RandomAccess(data);
+            var rx = new TpsRandomAccess(data);
             var dec = new TpsDecimal(rx, bcdLength, bcdDigitsAfterDecimal);
 
             Assert.AreEqual(value, dec.Value);

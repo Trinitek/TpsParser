@@ -107,7 +107,7 @@ namespace TpsParser.Tps.Record
 
         public bool IsArray => ElementCount > 1;
 
-        public FieldDefinitionRecord(RandomAccess rx)
+        public FieldDefinitionRecord(TpsRandomAccess rx)
         {
             if (rx == null)
             {

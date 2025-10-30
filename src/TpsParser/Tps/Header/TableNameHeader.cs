@@ -25,7 +25,7 @@ namespace TpsParser.Tps.Header
         /// Instantiates a new header that describes the name of the table.
         /// </summary>
         /// <param name="rx"></param>
-        public TableNameHeader(RandomAccess rx)
+        public TableNameHeader(TpsRandomAccess rx)
             : base(rx, readTable: false)
         {
             AssertIsType(0xFE);

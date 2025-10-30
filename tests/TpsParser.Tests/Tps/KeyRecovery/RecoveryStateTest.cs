@@ -21,15 +21,15 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var cseq = Enumerable.Range(0, 64).Select(i => (byte)i).ToArray();
             var cb0 = Enumerable.Repeat<byte>(0xB0, 64).ToArray();
 
-            k.Encrypt64(new RandomAccess(crypt));
-            k.Encrypt64(new RandomAccess(cb0));
-            k.Encrypt64(new RandomAccess(cseq));
+            k.Encrypt64(new TpsRandomAccess(crypt));
+            k.Encrypt64(new TpsRandomAccess(cb0));
+            k.Encrypt64(new TpsRandomAccess(cseq));
 
-            var plaintext = new Block(new RandomAccess(plain), isEncrypted: false);
-            var encrypted = new Block(new RandomAccess(crypt), isEncrypted: true);
+            var plaintext = new Block(new TpsRandomAccess(plain), isEncrypted: false);
+            var encrypted = new Block(new TpsRandomAccess(crypt), isEncrypted: true);
 
-            var cryptSeq = new Block(new RandomAccess(cseq), isEncrypted: false);
-            var cryptB0 = new Block(new RandomAccess(cb0), isEncrypted: false);
+            var cryptSeq = new Block(new TpsRandomAccess(cseq), isEncrypted: false);
+            var cryptB0 = new Block(new TpsRandomAccess(cb0), isEncrypted: false);
 
             var blocks = new Block[]
             {

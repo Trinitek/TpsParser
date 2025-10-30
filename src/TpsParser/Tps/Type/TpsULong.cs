@@ -15,7 +15,7 @@ namespace TpsParser.Tps.Type
         /// Instantiates a new ULONG.
         /// </summary>
         /// <param name="rx"></param>
-        public TpsUnsignedLong(RandomAccess rx)
+        public TpsUnsignedLong(TpsRandomAccess rx)
         {
             if (rx == null)
             {

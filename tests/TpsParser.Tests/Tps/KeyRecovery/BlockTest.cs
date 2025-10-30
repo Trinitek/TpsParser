@@ -16,7 +16,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             stream.CopyTo(ms);
 
-            var rx = new RandomAccess(ms.ToArray());
+            var rx = new TpsRandomAccess(ms.ToArray());
 
             var results = new List<Block>();
 

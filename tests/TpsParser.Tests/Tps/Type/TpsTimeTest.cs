@@ -31,7 +31,7 @@ namespace TpsParser.Tests.Tps.Type
         [Test]
         public void ShouldReadFromRandomAccess()
         {
-            var rx = new RandomAccess(new byte[] { 99, 59, 59, 12 });
+            var rx = new TpsRandomAccess(new byte[] { 99, 59, 59, 12 });
 
             var time = new TpsTime(rx);
 

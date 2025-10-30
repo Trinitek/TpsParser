@@ -6,7 +6,7 @@ namespace TpsParser.Tps.Header
     {
         public int IndexNumber { get; }
 
-        public IndexHeader(RandomAccess rx)
+        public IndexHeader(TpsRandomAccess rx)
             : base(rx)
         {
             IndexNumber = TableType;

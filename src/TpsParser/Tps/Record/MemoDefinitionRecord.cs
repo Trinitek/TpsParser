@@ -58,7 +58,7 @@ namespace TpsParser.Tps.Record
 
         public bool IsBlob => !IsMemo;
 
-        public MemoDefinitionRecord(RandomAccess rx)
+        public MemoDefinitionRecord(TpsRandomAccess rx)
         {
             if (rx == null)
             {

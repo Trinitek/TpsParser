@@ -10,7 +10,7 @@ namespace TpsParser.Tps.Header
 
         public bool IsAboutKeyOrIndex => AboutType < 0xF3;
 
-        public MetadataHeader(RandomAccess rx)
+        public MetadataHeader(TpsRandomAccess rx)
             : base(rx)
         {
             AssertIsType(0xF6);

@@ -35,14 +35,14 @@ namespace TpsParser.Tps
 
         public IReadOnlyList<int> PageEnd { get; }
 
-        private RandomAccess Data { get; }
+        private TpsRandomAccess Data { get; }
 
         /// <summary>
         /// Returns true if the header represents a valid TopSpeed file.
         /// </summary>
         public bool IsTopSpeedFile => MagicNumber == "tOpS";
 
-        public TpsHeader(RandomAccess rx)
+        public TpsHeader(TpsRandomAccess rx)
         {
             Data = rx ?? throw new ArgumentNullException(nameof(rx));
 

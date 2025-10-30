@@ -42,7 +42,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldDecryptBlock()
         {
-            var rx = new RandomAccess(ParseHex(EncryptedHeader));
+            var rx = new TpsRandomAccess(ParseHex(EncryptedHeader));
             var key = new Key("a");
 
             key.Decrypt64(rx);
@@ -56,7 +56,7 @@ namespace TpsParser.Tests.Tps
         [Test]
         public void ShouldEncryptBlock()
         {
-            var rx = new RandomAccess(ParseHex(DecryptedHeader));
+            var rx = new TpsRandomAccess(ParseHex(DecryptedHeader));
             var key = new Key("a");
 
             key.Encrypt64(rx);

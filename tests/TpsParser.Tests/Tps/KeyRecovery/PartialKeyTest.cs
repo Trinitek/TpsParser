@@ -16,12 +16,15 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var k2 = k1.Apply(index: 0x0F, keyPiece: 42);
             var k3 = k1.Apply(index: 0x0F, keyPiece: 42);
 
-            Assert.AreNotEqual(k1, k2);
-            Assert.AreEqual(k3, k2);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(k2, Is.Not.EqualTo(k1));
+                Assert.That(k2, Is.EqualTo(k3));
 
-            Assert.AreEqual(-42, k1.CompareTo(k2));
-            Assert.AreEqual(42, k2.CompareTo(k1));
-            Assert.AreEqual(0, k2.CompareTo(k3));
+                Assert.That(k1.CompareTo(k2), Is.EqualTo(-42));
+                Assert.That(k2.CompareTo(k1), Is.EqualTo(42));
+                Assert.That(k2.CompareTo(k3), Is.Zero);
+            }
         }
 
         [Test]
@@ -29,17 +32,17 @@ namespace TpsParser.Tests.Tps.KeyRecovery
         {
             var k1 = new PartialKey();
 
-            Assert.AreEqual(16, k1.GetInvalidIndexes().Count);
-            Assert.AreEqual(15, k1.GetInvalidIndexes()[0]);
-            Assert.IsFalse(k1.IsComplete);
+            Assert.That(k1.GetInvalidIndexes().Count, Is.EqualTo(16));
+            Assert.That(k1.GetInvalidIndexes()[0], Is.EqualTo(15));
+            Assert.That(k1.IsComplete, Is.False);
 
             for (int i = 0; i < 16; i++)
             {
                 k1 = k1.Apply(index: i, keyPiece: i);
             }
 
-            Assert.AreEqual(0, k1.GetInvalidIndexes().Count);
-            Assert.IsTrue(k1.IsComplete);
+            Assert.That(k1.GetInvalidIndexes().Count, Is.Zero);
+            Assert.That(k1.IsComplete);
         }
 
         [Test]
@@ -58,7 +61,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var pk = new PartialKey().Apply(index: 15, keyPiece: k.GetWord(15));
             var result = pk.PartialDecrypt(index: 15, block: blockCrypt);
 
-            Assert.AreEqual(blockPlain.Values[15], result.Values[15]);
+            Assert.That(result.Values[15], Is.EqualTo(blockPlain.Values[15]));
         }
 
         [Test]
@@ -78,8 +81,11 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             var result = await pk.KeyIndexScan(index: 15, encryptedBlock: blockCrypt, plaintextBlock: blockPlain, cancellationToken: default);
 
-            Assert.IsTrue(result.ContainsKey(pk));
-            Assert.AreEqual(1216, result.Count);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(result.ContainsKey(pk));
+                Assert.That(result.Count, Is.EqualTo(1216));
+            }
         }
     }
 }

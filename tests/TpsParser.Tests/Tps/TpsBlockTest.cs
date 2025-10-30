@@ -23,9 +23,12 @@ namespace TpsParser.Tests.Tps
 
             var block = new TpsBlock(rx, 0, 0x300, false);
 
-            Assert.AreEqual(2, block.Pages.Count);
-            Assert.AreEqual(0x200, block.Pages[0].Size);
-            Assert.AreEqual(0x100, block.Pages[1].Size);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(block.Pages.Count, Is.EqualTo(2));
+                Assert.That(block.Pages[0].Size, Is.EqualTo(0x200));
+                Assert.That(block.Pages[1].Size, Is.EqualTo(0x100));
+            }
         }
 
         [Test]
@@ -44,9 +47,12 @@ namespace TpsParser.Tests.Tps
 
             var block = new TpsBlock(rx, 0, 0x300, false);
 
-            Assert.AreEqual(2, block.Pages.Count);
-            Assert.AreEqual(0x100, block.Pages[0].Size);
-            Assert.AreEqual(0x100, block.Pages[1].Size);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(block.Pages.Count, Is.EqualTo(2));
+                Assert.That(block.Pages[0].Size, Is.EqualTo(0x100));
+                Assert.That(block.Pages[1].Size, Is.EqualTo(0x100));
+            }
         }
 
         [Test]
@@ -65,9 +71,12 @@ namespace TpsParser.Tests.Tps
 
             var block = new TpsBlock(rx, 0, 0x300, false);
 
-            Assert.AreEqual(1, block.Pages.Count);
-            Assert.AreEqual(0x100, block.Pages[0].Address);
-            Assert.AreEqual(0x200, block.Pages[0].Size);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(block.Pages.Count, Is.EqualTo(1));
+                Assert.That(block.Pages[0].Address, Is.EqualTo(0x100));
+                Assert.That(block.Pages[0].Size, Is.EqualTo(0x200));
+            }
         }
     }
 }

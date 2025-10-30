@@ -136,7 +136,7 @@ namespace TpsParser.Tests
                 {
                     var deserialized = parser.Deserialize<StringModel>().First();
 
-                    Assert.AreEqual(expected, deserialized.Notes);
+                    Assert.That(deserialized.Notes, Is.EqualTo(expected));
                 }
             }
 
@@ -151,7 +151,7 @@ namespace TpsParser.Tests
                 {
                     var deserialized = parser.Deserialize<StringTrimmingEnabledModel>().First();
 
-                    Assert.AreEqual(" Hello world!", deserialized.Notes);
+                    Assert.That(deserialized.Notes, Is.EqualTo(" Hello world!"));
                 }
             }
 
@@ -166,7 +166,7 @@ namespace TpsParser.Tests
                 {
                     var deserialized = parser.Deserialize<StringTrimmingDisabledModel>().First();
 
-                    Assert.AreEqual(expected, deserialized.Notes);
+                    Assert.That(deserialized.Notes, Is.EqualTo(expected));
                 }
             }
 
@@ -185,7 +185,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanTpsFieldAttributeModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
 
@@ -204,7 +204,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
 
@@ -223,7 +223,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanTrueModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
 
@@ -242,7 +242,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanFalseModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
 
@@ -261,7 +261,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanTrueFalseFallbackTrueModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
 
@@ -280,7 +280,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanTrueFalseFallbackFalseModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
 
@@ -299,7 +299,7 @@ namespace TpsParser.Tests
                 {
                     var des = parser.Deserialize<StringBooleanTrueFalseModel>().First();
 
-                    Assert.AreEqual(expected, des.HasNotes);
+                    Assert.That(des.HasNotes, Is.EqualTo(expected));
                 }
             }
         }

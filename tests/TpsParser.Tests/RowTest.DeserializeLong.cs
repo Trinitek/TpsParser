@@ -17,7 +17,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<LongModel>();
 
-                Assert.AreEqual(12, deserialized.Count);
+                Assert.That(deserialized.Count, Is.EqualTo(12));
             }
 
             [TestCaseSource(typeof(BadFieldObjectData), nameof(BadFieldObjectData.Data))]

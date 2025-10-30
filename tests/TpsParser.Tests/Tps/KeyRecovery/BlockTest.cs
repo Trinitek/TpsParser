@@ -36,27 +36,30 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var bC = new Block(block: bA);
             var bD = bA.Apply(a: 0, b: 1, va: 1, vb: 2);
 
-            Assert.AreEqual(0, bA.Offset);
-            Assert.AreEqual(10, bB.Offset);
-            Assert.AreEqual(0, bC.Offset);
-            Assert.AreEqual(0, bD.Offset);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(bA.Offset, Is.Zero);
+                Assert.That(bB.Offset, Is.EqualTo(10));
+                Assert.That(bC.Offset, Is.Zero);
+                Assert.That(bD.Offset, Is.Zero);
 
-            Assert.True(bA.IsEncrypted);
-            Assert.True(bB.IsEncrypted);
-            Assert.True(bC.IsEncrypted);
-            Assert.True(bD.IsEncrypted);
+                Assert.That(bA.IsEncrypted, Is.True);
+                Assert.That(bB.IsEncrypted, Is.True);
+                Assert.That(bC.IsEncrypted, Is.True);
+                Assert.That(bD.IsEncrypted, Is.True);
 
-            Assert.AreEqual(bA, bC, "A == C");
-            Assert.AreEqual(bC, bA, "C == A");
-            Assert.AreNotEqual(bB, bA, "B != A");
-            Assert.AreNotEqual(bD, bA, "D != A");
+                Assert.That(bC, Is.EqualTo(bA), "A == C");
+                Assert.That(bA, Is.EqualTo(bC), "C == A");
+                Assert.That(bA, Is.Not.EqualTo(bB), "B != A");
+                Assert.That(bA, Is.Not.EqualTo(bD), "D != A");
 
-            Assert.AreEqual(0, bA.Values[0]);
-            Assert.AreEqual(1, bD.Values[0]);
-            Assert.AreEqual(2, bD.Values[1]);
+                Assert.That(bA.Values[0], Is.Zero);
+                Assert.That(bD.Values[0], Is.EqualTo(1));
+                Assert.That(bD.Values[1], Is.EqualTo(2));
 
-            Assert.AreEqual(-1, bA.CompareTo(bD));
-            Assert.AreEqual(1, bD.CompareTo(bA));
+                Assert.That(bA.CompareTo(bD), Is.EqualTo(-1));
+                Assert.That(bD.CompareTo(bA), Is.EqualTo(1));
+            }
         }
 
         [Test]
@@ -66,12 +69,12 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             {
                 var blocks = LoadBlocksFromFile(fs, isEncrypted: true);
 
-                Assert.AreEqual(24, blocks.Count());
+                Assert.That(blocks.Count(), Is.EqualTo(24));
 
                 var identicalBlocks = Block.FindIdenticalBlocks(blocks);
 
-                CollectionAssert.IsNotEmpty(identicalBlocks);
-                Assert.AreEqual(4, identicalBlocks.Count);
+                Assert.That(identicalBlocks, Is.Not.Empty);
+                Assert.That(identicalBlocks.Count, Is.EqualTo(4));
             }
         }
 
@@ -85,11 +88,11 @@ namespace TpsParser.Tests.Tps.KeyRecovery
                 var cryptBlock = Block.GetHeaderIndexEndBlock(blocks, isEncrypted: true);
                 var plainBlock = Block.GetHeaderIndexEndBlock(blocks, isEncrypted: false);
 
-                Assert.AreEqual(0x1C0, cryptBlock.Offset);
-                Assert.AreEqual(0x1C0, plainBlock.Offset);
+                Assert.That(cryptBlock.Offset, Is.EqualTo(0x1C0));
+                Assert.That(plainBlock.Offset, Is.EqualTo(0x1C0));
 
-                Assert.AreEqual(0x925CDCB4, (uint)cryptBlock.Values[0]);
-                Assert.AreEqual(0x00000004, (uint)plainBlock.Values[0]);
+                Assert.That((uint)cryptBlock.Values[0], Is.EqualTo(0x925CDCB4));
+                Assert.That((uint)plainBlock.Values[0], Is.EqualTo(0x00000004));
             }
         }
 
@@ -98,10 +101,13 @@ namespace TpsParser.Tests.Tps.KeyRecovery
         {
             var sequenceBlock = Block.GenerateSequenceBlock(end: 0x5F5E5D5C);
 
-            Assert.AreEqual(0x23222120, (uint)sequenceBlock.Values[0]);
-            Assert.AreEqual(0x27262524, (uint)sequenceBlock.Values[1]);
-            Assert.AreEqual(0x5B5A5958, (uint)sequenceBlock.Values[14]);
-            Assert.AreEqual(0x5F5E5D5C, (uint)sequenceBlock.Values[15]);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That((uint)sequenceBlock.Values[0], Is.EqualTo(0x23222120));
+                Assert.That((uint)sequenceBlock.Values[1], Is.EqualTo(0x27262524));
+                Assert.That((uint)sequenceBlock.Values[14], Is.EqualTo(0x5B5A5958));
+                Assert.That((uint)sequenceBlock.Values[15], Is.EqualTo(0x5F5E5D5C));
+            }
         }
 
         [Test]
@@ -109,10 +115,13 @@ namespace TpsParser.Tests.Tps.KeyRecovery
         {
             var sequenceBlock = Block.GenerateSequenceBlock(end: 0x1F1E1D1C);
 
-            Assert.AreEqual(0xE3E2E1E0, (uint)sequenceBlock.Values[0]);
-            Assert.AreEqual(0xE7E6E5E4, (uint)sequenceBlock.Values[1]);
-            Assert.AreEqual(0x1B1A1918, (uint)sequenceBlock.Values[14]);
-            Assert.AreEqual(0x1F1E1D1C, (uint)sequenceBlock.Values[15]);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That((uint)sequenceBlock.Values[0], Is.EqualTo(0xE3E2E1E0));
+                Assert.That((uint)sequenceBlock.Values[1], Is.EqualTo(0xE7E6E5E4));
+                Assert.That((uint)sequenceBlock.Values[14], Is.EqualTo(0x1B1A1918));
+                Assert.That((uint)sequenceBlock.Values[15], Is.EqualTo(0x1F1E1D1C));
+            }
         }
 
         [Test]
@@ -129,7 +138,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             var identicalBlocks = Block.FindIdenticalBlocks(blocks);
 
-            CollectionAssert.IsEmpty(identicalBlocks);
+            Assert.That(identicalBlocks, Is.Empty);
         }
 
         [Test]
@@ -146,10 +155,13 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             var identicalBlocks = Block.FindIdenticalBlocks(blocks);
 
-            CollectionAssert.IsNotEmpty(identicalBlocks);
-            Assert.AreEqual(1, identicalBlocks.Count());
-            Assert.AreEqual(2, identicalBlocks.First().Value.Count());
-            Assert.AreEqual(blocks[0], identicalBlocks.First().Key);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(identicalBlocks, Is.Not.Empty);
+                Assert.That(identicalBlocks.Count(), Is.EqualTo(1));
+                Assert.That(identicalBlocks.First().Value.Count(), Is.EqualTo(2));
+                Assert.That(identicalBlocks.First().Key, Is.EqualTo(blocks[0]));
+            }
         }
 
         [Test]
@@ -166,33 +178,42 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             var identicalBlocks = Block.FindIdenticalBlocks(blocks);
 
-            CollectionAssert.IsNotEmpty(identicalBlocks);
-            Assert.AreEqual(2, identicalBlocks.Count());
-            Assert.AreEqual(2, identicalBlocks.First().Value.Count());
-            Assert.AreEqual(1, identicalBlocks.Last().Value.Count());
-            Assert.AreEqual(blocks[0], identicalBlocks.First().Key);
-            Assert.AreEqual(blocks[1], identicalBlocks.Last().Key);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(identicalBlocks, Is.Not.Empty);
+                Assert.That(identicalBlocks.Count(), Is.EqualTo(2));
+                Assert.That(identicalBlocks.First().Value.Count(), Is.EqualTo(2));
+                Assert.That(identicalBlocks.Last().Value.Count(), Is.EqualTo(1));
+                Assert.That(identicalBlocks.First().Key, Is.EqualTo(blocks[0]));
+                Assert.That(identicalBlocks.Last().Key, Is.EqualTo(blocks[1]));
+            }
         }
 
         [Test]
         public void ShouldDetectSequencePart()
         {
-            Assert.IsFalse(Block.IsSequencePart(0x01021012));
-            Assert.IsFalse(Block.IsSequencePart(0x0201fffe));
-            Assert.IsFalse(Block.IsSequencePart(0x04030200));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(Block.IsSequencePart(0x01021012), Is.False);
+                Assert.That(Block.IsSequencePart(0x0201fffe), Is.False);
+                Assert.That(Block.IsSequencePart(0x04030200), Is.False);
 
-            Assert.IsTrue(Block.IsSequencePart(0x0f0e0d0c));
-            Assert.IsTrue(Block.IsSequencePart(0x0100fffe));
-            Assert.IsTrue(Block.IsSequencePart(0x00fffefd));
-            Assert.IsTrue(Block.IsSequencePart(0x020100ff));
+                Assert.That(Block.IsSequencePart(0x0f0e0d0c));
+                Assert.That(Block.IsSequencePart(0x0100fffe));
+                Assert.That(Block.IsSequencePart(0x00fffefd));
+                Assert.That(Block.IsSequencePart(0x020100ff));
+            }
         }
 
         [Test]
         public void ShouldDetectB0B0Part()
         {
-            Assert.IsFalse(Block.IsB0Part(0x04030200));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(Block.IsB0Part(0x04030200), Is.False);
 
-            Assert.IsTrue(Block.IsB0Part(0xB0B0B0B0));
+                Assert.That(Block.IsB0Part(0xB0B0B0B0));
+            }
         }
     }
 }

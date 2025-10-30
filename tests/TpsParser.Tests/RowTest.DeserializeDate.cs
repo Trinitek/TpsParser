@@ -19,7 +19,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateModel>();
 
-                Assert.AreEqual(date, deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo(date));
             }
 
             [Test]
@@ -31,7 +31,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateModel>();
 
-                Assert.AreEqual(new DateTime(2020, 4, 3), deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo(new DateTime(2020, 4, 3)));
             }
 
             [Test]
@@ -41,7 +41,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<NullDateModel>();
 
-                Assert.IsNull(deserialized.Date);
+                Assert.That(deserialized.Date, Is.Null);
             }
 
             [Test]
@@ -51,7 +51,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateModel>();
 
-                Assert.AreEqual(default(DateTime), deserialized.Date);
+                Assert.That(deserialized.Date, Is.Default);
             }
 
             [Test]
@@ -63,7 +63,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateStringModel>();
 
-                Assert.AreEqual(expected.ToString(), deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo(expected.ToString()));
             }
 
             [Test]
@@ -75,7 +75,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateStringFormattedModel>();
 
-                Assert.AreEqual(expected.ToString("MM - dd - yyyy"), deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo(expected.ToString("MM - dd - yyyy")));
             }
 
             [Test]
@@ -93,7 +93,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateStringFallbackModel>();
 
-                Assert.AreEqual("nothing", deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo("nothing"));
             }
 
             [Test]
@@ -105,7 +105,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<DateModel>();
 
-                Assert.AreEqual(new DateTime(2020, 4, 3), deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo(new DateTime(2020, 4, 3)));
             }
 
             [Test]
@@ -117,7 +117,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<NullDateModel>();
 
-                Assert.AreEqual(new DateTime(2020, 4, 3), deserialized.Date);
+                Assert.That(deserialized.Date, Is.EqualTo(new DateTime(2020, 4, 3)));
             }
         }
     }

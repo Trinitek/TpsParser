@@ -23,8 +23,11 @@ namespace TpsParser.Tests.Tps.Type
 
                 var valuePairs = record.GetFieldValuePairs();
 
-                Assert.AreEqual(new TimeSpan(0, 6, 23, 15, 0), valuePairs["ClockIn"].Value);
-                Assert.AreEqual(new TimeSpan(0, 12, 59, 59, 0), valuePairs["ClockOut"].Value);
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(valuePairs["ClockIn"].Value, Is.EqualTo(new TimeSpan(0, 6, 23, 15, 0)));
+                    Assert.That(valuePairs["ClockOut"].Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 0)));
+                }
             }
         }
 
@@ -37,7 +40,7 @@ namespace TpsParser.Tests.Tps.Type
 
             // 99/100 seconds = 990 milliseconds
 
-            Assert.AreEqual(new TimeSpan(0, 12, 59, 59, 990), time.Value);
+            Assert.That(time.Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 990)));
         }
     }
 }

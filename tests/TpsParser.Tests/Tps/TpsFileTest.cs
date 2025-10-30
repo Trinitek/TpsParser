@@ -32,7 +32,7 @@ namespace TpsParser.Tests.Tps
 
             var records = file.GetAllRecords();
 
-            Assert.AreEqual(10, records.Count());
+            Assert.That(records.Count(), Is.EqualTo(10));
         }
 
         [Test]
@@ -42,14 +42,14 @@ namespace TpsParser.Tests.Tps
 
             var tableNames = file.GetTableNameRecords();
 
-            Assert.AreEqual(1, tableNames.Count());
+            Assert.That(tableNames.Count(), Is.EqualTo(1));
 
             var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
 
-            Assert.AreEqual(1, tableDefinitions.Count());
-            Assert.AreEqual(2, tableDefinitions[1].Fields.Count());
-            Assert.AreEqual(2, tableDefinitions[1].Indexes.Count());
-            Assert.AreEqual(0, tableDefinitions[1].Memos.Count());
+            Assert.That(tableDefinitions.Count(), Is.EqualTo(1));
+            Assert.That(tableDefinitions[1].Fields.Count(), Is.EqualTo(2));
+            Assert.That(tableDefinitions[1].Indexes.Count(), Is.EqualTo(2));
+            Assert.That(tableDefinitions[1].Memos.Count(), Is.Zero);
         }
 
         [Test]
@@ -60,13 +60,16 @@ namespace TpsParser.Tests.Tps
             var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
             var fields = tableDefinitions[1].Fields;
 
-            Assert.AreEqual("CON1:OUDNR", fields[0].FullName);
-            Assert.AreEqual("OUDNR", fields[0].Name);
-            Assert.AreEqual(TpsTypeCode.Short, fields[0].Type);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(fields[0].FullName, Is.EqualTo("CON1:OUDNR"));
+                Assert.That(fields[0].Name, Is.EqualTo("OUDNR"));
+                Assert.That(fields[0].Type, Is.EqualTo(TpsTypeCode.Short));
 
-            Assert.AreEqual("CON1:NEWNR", fields[1].FullName);
-            Assert.AreEqual("NEWNR", fields[1].Name);
-            Assert.AreEqual(TpsTypeCode.Short, fields[1].Type);
+                Assert.That(fields[1].FullName, Is.EqualTo("CON1:NEWNR"));
+                Assert.That(fields[1].Name, Is.EqualTo("NEWNR"));
+                Assert.That(fields[1].Type, Is.EqualTo(TpsTypeCode.Short));
+            }
         }
 
         [Test]
@@ -78,11 +81,14 @@ namespace TpsParser.Tests.Tps
             var dataRecords = file.GetDataRecords(table: 1, tableDefinitions[1], ignoreErrors: false)
                 .ToList();
 
-            Assert.AreEqual(1, dataRecords.Count());
-            Assert.AreEqual(2, dataRecords[0].RecordNumber);
-            Assert.AreEqual(2, dataRecords[0].Values.Count());
-            Assert.AreEqual(1, dataRecords[0].Values.ToList()[0].Value);
-            Assert.AreEqual(1, dataRecords[0].Values.ToList()[1].Value);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(dataRecords.Count(), Is.EqualTo(1));
+                Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
+                Assert.That(dataRecords[0].Values.Count(), Is.EqualTo(2));
+                Assert.That(dataRecords[0].Values.ToList()[0].Value, Is.EqualTo(1));
+                Assert.That(dataRecords[0].Values.ToList()[1].Value, Is.EqualTo(1));
+            }
         }
 
         [Test]
@@ -93,14 +99,14 @@ namespace TpsParser.Tests.Tps
             var indexes1 = file.GetIndexes(table: 1, index: 0)
                 .ToList();
 
-            Assert.AreEqual(1, indexes1.Count());
-            Assert.AreEqual(2, indexes1[0].RecordNumber);
+            Assert.That(indexes1.Count(), Is.EqualTo(1));
+            Assert.That(indexes1[0].RecordNumber, Is.EqualTo(2));
 
             var indexes2 = file.GetIndexes(table: 1, index: 1)
                 .ToList();
 
-            Assert.AreEqual(1, indexes2.Count());
-            Assert.AreEqual(2, indexes2[0].RecordNumber);
+            Assert.That(indexes2.Count(), Is.EqualTo(1));
+            Assert.That(indexes2[0].RecordNumber, Is.EqualTo(2));
         }
 
         [Test]
@@ -111,7 +117,7 @@ namespace TpsParser.Tests.Tps
             var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
             var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
 
-            Assert.AreEqual(5, memos.Count());
+            Assert.That(memos.Count(), Is.EqualTo(5));
         }
     }
 }

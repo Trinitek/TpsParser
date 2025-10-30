@@ -14,12 +14,15 @@ namespace TpsParser.Tests.Tps
 
             var header = file.GetHeader();
 
-            Assert.IsTrue(header.IsTopSpeedFile);
-            Assert.AreEqual(383744, header.FileLength1);
-            Assert.AreEqual(5048, header.LastIssuedRow);
-            Assert.AreEqual(15651, header.Changes);
-            Assert.AreEqual(60, header.PageStart.Count);
-            Assert.AreEqual(60, header.PageEnd.Count);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(header.IsTopSpeedFile);
+                Assert.That(header.FileLength1, Is.EqualTo(383744));
+                Assert.That(header.LastIssuedRow, Is.EqualTo(5048));
+                Assert.That(header.Changes, Is.EqualTo(15651));
+                Assert.That(header.PageStart.Count, Is.EqualTo(60));
+                Assert.That(header.PageEnd.Count, Is.EqualTo(60));
+            }
         }
 
         [Test]

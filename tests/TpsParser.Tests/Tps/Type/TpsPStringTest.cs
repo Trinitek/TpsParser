@@ -16,7 +16,7 @@ namespace TpsParser.Tests.Tps.Type
 
             var str = new TpsPString(rx, Encoding.ASCII);
 
-            Assert.AreEqual("Hello", str.Value);
+            Assert.That(str.Value, Is.EqualTo("Hello"));
         }
 
         [Test]
@@ -24,7 +24,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var str = new TpsPString("Hello");
 
-            Assert.AreEqual("Hello", str.Value);
+            Assert.That(str.Value, Is.EqualTo("Hello"));
         }
 
         [Test]

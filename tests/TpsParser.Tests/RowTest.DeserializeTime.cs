@@ -19,7 +19,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<TimeModel>();
 
-                Assert.AreEqual(time, deserialized.Time);
+                Assert.That(deserialized.Time, Is.EqualTo(time));
             }
 
             [Test]
@@ -31,7 +31,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<TimeModel>();
 
-                Assert.AreEqual(new TimeSpan(0, 0, 13, 20, 850), deserialized.Time);
+                Assert.That(deserialized.Time, Is.EqualTo(new TimeSpan(0, 0, 13, 20, 850)));
             }
         }
     }

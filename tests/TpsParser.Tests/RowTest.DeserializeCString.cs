@@ -18,7 +18,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<StringModel>();
 
-                Assert.AreEqual(expected, deserialized.Notes);
+                Assert.That(deserialized.Notes, Is.EqualTo(expected));
             }
 
             [Test]
@@ -28,7 +28,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<StringTrimmingEnabledModel>();
 
-                Assert.AreEqual(" Hello world!", deserialized.Notes);
+                Assert.That(deserialized.Notes, Is.EqualTo(" Hello world!"));
             }
 
             [Test]
@@ -40,7 +40,7 @@ namespace TpsParser.Tests
 
                 var deserialized = row.Deserialize<StringTrimmingDisabledModel>();
 
-                Assert.AreEqual(expected, deserialized.Notes);
+                Assert.That(deserialized.Notes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -56,7 +56,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanTpsFieldAttributeModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -72,7 +72,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -88,7 +88,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanTrueModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -104,7 +104,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanFalseModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -120,7 +120,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanTrueFalseFallbackTrueModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -136,7 +136,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanTrueFalseFallbackFalseModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
 
             [TestCase("Y", true)]
@@ -152,7 +152,7 @@ namespace TpsParser.Tests
 
                 var des = row.Deserialize<StringBooleanTrueFalseModel>();
 
-                Assert.AreEqual(expected, des.HasNotes);
+                Assert.That(des.HasNotes, Is.EqualTo(expected));
             }
         }
     }

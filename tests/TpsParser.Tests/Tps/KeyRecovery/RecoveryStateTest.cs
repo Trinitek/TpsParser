@@ -55,8 +55,11 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var selfScan1 = await state.IndexSelfScan(keyIndex: 8, cancellationToken: default);
             var selfScan2 = await state.IndexSelfScan(keyIndex: 15, cancellationToken: default);
 
-            Assert.AreEqual(1, selfScan1.Count());
-            Assert.AreEqual(0, selfScan2.Count());
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(selfScan1.Count(), Is.EqualTo(1));
+                Assert.That(selfScan2.Count(), Is.Zero);
+            }
         }
 
         [Test]
@@ -67,18 +70,18 @@ namespace TpsParser.Tests.Tps.KeyRecovery
             var state = new RecoveryState(encrypted, plaintext);
 
             var scanResults = await state.IndexScan(keyIndex: 15, cancellationToken: default);
-            Assert.AreEqual(192, scanResults.Count());
+            Assert.That(scanResults.Count(), Is.EqualTo(192));
 
             var firstReducedScanResults = scanResults.ReduceFirst(index: 15, blocks: blocks);
-            Assert.AreEqual(2, firstReducedScanResults.Count());
+            Assert.That(firstReducedScanResults.Count(), Is.EqualTo(2));
 
             VerifyReadWrite(firstReducedScanResults.First());
 
             var secondReducedScanResults = await firstReducedScanResults.First().IndexScan(keyIndex: 14, cancellationToken: default);
-            Assert.AreEqual(1450, secondReducedScanResults.Count());
+            Assert.That(secondReducedScanResults.Count(), Is.EqualTo(1450));
 
             var thirdReducedScanResults = secondReducedScanResults.ReduceNext(index: 14);
-            Assert.AreEqual(2, thirdReducedScanResults.Count());
+            Assert.That(thirdReducedScanResults.Count(), Is.EqualTo(2));
         }
 
         private void VerifyReadWrite(RecoveryState recoveryState)
@@ -94,7 +97,7 @@ namespace TpsParser.Tests.Tps.KeyRecovery
 
             var stateCopy = RecoveryState.Read(reader);
 
-            Assert.AreEqual(stateCopy, recoveryState);
+            Assert.That(recoveryState, Is.EqualTo(stateCopy));
         }
     }
 }

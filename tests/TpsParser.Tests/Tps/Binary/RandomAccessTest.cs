@@ -15,7 +15,7 @@ namespace TpsParser.Tests.Tps.Binary
             var rx = new TpsRandomAccess(data);
             byte parsed = rx.Byte();
 
-            Assert.AreEqual(value, parsed);
+            Assert.That(parsed, Is.EqualTo(value));
         }
 
         [TestCase((short)0x0102, new byte[] { 0x01, 0x02 })]
@@ -25,7 +25,7 @@ namespace TpsParser.Tests.Tps.Binary
             var rx = new TpsRandomAccess(data);
             short parsed = rx.ShortBE();
 
-            Assert.AreEqual(value, parsed);
+            Assert.That(parsed, Is.EqualTo(value));
         }
 
         [TestCase((short)0x0102, new byte[] { 0x02, 0x01 })]
@@ -35,7 +35,7 @@ namespace TpsParser.Tests.Tps.Binary
             var rx = new TpsRandomAccess(data);
             short parsed = rx.ShortLE();
 
-            Assert.AreEqual(value, parsed);
+            Assert.That(parsed, Is.EqualTo(value));
         }
 
         [TestCase(unchecked((int)0x01020304), new byte[] { 0x01, 0x02, 0x03, 0x04 })]
@@ -45,7 +45,7 @@ namespace TpsParser.Tests.Tps.Binary
             var rx = new TpsRandomAccess(data);
             var parsed = rx.LongBE();
 
-            Assert.AreEqual(value, parsed);
+            Assert.That(parsed, Is.EqualTo(value));
         }
 
         [TestCase(unchecked((int)0x01020304), new byte[] { 0x04, 0x03, 0x02, 0x01 })]
@@ -55,13 +55,13 @@ namespace TpsParser.Tests.Tps.Binary
             var rx = new TpsRandomAccess(data);
             var parsed = rx.LongLE();
 
-            Assert.AreEqual(value, parsed);
+            Assert.That(parsed, Is.EqualTo(value));
         }
 
         [Test]
         public void ShouldReadFixedLengthString()
         {
-            Assert.AreEqual(" !", new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22 }).FixedLengthString(2));
+            Assert.That(new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22 }).FixedLengthString(2), Is.EqualTo(" !"));
         }
 
         [Test]
@@ -69,37 +69,43 @@ namespace TpsParser.Tests.Tps.Binary
         {
             var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
 
-            Assert.AreEqual("é!", new TpsRandomAccess(new byte[] { 0x82, 0x21, 0x22 }).FixedLengthString(2, codepage850));
+            Assert.That(new TpsRandomAccess(new byte[] { 0x82, 0x21, 0x22 }).FixedLengthString(2, codepage850), Is.EqualTo("é!"));
         }
         
         [Test]
         public void ShouldReadZeroTerminatedString()
         {
-            Assert.AreEqual(" !\"", new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ZeroTerminatedString());
+            Assert.That(new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ZeroTerminatedString(), Is.EqualTo(" !\""));
         }
 
         [Test]
         public void ShouldToAscii()
         {
-            Assert.AreEqual(".!\" 00 #", new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ToAscii());
+            Assert.That(new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ToAscii(), Is.EqualTo(".!\" 00 #"));
         }
 
         [Test]
         public void ShouldFloat()
         {
-            Assert.AreEqual(0.0f, new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00 }).FloatLE(), delta: 0.0);
-            Assert.IsTrue(float.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x80, 0x7F }).FloatLE()));
-            Assert.IsTrue(float.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x80, 0xFF }).FloatLE()));
-            Assert.AreEqual(0.1f, new TpsRandomAccess(new byte[] { 0xCD, 0xCC, 0xCC, 0x3D }).FloatLE());
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00 }).FloatLE(), Is.EqualTo(0.0f).Within(0.0));
+                Assert.That(float.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x80, 0x7F }).FloatLE()));
+                Assert.That(float.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x80, 0xFF }).FloatLE()));
+                Assert.That(new TpsRandomAccess(new byte[] { 0xCD, 0xCC, 0xCC, 0x3D }).FloatLE(), Is.EqualTo(0.1f));
+            }
         }
 
         [Test]
         public void ShouldDouble()
         {
-            Assert.AreEqual(0.0d, new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).DoubleLE(), delta: 0.0);
-            Assert.IsTrue(double.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F }).DoubleLE()));
-            Assert.IsTrue(double.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF }).DoubleLE()));
-            Assert.AreEqual(0.1d, new TpsRandomAccess(new byte[] { 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F }).DoubleLE(), delta: 0.0);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).DoubleLE(), Is.Zero.Within(0.0));
+                Assert.That(double.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F }).DoubleLE()));
+                Assert.That(double.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF }).DoubleLE()));
+                Assert.That(new TpsRandomAccess(new byte[] { 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F }).DoubleLE(), Is.EqualTo(0.1d).Within(0.0));
+            }
         }
 
         [TestCase("0", 2, 0, new byte[] { 0x00, 0x00 })]
@@ -117,7 +123,7 @@ namespace TpsParser.Tests.Tps.Binary
             var rx = new TpsRandomAccess(data);
             var bcd = rx.BinaryCodedDecimal(bcdLength, bcdDigitsAfterDecimal);
 
-            Assert.AreEqual(value, bcd);
+            Assert.That(bcd, Is.EqualTo(value));
         }
 
         [Test]
@@ -130,7 +136,7 @@ namespace TpsParser.Tests.Tps.Binary
             ra.JumpAbsolute(0);
             int value2 = ra.LongLE();
 
-            Assert.AreEqual(value, value2);
+            Assert.That(value2, Is.EqualTo(value));
         }
 
         [Test]
@@ -140,26 +146,26 @@ namespace TpsParser.Tests.Tps.Binary
             ra.Byte();
             var read = ra.Read(3);
 
-            Assert.AreEqual(3, read.Length);
-            Assert.AreEqual(0, read.Position);
-            Assert.AreEqual(2, read.Byte());
-            Assert.AreEqual(3, read.Byte());
-            Assert.AreEqual(4, read.Byte());
+            Assert.That(read.Length, Is.EqualTo(3));
+            Assert.That(read.Position, Is.Zero);
+            Assert.That(read.Byte(), Is.EqualTo(2));
+            Assert.That(read.Byte(), Is.EqualTo(3));
+            Assert.That(read.Byte(), Is.EqualTo(4));
 
             read.JumpAbsolute(0);
-            Assert.AreEqual(2, read.Byte());
+            Assert.That(read.Byte(), Is.EqualTo(2));
 
             read.JumpRelative(1);
-            Assert.AreEqual(4, read.Byte());
+            Assert.That(read.Byte(), Is.EqualTo(4));
 
             read.JumpAbsolute(1);
 
             var read2 = read.Read(2);
 
-            Assert.AreEqual(2, read2.Length);
-            Assert.AreEqual(0, read2.Position);
-            Assert.AreEqual(3, read2.Byte());
-            Assert.AreEqual(4, read2.Byte());
+            Assert.That(read2.Length, Is.EqualTo(2));
+            Assert.That(read2.Position, Is.Zero);
+            Assert.That(read2.Byte(), Is.EqualTo(3));
+            Assert.That(read2.Byte(), Is.EqualTo(4));
         }
 
         [Test]

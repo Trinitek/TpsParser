@@ -24,7 +24,7 @@ namespace TpsParser.Tests.Tps.Type
             var rx = new TpsRandomAccess(data);
             var dec = new TpsDecimal(rx, bcdLength, bcdDigitsAfterDecimal);
 
-            Assert.AreEqual(value, dec.Value);
+            Assert.That(dec.Value, Is.EqualTo(value));
         }
 
         [TestCase("0")]
@@ -41,7 +41,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var dec = new TpsDecimal(value);
 
-            Assert.AreEqual(value, dec.Value);
+            Assert.That(dec.Value, Is.EqualTo(value));
         }
 
         [TestCase("")]
@@ -68,7 +68,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var dec = new TpsDecimal(value);
 
-            Assert.AreEqual(expected, ((IConvertible<decimal>)dec).AsType());
+            Assert.That(((IConvertible<decimal>)dec).AsType(), Is.EqualTo(expected));
         }
 
         private class ShouldConvertToDecimalData
@@ -105,7 +105,7 @@ namespace TpsParser.Tests.Tps.Type
         {
             var dec = new TpsDecimal(value);
 
-            Assert.AreEqual(expected, ((IConvertible<bool>)dec).AsType());
+            Assert.That(((IConvertible<bool>)dec).AsType(), Is.EqualTo(expected));
         }
     }
 }

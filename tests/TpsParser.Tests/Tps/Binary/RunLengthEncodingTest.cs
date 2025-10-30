@@ -13,8 +13,8 @@ namespace TpsParser.Tests.Tps.Binary
 
             var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x07 }).UnpackRunLengthEncoding();
 
-            Assert.AreEqual(8, ra.Length);
-            Assert.AreEqual("11111111", ra.ToAscii());
+            Assert.That(ra.Length, Is.EqualTo(8));
+            Assert.That(ra.ToAscii(), Is.EqualTo("11111111"));
         }
 
         [Test]
@@ -24,8 +24,8 @@ namespace TpsParser.Tests.Tps.Binary
 
             var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03 }).UnpackRunLengthEncoding();
 
-            Assert.AreEqual(13, ra.Length);
-            Assert.AreEqual("1111111123333", ra.ToAscii());
+            Assert.That(ra.Length, Is.EqualTo(13));
+            Assert.That(ra.ToAscii(), Is.EqualTo("1111111123333"));
         }
 
         [Test]
@@ -33,8 +33,11 @@ namespace TpsParser.Tests.Tps.Binary
         {
             var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31 }).UnpackRunLengthEncoding();
 
-            Assert.AreEqual(1, ra.Length);
-            Assert.AreEqual("1", ra.ToAscii());
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(ra.Length, Is.EqualTo(1));
+                Assert.That(ra.ToAscii(), Is.EqualTo("1"));
+            }
         }
 
         [Test]
@@ -42,8 +45,11 @@ namespace TpsParser.Tests.Tps.Binary
         {
             var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x07 }).UnpackRunLengthEncoding();
 
-            Assert.AreEqual(8, ra.Length);
-            Assert.AreEqual("11111111", ra.ToAscii());
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(ra.Length, Is.EqualTo(8));
+                Assert.That(ra.ToAscii(), Is.EqualTo("11111111"));
+            }
         }
 
         [Test]
@@ -56,7 +62,7 @@ namespace TpsParser.Tests.Tps.Binary
 
             var ra = new TpsRandomAccess(block).UnpackRunLengthEncoding();
 
-            Assert.AreEqual(128 + 16, ra.Length);
+            Assert.That(ra.Length, Is.EqualTo(128 + 16));
         }
 
         [Test]
@@ -64,7 +70,7 @@ namespace TpsParser.Tests.Tps.Binary
         {
             var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x80, 0x01 }).UnpackRunLengthEncoding();
 
-            Assert.AreEqual(129, ra.Length);
+            Assert.That(ra.Length, Is.EqualTo(129));
         }
     }
 }

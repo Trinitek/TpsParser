@@ -18,33 +18,36 @@ namespace TpsParser.Tests
                 var table = parser.BuildTable();
                 var rows = table.Rows.OrderBy(r => r.Id).ToList();
 
-                Assert.AreEqual(4, rows.Count());
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(rows.Count(), Is.EqualTo(4));
 
-                // Fixed length strings. Dead area is padded with spaces, except for memos.
+                    // Fixed length strings. Dead area is padded with spaces, except for memos.
 
-                Assert.AreEqual(4, rows[0].Values.Count());
-                Assert.AreEqual("Joe Smith".PadRight(64, ' '), rows[0].Values["Name"].Value);
-                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Values["Date"].Value);
-                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Values["Notes"].Value);
-                Assert.AreEqual("He also likes sushi.", rows[0].Values["AdditionalNotes"].Value);
+                    Assert.That(rows[0].Values.Count(), Is.EqualTo(4));
+                    Assert.That(rows[0].Values["Name"].Value, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
+                    Assert.That(rows[0].Values["Date"].Value, Is.EqualTo(new DateTime(2016, 2, 9)));
+                    Assert.That(rows[0].Values["Notes"].Value, Is.EqualTo("Joe is a great guy to work with."));
+                    Assert.That(rows[0].Values["AdditionalNotes"].Value, Is.EqualTo("He also likes sushi."));
 
-                Assert.AreEqual(4, rows[1].Values.Count());
-                Assert.AreEqual("Jane Jones".PadRight(64, ' '), rows[1].Values["Name"].Value);
-                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Values["Date"].Value);
-                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Values["Notes"].Value);
-                Assert.AreEqual("She doesn't like sushi as much as Joe.", rows[1].Values["AdditionalNotes"].Value);
+                    Assert.That(rows[1].Values.Count(), Is.EqualTo(4));
+                    Assert.That(rows[1].Values["Name"].Value, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
+                    Assert.That(rows[1].Values["Date"].Value, Is.EqualTo(new DateTime(2019, 8, 22)));
+                    Assert.That(rows[1].Values["Notes"].Value, Is.EqualTo("Jane knows how to make a great pot of coffee."));
+                    Assert.That(rows[1].Values["AdditionalNotes"].Value, Is.EqualTo("She doesn't like sushi as much as Joe."));
 
-                Assert.AreEqual(2, rows[2].Values.Count());
-                Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Values["Name"].Value);
-                Assert.AreEqual(new DateTime(2019, 10, 7), rows[2].Values["Date"].Value);
-                Assert.IsFalse(rows[2].Values.TryGetValue("Notes", out var _));
-                Assert.IsFalse(rows[2].Values.TryGetValue("AdditionalNotes", out var _));
+                    Assert.That(rows[2].Values.Count(), Is.EqualTo(2));
+                    Assert.That(rows[2].Values["Name"].Value, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
+                    Assert.That(rows[2].Values["Date"].Value, Is.EqualTo(new DateTime(2019, 10, 7)));
+                    Assert.That(rows[2].Values.TryGetValue("Notes", out var _), Is.False);
+                    Assert.That(rows[2].Values.TryGetValue("AdditionalNotes", out var _), Is.False);
 
-                Assert.AreEqual(3, rows[3].Values.Count());
-                Assert.AreEqual("Jimmy OneNote".PadRight(64, ' '), rows[3].Values["Name"].Value);
-                Assert.AreEqual(new DateTime(2013, 3, 14), rows[3].Values["Date"].Value);
-                Assert.IsFalse(rows[3].Values.TryGetValue("Notes", out var _));
-                Assert.AreEqual("Has a strange last name.", rows[3].Values["AdditionalNotes"].Value);
+                    Assert.That(rows[3].Values.Count(), Is.EqualTo(3));
+                    Assert.That(rows[3].Values["Name"].Value, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
+                    Assert.That(rows[3].Values["Date"].Value, Is.EqualTo(new DateTime(2013, 3, 14)));
+                    Assert.That(rows[3].Values.TryGetValue("Notes", out var _), Is.False);
+                    Assert.That(rows[3].Values["AdditionalNotes"].Value, Is.EqualTo("Has a strange last name."));
+                }
             }
         }
 
@@ -72,27 +75,30 @@ namespace TpsParser.Tests
                 var rows = InvokeDeserialize<IMemoModel>(parser, targetObjectType, ignoreErrors: false)
                     .ToList();
 
-                Assert.AreEqual(4, rows.Count());
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(rows.Count(), Is.EqualTo(4));
 
-                Assert.AreEqual("Joe Smith".PadRight(64, ' '), rows[0].Name);
-                Assert.AreEqual(new DateTime(2016, 2, 9), rows[0].Date);
-                Assert.AreEqual("Joe is a great guy to work with.", rows[0].Notes);
-                Assert.AreEqual("He also likes sushi.", rows[0].AdditionalNotes);
+                    Assert.That(rows[0].Name, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
+                    Assert.That(rows[0].Date, Is.EqualTo(new DateTime(2016, 2, 9)));
+                    Assert.That(rows[0].Notes, Is.EqualTo("Joe is a great guy to work with."));
+                    Assert.That(rows[0].AdditionalNotes, Is.EqualTo("He also likes sushi."));
 
-                Assert.AreEqual("Jane Jones".PadRight(64, ' '), rows[1].Name);
-                Assert.AreEqual(new DateTime(2019, 8, 22), rows[1].Date);
-                Assert.AreEqual("Jane knows how to make a great pot of coffee.", rows[1].Notes);
-                Assert.AreEqual("She doesn't like sushi as much as Joe.", rows[1].AdditionalNotes);
-                
-                Assert.AreEqual("John NoNotes".PadRight(64, ' '), rows[2].Name);
-                Assert.AreEqual(new DateTime(2019, 10, 7), rows[2].Date);
-                Assert.IsNull(rows[2].Notes);
-                Assert.IsNull(rows[2].AdditionalNotes);
+                    Assert.That(rows[1].Name, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
+                    Assert.That(rows[1].Date, Is.EqualTo(new DateTime(2019, 8, 22)));
+                    Assert.That(rows[1].Notes, Is.EqualTo("Jane knows how to make a great pot of coffee."));
+                    Assert.That(rows[1].AdditionalNotes, Is.EqualTo("She doesn't like sushi as much as Joe."));
 
-                Assert.AreEqual("Jimmy OneNote".PadRight(64, ' '), rows[3].Name);
-                Assert.AreEqual(new DateTime(2013, 3, 14), rows[3].Date);
-                Assert.IsNull(rows[3].Notes);
-                Assert.AreEqual("Has a strange last name.", rows[3].AdditionalNotes);
+                    Assert.That(rows[2].Name, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
+                    Assert.That(rows[2].Date, Is.EqualTo(new DateTime(2019, 10, 7)));
+                    Assert.That(rows[2].Notes, Is.Null);
+                    Assert.That(rows[2].AdditionalNotes, Is.Null);
+
+                    Assert.That(rows[3].Name, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
+                    Assert.That(rows[3].Date, Is.EqualTo(new DateTime(2013, 3, 14)));
+                    Assert.That(rows[3].Notes, Is.Null);
+                    Assert.That(rows[3].AdditionalNotes, Is.EqualTo("Has a strange last name."));
+                }
             }
         }
 
@@ -112,10 +118,13 @@ namespace TpsParser.Tests
             {
                 var rows = parser.Deserialize<MemosRecordNumberFieldModel>().ToList();
 
-                Assert.AreEqual(2, rows[0]._id);
-                Assert.AreEqual(3, rows[1]._id);
-                Assert.AreEqual(4, rows[2]._id);
-                Assert.AreEqual(5, rows[3]._id);
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(rows[0]._id, Is.EqualTo(2));
+                    Assert.That(rows[1]._id, Is.EqualTo(3));
+                    Assert.That(rows[2]._id, Is.EqualTo(4));
+                    Assert.That(rows[3]._id, Is.EqualTo(5));
+                }
             }
         }
 
@@ -126,10 +135,13 @@ namespace TpsParser.Tests
             {
                 var rows = parser.Deserialize<MemosRecordNumberPropertyModel>().ToList();
 
-                Assert.AreEqual(2, rows[0].Id);
-                Assert.AreEqual(3, rows[1].Id);
-                Assert.AreEqual(4, rows[2].Id);
-                Assert.AreEqual(5, rows[3].Id);
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(rows[0].Id, Is.EqualTo(2));
+                    Assert.That(rows[1].Id, Is.EqualTo(3));
+                    Assert.That(rows[2].Id, Is.EqualTo(4));
+                    Assert.That(rows[3].Id, Is.EqualTo(5));
+                }
             }
         }
 

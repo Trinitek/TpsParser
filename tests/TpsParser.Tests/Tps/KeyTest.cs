@@ -33,10 +33,10 @@ namespace TpsParser.Tests.Tps
         {
             var key = new Key("a");
 
-            Assert.AreEqual((uint)0x7052a480, (uint)key.GetWord(0));
-            Assert.AreEqual((uint)0x68dd1890, (uint)key.GetWord(1));
-            Assert.AreEqual((uint)0xf1ab48a0, (uint)key.GetWord(2));
-            Assert.AreEqual((uint)0x48dcf8a0, (uint)key.GetWord(3));
+            Assert.That((uint)key.GetWord(0), Is.EqualTo((uint)0x7052a480));
+            Assert.That((uint)key.GetWord(1), Is.EqualTo((uint)0x68dd1890));
+            Assert.That((uint)key.GetWord(2), Is.EqualTo((uint)0xf1ab48a0));
+            Assert.That((uint)key.GetWord(3), Is.EqualTo((uint)0x48dcf8a0));
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace TpsParser.Tests.Tps
             var expectedDecrypted = ParseHex(DecryptedHeader);
             var actualDecrypted = rx.GetData();
 
-            CollectionAssert.AreEqual(expectedDecrypted, actualDecrypted);
+            Assert.That(actualDecrypted, Is.EqualTo(expectedDecrypted).AsCollection);
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace TpsParser.Tests.Tps
             var expectedEncrypted = ParseHex(EncryptedHeader);
             var actualEncrypted = rx.GetData();
 
-            CollectionAssert.AreEqual(expectedEncrypted, actualEncrypted);
+            Assert.That(actualEncrypted, Is.EqualTo(expectedEncrypted).AsCollection);
         }
 
         [Test]
@@ -79,19 +79,19 @@ namespace TpsParser.Tests.Tps
                 var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
                 var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
 
-                Assert.AreEqual(decryptedDefinitions.Count, encryptedDefinitions.Count);
+                Assert.That(encryptedDefinitions.Count, Is.EqualTo(decryptedDefinitions.Count));
 
                 // Note that record IDs may differ.
                 var encryptedRecords = encryptedFile.GetDataRecords(table: 2, tableDefinition: encryptedDefinitions[2], ignoreErrors: false);
                 var decryptedRecords = decryptedFile.GetDataRecords(table: 1, tableDefinition: decryptedDefinitions[1], ignoreErrors: false);
 
-                Assert.AreEqual(decryptedRecords.Count(), encryptedRecords.Count());
+                Assert.That(encryptedRecords.Count(), Is.EqualTo(decryptedRecords.Count()));
 
                 var zip = decryptedRecords.Zip(encryptedRecords, (d, e) => (dec: d, enc: e));
 
                 foreach (var (dec, enc) in zip)
                 {
-                    CollectionAssert.AreEqual(dec.Values, enc.Values);
+                    Assert.That(enc.Values, Is.EqualTo(dec.Values).AsCollection);
                 }
             }
         }

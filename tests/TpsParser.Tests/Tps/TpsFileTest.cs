@@ -4,120 +4,119 @@ using System.Linq;
 using TpsParser.Tps;
 using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests.Tps
+namespace TpsParser.Tests.Tps;
+
+[TestFixture]
+internal sealed class TpsFileTest
 {
-    [TestFixture]
-    public class TpsFileTest
+    private TpsFile GetTableFile()
     {
-        private TpsFile GetTableFile()
+        using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
         {
-            using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
-            {
-                return new RandomAccessTpsFile(stream);
-            }
+            return new RandomAccessTpsFile(stream);
         }
+    }
 
-        private TpsFile GetTableWithMemosFile()
+    private TpsFile GetTableWithMemosFile()
+    {
+        using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
         {
-            using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
-            {
-                return new RandomAccessTpsFile(stream);
-            }
+            return new RandomAccessTpsFile(stream);
         }
+    }
 
-        [Test]
-        public void ShouldParseFile()
+    [Test]
+    public void ShouldParseFile()
+    {
+        var file = GetTableFile();
+
+        var records = file.GetAllRecords();
+
+        Assert.That(records.Count(), Is.EqualTo(10));
+    }
+
+    [Test]
+    public void ShouldParseTableMetadata()
+    {
+        var file = GetTableFile();
+
+        var tableNames = file.GetTableNameRecords();
+
+        Assert.That(tableNames.Count(), Is.EqualTo(1));
+
+        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+
+        Assert.That(tableDefinitions.Count(), Is.EqualTo(1));
+        Assert.That(tableDefinitions[1].Fields.Count(), Is.EqualTo(2));
+        Assert.That(tableDefinitions[1].Indexes.Count(), Is.EqualTo(2));
+        Assert.That(tableDefinitions[1].Memos.Count(), Is.Zero);
+    }
+
+    [Test]
+    public void ShouldParseTableFieldInfo()
+    {
+        var file = GetTableFile();
+
+        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+        var fields = tableDefinitions[1].Fields;
+
+        using (Assert.EnterMultipleScope())
         {
-            var file = GetTableFile();
+            Assert.That(fields[0].FullName, Is.EqualTo("CON1:OUDNR"));
+            Assert.That(fields[0].Name, Is.EqualTo("OUDNR"));
+            Assert.That(fields[0].Type, Is.EqualTo(TpsTypeCode.Short));
 
-            var records = file.GetAllRecords();
-
-            Assert.That(records.Count(), Is.EqualTo(10));
+            Assert.That(fields[1].FullName, Is.EqualTo("CON1:NEWNR"));
+            Assert.That(fields[1].Name, Is.EqualTo("NEWNR"));
+            Assert.That(fields[1].Type, Is.EqualTo(TpsTypeCode.Short));
         }
+    }
 
-        [Test]
-        public void ShouldParseTableMetadata()
+    [Test]
+    public void ShouldParseRecord()
+    {
+        var file = GetTableFile();
+
+        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+        var dataRecords = file.GetDataRecords(table: 1, tableDefinitions[1], ignoreErrors: false)
+            .ToList();
+
+        using (Assert.EnterMultipleScope())
         {
-            var file = GetTableFile();
-
-            var tableNames = file.GetTableNameRecords();
-
-            Assert.That(tableNames.Count(), Is.EqualTo(1));
-
-            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-
-            Assert.That(tableDefinitions.Count(), Is.EqualTo(1));
-            Assert.That(tableDefinitions[1].Fields.Count(), Is.EqualTo(2));
-            Assert.That(tableDefinitions[1].Indexes.Count(), Is.EqualTo(2));
-            Assert.That(tableDefinitions[1].Memos.Count(), Is.Zero);
+            Assert.That(dataRecords.Count(), Is.EqualTo(1));
+            Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
+            Assert.That(dataRecords[0].Values.Count(), Is.EqualTo(2));
+            Assert.That(dataRecords[0].Values.ToList()[0].Value, Is.EqualTo(1));
+            Assert.That(dataRecords[0].Values.ToList()[1].Value, Is.EqualTo(1));
         }
+    }
 
-        [Test]
-        public void ShouldParseTableFieldInfo()
-        {
-            var file = GetTableFile();
+    [Test]
+    public void ShouldParseIndexData()
+    {
+        var file = GetTableFile();
 
-            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-            var fields = tableDefinitions[1].Fields;
+        var indexes1 = file.GetIndexes(table: 1, index: 0)
+            .ToList();
 
-            using (Assert.EnterMultipleScope())
-            {
-                Assert.That(fields[0].FullName, Is.EqualTo("CON1:OUDNR"));
-                Assert.That(fields[0].Name, Is.EqualTo("OUDNR"));
-                Assert.That(fields[0].Type, Is.EqualTo(TpsTypeCode.Short));
+        Assert.That(indexes1.Count(), Is.EqualTo(1));
+        Assert.That(indexes1[0].RecordNumber, Is.EqualTo(2));
 
-                Assert.That(fields[1].FullName, Is.EqualTo("CON1:NEWNR"));
-                Assert.That(fields[1].Name, Is.EqualTo("NEWNR"));
-                Assert.That(fields[1].Type, Is.EqualTo(TpsTypeCode.Short));
-            }
-        }
+        var indexes2 = file.GetIndexes(table: 1, index: 1)
+            .ToList();
 
-        [Test]
-        public void ShouldParseRecord()
-        {
-            var file = GetTableFile();
+        Assert.That(indexes2.Count(), Is.EqualTo(1));
+        Assert.That(indexes2[0].RecordNumber, Is.EqualTo(2));
+    }
 
-            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-            var dataRecords = file.GetDataRecords(table: 1, tableDefinitions[1], ignoreErrors: false)
-                .ToList();
+    [Test]
+    public void ShouldParseMemos()
+    {
+        var file = GetTableWithMemosFile();
 
-            using (Assert.EnterMultipleScope())
-            {
-                Assert.That(dataRecords.Count(), Is.EqualTo(1));
-                Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
-                Assert.That(dataRecords[0].Values.Count(), Is.EqualTo(2));
-                Assert.That(dataRecords[0].Values.ToList()[0].Value, Is.EqualTo(1));
-                Assert.That(dataRecords[0].Values.ToList()[1].Value, Is.EqualTo(1));
-            }
-        }
+        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+        var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
 
-        [Test]
-        public void ShouldParseIndexData()
-        {
-            var file = GetTableFile();
-
-            var indexes1 = file.GetIndexes(table: 1, index: 0)
-                .ToList();
-
-            Assert.That(indexes1.Count(), Is.EqualTo(1));
-            Assert.That(indexes1[0].RecordNumber, Is.EqualTo(2));
-
-            var indexes2 = file.GetIndexes(table: 1, index: 1)
-                .ToList();
-
-            Assert.That(indexes2.Count(), Is.EqualTo(1));
-            Assert.That(indexes2[0].RecordNumber, Is.EqualTo(2));
-        }
-
-        [Test]
-        public void ShouldParseMemos()
-        {
-            var file = GetTableWithMemosFile();
-
-            var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-            var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
-
-            Assert.That(memos.Count(), Is.EqualTo(5));
-        }
+        Assert.That(memos.Count(), Is.EqualTo(5));
     }
 }

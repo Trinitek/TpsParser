@@ -3,29 +3,28 @@ using System;
 using TpsParser.Binary;
 using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests.Tps.Type
+namespace TpsParser.Tests.Tps.Type;
+
+[TestFixture]
+internal sealed class TpsDateTest
 {
-    [TestFixture]
-    public class TpsDateTest
+    [Test]
+    public void ShouldReadFromRandomAccess()
     {
-        [Test]
-        public void ShouldReadFromRandomAccess()
-        {
-            var rx = new TpsRandomAccess(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
+        var rx = new TpsRandomAccess(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
 
-            var date = new TpsDate(rx);
+        var date = new TpsDate(rx);
 
-            Assert.That(date.Value, Is.EqualTo(new DateTime(2019, 7, 16)));
-        }
+        Assert.That(date.Value, Is.EqualTo(new DateTime(2019, 7, 16)));
+    }
 
-        [Test]
-        public void ShouldReadFromDateTime()
-        {
-            var dateTime = new DateTime(2019, 7, 16);
+    [Test]
+    public void ShouldReadFromDateTime()
+    {
+        var dateTime = new DateTime(2019, 7, 16);
 
-            var date = new TpsDate(dateTime);
+        var date = new TpsDate(dateTime);
 
-            Assert.That(date.Value, Is.EqualTo(dateTime));
-        }
+        Assert.That(date.Value, Is.EqualTo(dateTime));
     }
 }

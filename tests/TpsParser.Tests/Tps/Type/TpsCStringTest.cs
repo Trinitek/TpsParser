@@ -4,33 +4,32 @@ using System.Text;
 using TpsParser.Binary;
 using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests.Tps.Type
+namespace TpsParser.Tests.Tps.Type;
+
+[TestFixture]
+internal sealed class TpsCStringTest
 {
-    [TestFixture]
-    public class TpsCStringTest
+    [Test]
+    public void ShouldReadFromRandomAccess()
     {
-        [Test]
-        public void ShouldReadFromRandomAccess()
-        {
-            var rx = new TpsRandomAccess(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00 });
+        var rx = new TpsRandomAccess(new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00 });
 
-            var str = new TpsCString(rx, Encoding.ASCII);
+        var str = new TpsCString(rx, Encoding.ASCII);
 
-            Assert.That(str.Value, Is.EqualTo("Hello"));
-        }
+        Assert.That(str.Value, Is.EqualTo("Hello"));
+    }
 
-        [Test]
-        public void ShouldReadFromString()
-        {
-            var str = new TpsCString("Hello");
+    [Test]
+    public void ShouldReadFromString()
+    {
+        var str = new TpsCString("Hello");
 
-            Assert.That(str.Value, Is.EqualTo("Hello"));
-        }
+        Assert.That(str.Value, Is.EqualTo("Hello"));
+    }
 
-        [Test]
-        public void ShouldThrowWhenStringCtorIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => new TpsCString(null));
-        }
+    [Test]
+    public void ShouldThrowWhenStringCtorIsNull()
+    {
+        Assert.Throws<ArgumentNullException>(() => new TpsCString(null));
     }
 }

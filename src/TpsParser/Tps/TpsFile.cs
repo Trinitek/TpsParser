@@ -165,7 +165,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
         if (!header.IsTopSpeedFile)
         {
-            throw new NotATopSpeedFileException($"Not a TopSpeed file ({header.MagicNumber})");
+            throw new TpsParserException($"Not a TopSpeed file ({header.MagicNumber})");
         }
 
         return header;

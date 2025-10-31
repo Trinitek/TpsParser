@@ -30,6 +30,6 @@ internal sealed class TpsHeaderTest
     {
         var file = new RandomAccessTpsFile(new FileStream("Resources/bad-header.dat", FileMode.Open));
 
-        Assert.Throws<NotATopSpeedFileException>(() => file.GetHeader());
+        Assert.That(() => file.GetHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
     }
 }

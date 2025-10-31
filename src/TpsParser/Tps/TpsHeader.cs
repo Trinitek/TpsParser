@@ -50,7 +50,7 @@ namespace TpsParser.Tps
 
             if (Address != 0)
             {
-                throw new NotATopSpeedFileException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
+                throw new TpsParserException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
             }
 
             HeaderSize = rx.ShortLE();

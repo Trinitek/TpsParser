@@ -103,7 +103,7 @@ internal sealed class KeyTest
         {
             var encryptedFile = new RandomAccessTpsFile(fsEncrypted);
 
-            Assert.Throws<NotATopSpeedFileException>(() => encryptedFile.GetHeader());
+            Assert.That(() => encryptedFile.GetHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
         }
     }
 }

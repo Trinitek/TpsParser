@@ -1,15 +1,19 @@
 ﻿using System;
 
-namespace TpsParser
-{
-    public sealed class RunLengthEncodingException : Exception
-    {
-        public RunLengthEncodingException(string message)
-            : base(message)
-        { }
+namespace TpsParser;
 
-        public RunLengthEncodingException(string message, Exception innerException)
-            : base(message, innerException)
-        { }
-    }
+/// <summary>
+/// Represents errors that occur when decoding run-length encoded data.
+/// </summary>
+public sealed class RunLengthEncodingException : TpsParserException
+{
+    /// <inheritdoc/>
+    public RunLengthEncodingException(string message)
+        : base(message)
+    { }
+
+    /// <inheritdoc/>
+    public RunLengthEncodingException(string message, Exception innerException)
+        : base(message, innerException)
+    { }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,8 +7,23 @@ using TpsParser.TypeModel;
 
 namespace TpsParser.Binary;
 
+/// <summary>
+/// A binary reader for format-specific types and structures.
+/// </summary>
 public sealed class TpsRandomAccess
 {
+    //private SequenceReader<byte> SequenceReader { get; }
+    //private ReadOnlySequence<byte> Sequence { get; }
+
+    //private void X()
+    //{
+    //    //ReadOnlySequence<byte> seq;
+    //    //Sequence.
+    //    //new ReadOnlySequence<byte>();
+    //    //new ReadOnlySequenceSegment<byte>()
+    //    //SequenceReader = new()
+    //}
+
     private byte[] Data { get; }
     private Stack<int> PositionStack { get; }
 
@@ -432,6 +448,11 @@ public sealed class TpsRandomAccess
         }
     }
 
+    public ReadOnlySpan<byte> GetSpan()
+    {
+        return new ReadOnlySpan<byte>(Data, BaseOffset, Length);
+    }
+
     /// <summary>
     /// Gets a new <see cref="TpsRandomAccess"/> of the given length at the current position and advances the position.
     /// </summary>
@@ -829,7 +850,7 @@ public sealed class TpsRandomAccess
     {
         encoding ??= Encoding;
 
-        return new TpsString(encoding.GetString(GetData()));
+        return new TpsString(encoding.GetString(GetSpan()));
     }
 
     /// <summary>

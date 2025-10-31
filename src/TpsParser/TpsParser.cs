@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using TpsParser.Tps;
 using TpsParser.Tps.Record;
 using TpsParser.TypeModel;

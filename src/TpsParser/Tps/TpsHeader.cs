@@ -3,87 +3,89 @@ using System.Collections.Generic;
 using System.Text;
 using TpsParser.Binary;
 
-namespace TpsParser.Tps
+namespace TpsParser.Tps;
+
+/// <summary>
+/// Represents a TopSpeed file header.
+/// </summary>
+public sealed class TpsHeader
 {
     /// <summary>
-    /// Represents a TopSpeed file header.
+    /// The magic number used to identify a TopSpeed file.
     /// </summary>
-    public sealed class TpsHeader
+    public const string TopSpeedMagicNumber = "tOpS";
+
+    public int Address { get; }
+    public int HeaderSize { get; }
+    public int FileLength1 { get; }
+    public int FileLength2 { get; }
+
+    /// <summary>
+    /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
+    /// </summary>
+    public string MagicNumber { get; }
+
+    public int Zeroes { get; }
+
+    /// <summary>
+    /// Gets the last issued row number in the file.
+    /// </summary>
+    public int LastIssuedRow { get; }
+
+    public int Changes { get; }
+
+    public int ManagementPageReference { get; }
+
+    public IReadOnlyList<int> PageStart { get; }
+
+    public IReadOnlyList<int> PageEnd { get; }
+
+    private TpsRandomAccess Data { get; }
+
+    /// <summary>
+    /// Returns true if the header represents a valid TopSpeed file.
+    /// </summary>
+    public bool IsTopSpeedFile => MagicNumber == TopSpeedMagicNumber;
+
+    public TpsHeader(TpsRandomAccess rx)
     {
-        public int Address { get; }
-        public int HeaderSize { get; }
-        public int FileLength1 { get; }
-        public int FileLength2 { get; }
+        Data = rx ?? throw new ArgumentNullException(nameof(rx));
 
-        /// <summary>
-        /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
-        /// </summary>
-        public string MagicNumber { get; }
+        Address = rx.ReadLongLE();
 
-        public int Zeroes { get; }
-
-        /// <summary>
-        /// Gets the last issued row number in the file.
-        /// </summary>
-        public int LastIssuedRow { get; }
-
-        public int Changes { get; }
-
-        public int ManagementPageReference { get; }
-
-        public IReadOnlyList<int> PageStart { get; }
-
-        public IReadOnlyList<int> PageEnd { get; }
-
-        private TpsRandomAccess Data { get; }
-
-        /// <summary>
-        /// Returns true if the header represents a valid TopSpeed file.
-        /// </summary>
-        public bool IsTopSpeedFile => MagicNumber == "tOpS";
-
-        public TpsHeader(TpsRandomAccess rx)
+        if (Address != 0)
         {
-            Data = rx ?? throw new ArgumentNullException(nameof(rx));
-
-            Address = rx.LongLE();
-
-            if (Address != 0)
-            {
-                throw new TpsParserException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
-            }
-
-            HeaderSize = rx.ShortLE();
-
-            var header = rx.Read(HeaderSize - 6);
-
-            FileLength1 = header.LongLE();
-            FileLength2 = header.LongLE();
-            MagicNumber = header.FixedLengthString(4);
-            Zeroes = header.ShortLE();
-            LastIssuedRow = header.LongBE();
-            Changes = header.LongLE();
-            ManagementPageReference = header.ToFileOffset(header.LongLE());
-
-            PageStart = header.ToFileOffset(header.LongArrayLE((0x110 - 0x20) / 4));
-            PageEnd = header.ToFileOffset(header.LongArrayLE((0x200 - 0x110) / 4));
+            throw new TpsParserException("File does not start with 0x00000000. It is not a TopSpeed file or it may be encrypted.");
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+        HeaderSize = rx.ReadShortLE();
+
+        var header = rx.Read(HeaderSize - 6);
+
+        FileLength1 = header.ReadLongLE();
+        FileLength2 = header.ReadLongLE();
+        MagicNumber = header.ReadFixedLengthString(4);
+        Zeroes = header.ReadShortLE();
+        LastIssuedRow = header.ReadLongBE();
+        Changes = header.ReadLongLE();
+        ManagementPageReference = TpsRandomAccess.GetFileOffset(header.ReadLongLE());
+        PageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE((0x110 - 0x20) / 4));
+        PageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE((0x200 - 0x110) / 4));
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine($"TpsHeader({StringUtils.ToHex8(Address)},{StringUtils.ToHex4(HeaderSize)},{StringUtils.ToHex8(FileLength1)},{StringUtils.ToHex8(FileLength2)}," +
+            $"{MagicNumber},{StringUtils.ToHex4(Zeroes)},{StringUtils.ToHex8(LastIssuedRow)},{StringUtils.ToHex8(Changes)},{StringUtils.ToHex8(ManagementPageReference)})");
+
+        for (int i = 0; i < PageStart.Count; i++)
         {
-            var sb = new StringBuilder();
-
-            sb.AppendLine($"TpsHeader({Data.ToHex8(Address)},{Data.ToHex4(HeaderSize)},{Data.ToHex8(FileLength1)},{Data.ToHex8(FileLength2)}," +
-                $"{MagicNumber},{Data.ToHex4(Zeroes)},{Data.ToHex8(LastIssuedRow)},{Data.ToHex8(Changes)},{Data.ToHex8(ManagementPageReference)})");
-
-            for (int i = 0; i < PageStart.Count; i++)
-            {
-                sb.AppendLine($"{PageStart[i]}..{PageEnd[i]}");
-            }
-
-            return sb.ToString();
+            sb.AppendLine($"{PageStart[i]}..{PageEnd[i]}");
         }
+
+        return sb.ToString();
     }
 }

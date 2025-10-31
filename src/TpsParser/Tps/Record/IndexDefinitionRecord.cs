@@ -40,11 +40,11 @@ namespace TpsParser.Tps.Record
                 throw new ArgumentNullException(nameof(rx));
             }
 
-            ExternalFile = rx.ZeroTerminatedString();
+            ExternalFile = rx.ReadZeroTerminatedString();
 
             if (ExternalFile.Length == 0)
             {
-                int read = rx.Byte();
+                int read = rx.ReadByte();
 
                 if (read != 0x01)
                 {
@@ -52,17 +52,17 @@ namespace TpsParser.Tps.Record
                 }
             }
 
-            Name = rx.ZeroTerminatedString();
-            Flags = rx.Byte();
-            FieldsInKey = rx.ShortLE();
+            Name = rx.ReadZeroTerminatedString();
+            Flags = rx.ReadByte();
+            FieldsInKey = rx.ReadShortLE();
 
             KeyField = new int[FieldsInKey];
             KeyFieldFlag = new int[FieldsInKey];
 
             for (int i = 0; i < FieldsInKey; i++)
             {
-                KeyField[i] = rx.ShortLE();
-                KeyFieldFlag[i] = rx.ShortLE();
+                KeyField[i] = rx.ReadShortLE();
+                KeyFieldFlag[i] = rx.ReadShortLE();
             }
         }
 

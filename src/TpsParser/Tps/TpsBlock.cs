@@ -40,7 +40,7 @@ public sealed class TpsBlock
                     {
                         if (ignorePageErrors)
                         {
-                            Debug.WriteLine($"Ignored RLE error: {ex.ToString()}");
+                            Debug.WriteLine($"Ignored RLE error: {ex}");
                         }
                         else
                         {
@@ -77,7 +77,7 @@ public sealed class TpsBlock
             do
             {
                 Data.PushPosition();
-                address = Data.LongLE();
+                address = Data.ReadLongLE();
                 Data.PopPosition();
 
                 // Check if there is really a new page here.
@@ -100,8 +100,8 @@ public sealed class TpsBlock
 
         try
         {
-            Data.LongLE();
-            pageSize = Data.ShortLE();
+            Data.ReadLongLE();
+            pageSize = Data.ReadShortLE();
         }
         finally
         {
@@ -127,7 +127,7 @@ public sealed class TpsBlock
 
                     try
                     {
-                        address = Data.LongLE();
+                        address = Data.ReadLongLE();
                     }
                     finally
                     {
@@ -150,6 +150,7 @@ public sealed class TpsBlock
         return true;
     }
 
+    /// <inheritdoc/>
     public override string ToString() =>
-        $"TpsBlock({Data.ToHex8(Start)},{Data.ToHex8(End)},{Pages.Count})";
+        $"TpsBlock({StringUtils.ToHex8(Start)},{StringUtils.ToHex8(End)},{Pages.Count})";
 }

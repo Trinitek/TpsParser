@@ -34,7 +34,7 @@ public sealed class Key
             block[x] = (byte)(i + keyBytes[(i + 1) % keyBytes.Length]);
         }
 
-        Data = new TpsRandomAccess(block);
+        Data = new TpsRandomAccess(block, encoding);
 
         // Two calls required.
 
@@ -77,7 +77,7 @@ public sealed class Key
     public int GetWord(int word)
     {
         Data.JumpAbsolute(word * 4);
-        return Data.LongLE();
+        return Data.ReadLongLE();
     }
 
     private void SetWord(int word, int value)
@@ -108,8 +108,8 @@ public sealed class Key
             int keyA = GetWord(i);
             int positionB = keyA & 0x0F;
 
-            int data2 = buffer.JumpAbsolute(positionA * 4).LongLE();
-            int data1 = buffer.JumpAbsolute(positionB * 4).LongLE();
+            int data2 = buffer.JumpAbsolute(positionA * 4).ReadLongLE();
+            int data1 = buffer.JumpAbsolute(positionB * 4).ReadLongLE();
 
             int opAnd1 = keyA & data2;
             int opNotA = ~keyA;
@@ -150,9 +150,9 @@ public sealed class Key
             int keyA = GetWord(positionA);
             int positionB = keyA & 0x0F;
 
-            int data1 = buffer.JumpAbsolute(positionA * 4).LongLE();
+            int data1 = buffer.JumpAbsolute(positionA * 4).ReadLongLE();
             data1 -= keyA;
-            int data2 = buffer.JumpAbsolute(positionB * 4).LongLE();
+            int data2 = buffer.JumpAbsolute(positionB * 4).ReadLongLE();
             data2 -= keyA;
 
             int opAnd1 = data1 & keyA;

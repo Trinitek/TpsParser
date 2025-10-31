@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TpsParser.TypeModel;
 
 namespace TpsParser.Binary;
 
@@ -11,32 +12,61 @@ public sealed class TpsRandomAccess
     private Stack<int> PositionStack { get; }
 
     /// <summary>
+    /// Gets the default encoding used when reading strings.
+    /// </summary>
+    public Encoding Encoding { get; }
+
+    /// <summary>
     /// Gets the base offset position in the data array.
     /// </summary>
     public int BaseOffset { get; }
 
     /// <summary>
-    /// Gets the current position in the data array.
+    /// Gets the current position in the data array relative to <see cref="BaseOffset"/>.
     /// </summary>
     public int Position { get; private set; }
+
+    /// <summary>
+    /// Gets the absolute position in the data array.
+    /// </summary>
+    public int AbsolutePosition => BaseOffset + Position;
 
     /// <summary>
     /// Gets the length of the data array.
     /// </summary>
     public int Length { get; }
 
+    /// <summary>
+    /// Returns true if there is one byte available at <see cref="Position"/>.
+    /// </summary>
     public bool IsOneByteLeft => Position > Length - 1;
 
+    /// <summary>
+    /// Returns true if no more data is available at <see cref="Position"/>.
+    /// </summary>
     public bool IsAtEnd => Position >= Length - 1;
 
-    public TpsRandomAccess(byte[] data)
+    /// <summary>
+    /// Instantiates a new reader from a byte array.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="encoding"></param>
+    public TpsRandomAccess(byte[] data, Encoding encoding)
         : this(
               data: data,
               baseOffset: 0,
-              length: data.Length)
+              length: data?.Length ?? throw new ArgumentNullException(nameof(data)),
+              encoding: encoding)
     { }
 
-    public TpsRandomAccess(byte[] data, int baseOffset, int length)
+    /// <summary>
+    /// Instantiates a new reader from a byte array.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="baseOffset"></param>
+    /// <param name="length"></param>
+    /// <param name="encoding"></param>
+    public TpsRandomAccess(byte[] data, int baseOffset, int length, Encoding encoding)
     {
         Position = 0;
         Data = data ?? throw new ArgumentNullException(nameof(data));
@@ -44,24 +74,39 @@ public sealed class TpsRandomAccess
         Length = length;
 
         PositionStack = new Stack<int>();
+        Encoding = encoding;
     }
 
-    public TpsRandomAccess(TpsRandomAccess existing, int additiveOffset, int length)
+    /// <summary>
+    /// Instantiates a new reader from an existing one.
+    /// </summary>
+    /// <param name="existing"></param>
+    /// <param name="additiveOffset"></param>
+    /// <param name="length"></param>
+    /// <param name="encoding">The encoding to use, or null if the encoding should be inherited from <paramref name="encoding"/>.</param>
+    public TpsRandomAccess(TpsRandomAccess existing, int additiveOffset, int length, Encoding encoding = null)
         : this(
-              data: existing.Data,
+              data: existing?.Data ?? throw new ArgumentNullException(nameof(existing)),
               baseOffset: existing.BaseOffset + additiveOffset,
-              length: length)
+              length: length,
+              encoding: encoding ?? existing.Encoding)
     { }
 
+    /// <summary>
+    /// Saves the current position on the stack.
+    /// </summary>
     public void PushPosition() => PositionStack.Push(Position);
 
+    /// <summary>
+    /// Restores the previous position saved to the stack with <see cref="PushPosition"/>.
+    /// </summary>
     public void PopPosition() => Position = PositionStack.Pop();
 
-    private void CheckSpace(int numberOfBytes)
+    private void AssertSpace(int numberOfBytes)
     {
         if (Position + numberOfBytes > Length)
         {
-            throw new IndexOutOfRangeException($"Data type of size {numberOfBytes} exceeds the end of the data array at offset {Position}. Array is {Length} bytes long.");
+            throw new IndexOutOfRangeException($"Data type of size {numberOfBytes} exceeds the end of the data array at offset {Position} by {Length - Position + numberOfBytes}. Array is {Length} bytes long.");
         }
         if (Position < 0)
         {
@@ -73,17 +118,15 @@ public sealed class TpsRandomAccess
     /// Reads a little endian 2s-complement signed 4 byte integer.
     /// </summary>
     /// <returns></returns>
-    public int LongLE()
+    public int ReadLongLE()
     {
-        CheckSpace(4);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(4);
 
         int result =
-            (Data[reference + 0] & 0xFF)
-            | ((Data[reference + 1] & 0xFF) << 8)
-            | ((Data[reference + 2] & 0xFF) << 16)
-            | ((Data[reference + 3] & 0xFF) << 24);
+            Data[AbsolutePosition + 0] & 0xFF
+            | (Data[AbsolutePosition + 1] & 0xFF) << 8
+            | (Data[AbsolutePosition + 2] & 0xFF) << 16
+            | (Data[AbsolutePosition + 3] & 0xFF) << 24;
 
         Position += 4;
         return result;
@@ -95,14 +138,12 @@ public sealed class TpsRandomAccess
     /// <param name="value"></param>
     public void WriteLongLE(int value)
     {
-        CheckSpace(4);
+        AssertSpace(4);
 
-        int reference = BaseOffset + Position;
-
-        Data[reference + 0] = (byte)(value & 0xFF);
-        Data[reference + 1] = (byte)((value >> 8) & 0xFF);
-        Data[reference + 2] = (byte)((value >> 16) & 0xFF);
-        Data[reference + 3] = (byte)((value >> 24) & 0xFF);
+        Data[AbsolutePosition + 0] = (byte)(value & 0xFF);
+        Data[AbsolutePosition + 1] = (byte)(value >> 8 & 0xFF);
+        Data[AbsolutePosition + 2] = (byte)(value >> 16 & 0xFF);
+        Data[AbsolutePosition + 3] = (byte)(value >> 24 & 0xFF);
 
         Position += 4;
     }
@@ -111,75 +152,67 @@ public sealed class TpsRandomAccess
     /// Reads a little endian unsigned 4 byte integer.
     /// </summary>
     /// <returns></returns>
-    public uint UnsignedLongLE()
+    public uint ReadUnsignedLongLE()
     {
-        CheckSpace(4);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(4);
 
         uint result =
-            (Data[reference + 0] & 0xFFU)
-            | ((Data[reference + 1] & 0xFFU) << 8)
-            | ((Data[reference + 2] & 0xFFU) << 16)
-            | ((Data[reference + 3] & 0xFFU) << 24);
+            Data[AbsolutePosition + 0] & 0xFFU
+            | (Data[AbsolutePosition + 1] & 0xFFU) << 8
+            | (Data[AbsolutePosition + 2] & 0xFFU) << 16
+            | (Data[AbsolutePosition + 3] & 0xFFU) << 24;
 
         Position += 4;
         return result;
     }
 
     /// <summary>
-    /// Reads a big endian signed integer.
+    /// Reads a big endian signed integer and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public int LongBE()
+    public int ReadLongBE()
     {
-        CheckSpace(4);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(4);
 
         int result =
-            (Data[reference + 3] & 0xFF)
-            | ((Data[reference + 2] & 0xFF) << 8)
-            | ((Data[reference + 1] & 0xFF) << 16)
-            | ((Data[reference + 0] & 0xFF) << 24);
+            Data[AbsolutePosition + 3] & 0xFF
+            | (Data[AbsolutePosition + 2] & 0xFF) << 8
+            | (Data[AbsolutePosition + 1] & 0xFF) << 16
+            | (Data[AbsolutePosition + 0] & 0xFF) << 24;
 
         Position += 4;
         return result;
     }
 
     /// <summary>
-    /// Reads a big endian unsigned integer.
+    /// Reads a big endian unsigned integer and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public uint UnsignedLongBE()
+    public uint ReadUnsignedLongBE()
     {
-        CheckSpace(4);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(4);
 
         uint result =
-            (Data[reference + 4] & 0xFFU)
-            | ((Data[reference + 3] & 0xFFU) << 8)
-            | ((Data[reference + 2] & 0xFFU) << 16)
-            | ((Data[reference + 1] & 0xFFU) << 24);
+            Data[AbsolutePosition + 4] & 0xFFU
+            | (Data[AbsolutePosition + 3] & 0xFFU) << 8
+            | (Data[AbsolutePosition + 2] & 0xFFU) << 16
+            | (Data[AbsolutePosition + 1] & 0xFFU) << 24;
 
         Position += 4;
         return result;
     }
 
     /// <summary>
-    /// Reads a little endian signed short.
+    /// Reads a little endian signed short and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public short ShortLE()
+    public short ReadShortLE()
     {
-        CheckSpace(2);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(2);
 
         short result =
-            (short)((Data[reference + 0] & 0xFF)
-            | ((Data[reference + 1] & 0xFF) << 8));
+            (short)(Data[AbsolutePosition + 0] & 0xFF
+            | (Data[AbsolutePosition + 1] & 0xFF) << 8);
 
         Position += 2;
 
@@ -187,18 +220,16 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a little endian unsigned short.
+    /// Reads a little endian unsigned short and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ushort UnsignedShortLE()
+    public ushort ReadUnsignedShortLE()
     {
-        CheckSpace(2);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(2);
 
         ushort result =
-            (ushort)((Data[reference + 0] & 0xFF)
-            | ((Data[reference + 1] & 0xFF) << 8));
+            (ushort)(Data[AbsolutePosition + 0] & 0xFF
+            | (Data[AbsolutePosition + 1] & 0xFF) << 8);
 
         Position += 2;
 
@@ -206,18 +237,16 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a big endian signed short.
+    /// Reads a big endian signed short and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public short ShortBE()
+    public short ReadShortBE()
     {
-        CheckSpace(2);
-
-        int reference = BaseOffset + Position;
+        AssertSpace(2);
 
         short result =
-            (short)((Data[reference + 1] & 0xFF)
-            | ((Data[reference + 0] & 0xFF) << 8));
+            (short)(Data[AbsolutePosition + 1] & 0xFF
+            | (Data[AbsolutePosition + 0] & 0xFF) << 8);
 
         Position += 2;
 
@@ -225,46 +254,68 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a byte.
+    /// Reads a big endian unsigned short and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public byte Byte()
+    public ushort ReadUnsignedShortBE()
     {
-        CheckSpace(1);
+        AssertSpace(2);
 
-        int reference = BaseOffset + Position;
+        ushort result =
+            (ushort)(Data[AbsolutePosition + 1] & 0xFF
+            | (Data[AbsolutePosition + 0] & 0xFF) << 8);
 
-        byte result = Data[reference];
+        Position += 2;
+
+        return result;
+    }
+
+    /// <summary>
+    /// Reads a byte and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public byte ReadByte()
+    {
+        AssertSpace(1);
+
+        byte result = Data[AbsolutePosition];
 
         Position += 1;
 
         return result;
     }
 
+    /// <summary>
+    /// Reads a byte from the given position without advancing the position.
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
     public byte Peek(int position) => Data[BaseOffset + position];
 
     /// <summary>
-    /// Reads a little endian float.
+    /// Reads a little endian float and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public float FloatLE()
+    public float ReadFloatLE()
     {
-        int integer = LongLE();
+        int integer = ReadLongLE();
         byte[] intBytes = BitConverter.GetBytes(integer);
         float result = BitConverter.ToSingle(intBytes, 0);
         return result;
     }
 
     /// <summary>
-    /// Reads a little endian double.
+    /// Reads a little endian double and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public double DoubleLE()
+    public double ReadDoubleLE()
     {
-        long lsb = LongLE() & 0xFFFFFFFFL;
-        long msb = LongLE() & 0xFFFFFFFFL;
+        AssertSpace(8);
 
-        long doubleAsLong = (msb << 32) | lsb;
+        long lsb = ReadLongLE() & 0xFFFFFFFFL;
+        long msb = ReadLongLE() & 0xFFFFFFFFL;
+
+        long doubleAsLong = msb << 32 | lsb;
 
         double result = BitConverter.Int64BitsToDouble(doubleAsLong);
 
@@ -272,29 +323,18 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a fixed length string.
-    /// </summary>
-    /// <param name="length">The length of the string to read.</param>
-    /// <returns></returns>
-    public string FixedLengthString(int length) => FixedLengthString(length, Encoding.GetEncoding("ISO-8859-1"));
-
-    /// <summary>
-    /// Reads a fixed length string.
+    /// Reads a fixed length string and advances the current position.
     /// </summary>
     /// <param name="length">The length of the string to read.</param>
     /// <param name="encoding">The encoding of the string.</param>
     /// <returns></returns>
-    public string FixedLengthString(int length, Encoding encoding)
+    public string ReadFixedLengthString(int length, Encoding encoding = null)
     {
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        AssertSpace(length);
 
-        CheckSpace(length);
+        encoding ??= Encoding;
 
-        int reference = BaseOffset + Position;
-        string result = encoding.GetString(Data.ToArray(), reference, length);
+        string result = encoding.GetString(Data.ToArray(), AbsolutePosition, length);
 
         Position += length;
 
@@ -302,30 +342,19 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a zero-terminated string.
+    /// Reads a zero-terminated string and advances the current position.
     /// </summary>
+    /// <param name="encoding">The encoding of the string to use.</param>
     /// <returns></returns>
-    public string ZeroTerminatedString() => ZeroTerminatedString(Encoding.GetEncoding("ISO-8859-1"));
-
-    /// <summary>
-    /// Reads a zero-terminated string.
-    /// </summary>
-    /// <param name="encoding">The encoding of the string.</param>
-    /// <returns></returns>
-    public string ZeroTerminatedString(Encoding encoding)
+    public string ReadZeroTerminatedString(Encoding encoding = null)
     {
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-
         var bytes = new List<byte>();
 
         byte value;
 
         do
         {
-            value = Byte();
+            value = ReadByte();
 
             if (value != 0)
             {
@@ -334,41 +363,34 @@ public sealed class TpsRandomAccess
         }
         while (value != 0);
 
+        encoding ??= Encoding;
+
         return encoding.GetString(bytes.ToArray());
     }
 
     /// <summary>
-    /// Reads a Pascal string. Pascal strings have their length encoded in the first byte.
-    /// </summary>
-    /// <returns></returns>
-    public string PascalString() => PascalString(Encoding.GetEncoding("ISO-8859-1"));
-
-    /// <summary>
-    /// Reads a Pascal string. Pascal strings have their length encoded in the first byte.
+    /// Reads a Pascal string and advances the current position. Pascal strings have their length encoded in the first byte.
     /// </summary>
     /// <param name="encoding">The encoding of the string.</param>
     /// <returns></returns>
-    public string PascalString(Encoding encoding)
+    public string ReadPascalString(Encoding encoding = null)
     {
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-
-        int length = Byte();
+        int length = ReadByte();
 
         var bytes = new List<byte>();
 
         for (int i = 0; i < length; i++)
         {
-            bytes.Add(Byte());
+            bytes.Add(ReadByte());
         }
+
+        encoding ??= Encoding;
 
         return encoding.GetString(bytes.ToArray());
     }
 
     /// <summary>
-    /// Set the current position to the given offset.
+    /// Sets the current position to the given offset.
     /// </summary>
     /// <param name="offset">The new offset.</param>
     /// <returns></returns>
@@ -379,7 +401,7 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Set the current position relative to the given offset.
+    /// Sets the current position relative to the given offset.
     /// </summary>
     /// <param name="offset">The relative offset.</param>
     /// <returns></returns>
@@ -402,10 +424,11 @@ public sealed class TpsRandomAccess
         }
         else
         {
-            return Data
-                .Skip(BaseOffset)
-                .Take(Length)
-                .ToArray();
+            byte[] dest = new byte[Length];
+
+            Array.Copy(Data, BaseOffset, dest, 0, Length);
+
+            return dest;
         }
     }
 
@@ -416,31 +439,42 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public TpsRandomAccess Read(int length)
     {
-        CheckSpace(length);
+        AssertSpace(length);
 
-        int reference = BaseOffset + Position;
+        int reference = AbsolutePosition;
         Position += length;
 
-        return new TpsRandomAccess(Data, reference, length);
+        return new TpsRandomAccess(Data, reference, length, Encoding);
     }
 
     /// <summary>
-    /// Reads an array from the current position and advances the position.
+    /// Reads an array of bytes and advances the position.
     /// </summary>
     /// <param name="length"></param>
     /// <returns></returns>
     public byte[] ReadBytes(int length)
     {
-        CheckSpace(length);
-
-        int reference = BaseOffset + Position;
+        var dest = PeekBytes(length);
 
         Position += length;
 
-        return Data
-            .Skip(reference)
-            .Take(length)
-            .ToArray();
+        return dest;
+    }
+
+    /// <summary>
+    /// Reads an array from the current position.
+    /// </summary>
+    /// <param name="length"></param>
+    /// <returns></returns>
+    public byte[] PeekBytes(int length)
+    {
+        AssertSpace(length);
+
+        byte[] dest = new byte[length];
+
+        Array.Copy(Data, AbsolutePosition, dest, 0, length);
+
+        return dest;
     }
 
     /// <summary>
@@ -453,7 +487,7 @@ public sealed class TpsRandomAccess
 
         do
         {
-            int skip = Byte();
+            int skip = ReadByte();
 
             if (skip == 0)
             {
@@ -462,10 +496,10 @@ public sealed class TpsRandomAccess
 
             if (skip > 0x7F)
             {
-                int msb = Byte();
+                int msb = ReadByte();
                 int lsb = skip & 0x7F;
                 int shift = 0x80 * (msb & 0x01);
-                skip = ((msb << 7) & 0xFF00) + lsb + shift;
+                skip = (msb << 7 & 0xFF00) + lsb + shift;
             }
 
             bytes.AddRange(ReadBytes(skip));
@@ -474,15 +508,15 @@ public sealed class TpsRandomAccess
             {
                 JumpRelative(-1);
 
-                byte toRepeat = Byte();
-                int repeatsMinusOne = Byte();
+                byte toRepeat = ReadByte();
+                int repeatsMinusOne = ReadByte();
 
                 if (repeatsMinusOne > 0x7F)
                 {
-                    int msb = Byte();
+                    int msb = ReadByte();
                     int lsb = repeatsMinusOne & 0x7F;
                     int shift = 0x80 * (msb & 0x01);
-                    repeatsMinusOne = ((msb << 7) & 0xFF00) + lsb + shift;
+                    repeatsMinusOne = (msb << 7 & 0xFF00) + lsb + shift;
                 }
 
                 byte[] repeat = new byte[repeatsMinusOne];
@@ -497,14 +531,8 @@ public sealed class TpsRandomAccess
         }
         while (!IsAtEnd);
 
-        return new TpsRandomAccess(bytes.ToArray());
+        return new TpsRandomAccess(bytes.ToArray(), Encoding);
     }
-
-    public string ToHex8(int value) => $"{value:X8}";
-
-    public string ToHex4(int value) => $"{value:X4}";
-
-    public string ToHex2(int value) => $"{value:X2}";
 
     /// <summary>
     /// Reads an array of little endian 2s-complement signed 4 byte integers.
@@ -517,7 +545,7 @@ public sealed class TpsRandomAccess
 
         for (int i = 0; i < length; i++)
         {
-            results[i] = LongLE();
+            results[i] = ReadLongLE();
         }
 
         return results;
@@ -527,15 +555,13 @@ public sealed class TpsRandomAccess
     /// Gets an array of the remaining unread data array.
     /// </summary>
     /// <returns></returns>
-    public byte[] GetRemainder()
+    public byte[] GetRemainderAsByteArray()
     {
-        int reference = BaseOffset + Position;
-
         byte[] result = new byte[Length - Position];
 
         Array.Copy(
             sourceArray: Data,
-            sourceIndex: reference,
+            sourceIndex: AbsolutePosition,
             destinationArray: result,
             destinationIndex: 0,
             length: result.Length);
@@ -543,12 +569,33 @@ public sealed class TpsRandomAccess
         return result;
     }
 
-    public int ToFileOffset(int pageReference) => (pageReference << 8) + 0x200;
+    /// <summary>
+    /// Gets a new reader instance for the remainder of the unread data.
+    /// </summary>
+    /// <returns></returns>
+    public TpsRandomAccess GetReaderForRemainder() =>
+        new TpsRandomAccess(
+            existing: this,
+            additiveOffset: Position,
+            length: Length - Position,
+            encoding: Encoding);
 
-    public int[] ToFileOffset(int[] pageReferences)
+    /// <summary>
+    /// Gets the absolute position of the given page by its reference number.
+    /// </summary>
+    /// <param name="pageReference"></param>
+    /// <returns></returns>
+    public static int GetFileOffset(int pageReference) => (pageReference << 8) + 0x200;
+
+    /// <summary>
+    /// Gets the absolute positions of the given pages by their reference numbers.
+    /// </summary>
+    /// <param name="pageReferences"></param>
+    /// <returns></returns>
+    public static int[] GetFileOffset(int[] pageReferences)
     {
         return pageReferences
-            .Select(reference => ToFileOffset(reference))
+            .Select(reference => GetFileOffset(reference))
             .ToArray();
     }
 
@@ -562,10 +609,10 @@ public sealed class TpsRandomAccess
         {
             int value = Data[BaseOffset + i];
 
-            if ((value < 32) | (value > 127))
+            if (value < 32 | value > 127)
             {
                 stringBuilder.Append(" ");
-                stringBuilder.Append(ToHex2(value));
+                stringBuilder.Append(StringUtils.ToHex2(value));
                 wasHex = true;
             }
             else
@@ -589,35 +636,7 @@ public sealed class TpsRandomAccess
         return stringBuilder.ToString();
     }
 
-    public string BinaryCodedDecimal(int length, int digitsAfterDecimalPoint)
-    {
-        var stringBuilder = new StringBuilder();
-
-        foreach (byte b in ReadBytes(length))
-        {
-            stringBuilder.Append(ToHex2(b));
-        }
-
-        string currentString = stringBuilder.ToString();
-
-        string sign = currentString.Substring(0, 1);
-        string number = currentString.Substring(1);
-
-        if (digitsAfterDecimalPoint > 0)
-        {
-            int decimalIndex = number.Length - digitsAfterDecimalPoint;
-            number = TrimLeadingZeroes(number.Substring(0, decimalIndex)) + "." + number.Substring(decimalIndex);
-        }
-        else
-        {
-            number = TrimLeadingZeroes(number);
-        }
-
-        return (!(sign == "0") ? "-" : string.Empty) + number;
-    }
-
-    private string TrimLeadingZeroes(string number) => string.IsNullOrWhiteSpace(number) ? "0" : decimal.Parse(number).ToString();
-
+    /// <inheritdoc/>
     public override string ToString()
     {
         return $"{Position:X}/{Length:X}";
@@ -665,5 +684,199 @@ public sealed class TpsRandomAccess
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TpsByte"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsByte ReadTpsByte() => new TpsByte(ReadByte());
+
+    /// <summary>
+    /// Reads a <see cref="TpsShort"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsShort ReadTpsShort() => new TpsShort(ReadShortLE());
+
+    /// <summary>
+    /// Reads a <see cref="TpsUnsignedShort"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsUnsignedShort ReadTpsUnsignedShort() => new TpsUnsignedShort(ReadUnsignedShortLE());
+
+    /// <summary>
+    /// Reads a <see cref="TpsDate"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsDate ReadTpsDate()
+    {
+        long date = ReadUnsignedLongLE();
+
+        if (date != 0)
+        {
+            long years = (date & 0xFFFF0000) >> 16;
+            long months = (date & 0x0000FF00) >> 8;
+            long days = date & 0x000000FF;
+            return new TpsDate(new DateTime((int)years, (int)months, (int)days));
+        }
+        else
+        {
+            return new TpsDate(null);
+        }
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TpsTime"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsTime ReadTpsTime()
+    {
+        int time = ReadLongLE();
+
+        // Hours 0 - 23
+        int hours = (time & 0x7F000000) >> 24;
+
+        // Minutes 0 - 59
+        int mins = (time & 0x00FF0000) >> 16;
+
+        // Seconds 0 - 59
+        int secs = (time & 0x0000FF00) >> 8;
+
+        // Centiseconds (seconds/100) 0 - 99
+        int centi = time & 0x000000FF;
+
+        return new TpsTime((byte)hours, (byte)mins, (byte)secs, (byte)(centi * 10));
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TpsLong"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsLong ReadTpsLong() => new TpsLong(ReadLongLE());
+
+    /// <summary>
+    /// Reads a <see cref="TpsUnsignedLong"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsUnsignedLong ReadTpsUnsignedLong() => new TpsUnsignedLong(ReadUnsignedLongLE());
+
+    /// <summary>
+    /// Reads a <see cref="TpsFloat"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsFloat ReadTpsFloat() => new TpsFloat(ReadFloatLE());
+
+    /// <summary>
+    /// Reads a <see cref="TpsDouble"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsDouble ReadTpsDouble() => new TpsDouble(ReadDoubleLE());
+
+    /// <summary>
+    /// Reads a <see cref="TpsDecimal"/> and advances the current position.
+    /// </summary>
+    /// <param name="length">The total number of bytes that represent the number.</param>
+    /// <param name="digitsAfterDecimalPoint">The number of digits in the fractional part of the number.</param>
+    /// <returns></returns>
+    public TpsDecimal ReadTpsDecimal(int length, byte digitsAfterDecimalPoint)
+    {
+        if (length < 1 || length > 16)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), "Expected a byte length between 1 and 16 inclusive.");
+        }
+
+        ulong high = default;
+        ulong low = default;
+        byte places = digitsAfterDecimalPoint;
+
+        ref ulong current = ref (length > 16) ? ref high : ref low;
+
+        byte[] data = ReadBytes(length);
+
+        int shift = 0;
+
+        // Write the least significant 30 digits
+        for (int i = length - 1; i > 0; i--)
+        {
+            current |= (ulong)data[i] << (8 * shift);
+
+            if (i == 16)
+            {
+                shift = 0;
+                current = ref high;
+            }
+            else
+            {
+                shift++;
+            }
+        }
+
+        // Most significant digit (may be zero)
+        current |= ((ulong)data[0] & 0x0F) << (8 * shift);
+
+        // Sign
+        high |= ((ulong)data[0] & 0xF0) << 56;
+
+        return new TpsDecimal(high, low, places);
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TpsString"/> and consumes the entire data array.
+    /// </summary>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public TpsString ReadTpsString(Encoding encoding = null)
+    {
+        encoding ??= Encoding;
+
+        return new TpsString(encoding.GetString(GetData()));
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TpsString"/> and advances the current position.
+    /// </summary>
+    /// <param name="length">The length of the string in bytes.</param>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public TpsString ReadTpsString(int length, Encoding encoding = null)
+    {
+        if (length < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), "String length must not be negative.");
+        }
+
+        encoding ??= Encoding;
+
+        return new TpsString(ReadFixedLengthString(length, encoding));
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TpsCString"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsCString ReadTpsCString(Encoding encoding = null) => new TpsCString(ReadZeroTerminatedString(encoding));
+
+    /// <summary>
+    /// Reads a <see cref="TpsPString"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsPString ReadTpsPString(Encoding encoding = null) => new TpsPString(ReadPascalString(encoding));
+
+    /// <summary>
+    /// Reads a <see cref="TpsMemo"/> and consumes the entire data array.
+    /// </summary>
+    /// <returns></returns>
+    public TpsMemo ReadMemo(Encoding encoding = null) => new TpsMemo(ReadTpsString(encoding).Value);
+
+    /// <summary>
+    /// Reads a <see cref="TpsBlob"/> and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public TpsBlob ReadBlob()
+    {
+        int length = ReadLongLE();
+        var bytes = ReadBytes(length);
+
+        return new TpsBlob(bytes);
     }
 }

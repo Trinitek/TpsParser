@@ -239,7 +239,7 @@ public sealed class PartialKey : IComparable<PartialKey>, IEquatable<PartialKey>
     {
         if (IsComplete)
         {
-            var rx = new TpsRandomAccess(new byte[64]);
+            var rx = new TpsRandomAccess(new byte[64], Encoding.Latin1);
 
             foreach (var k in KeyPiece)
             {

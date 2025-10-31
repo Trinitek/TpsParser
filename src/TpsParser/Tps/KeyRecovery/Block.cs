@@ -288,8 +288,9 @@ public sealed class Block : IComparable<Block>, IEquatable<Block>
     /// </para>
     /// </summary>
     /// <param name="end"></param>
+    /// <param name="encoding"></param>
     /// <returns></returns>
-    public static Block GenerateSequenceBlock(int end)
+    public static Block GenerateSequenceBlock(int end, Encoding encoding)
     {
         int start = (end >> 24) & 0xFF;
 
@@ -300,7 +301,7 @@ public sealed class Block : IComparable<Block>, IEquatable<Block>
             sequence[i] = (byte)start--;
         }
 
-        return new Block(offset: 0, values: new TpsRandomAccess(sequence).LongArrayLE(16), isEncrypted: false);
+        return new Block(offset: 0, values: new TpsRandomAccess(sequence, encoding).LongArrayLE(16), isEncrypted: false);
     }
 
     /// <summary>

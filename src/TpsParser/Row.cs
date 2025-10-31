@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TpsParser.Tps.Type;
+using TpsParser.TypeModel;
 
 namespace TpsParser;
 
@@ -26,14 +26,14 @@ public sealed class Row
     /// This contains data fields as well as any associated memos or blobs.
     /// </para>
     /// </summary>
-    public IReadOnlyDictionary<string, TpsObject> Values { get; }
+    public IReadOnlyDictionary<string, ITpsObject> Values { get; }
 
     /// <summary>
     /// Instantiates a new row.
     /// </summary>
     /// <param name="recordNumber">The record number of the row.</param>
     /// <param name="values">The values in the row, keyed by their column names.</param>
-    public Row(int recordNumber, IReadOnlyDictionary<string, TpsObject> values)
+    public Row(int recordNumber, IReadOnlyDictionary<string, ITpsObject> values)
     {
         Id = recordNumber;
         Values = values ?? throw new ArgumentNullException(nameof(values));
@@ -44,7 +44,7 @@ public sealed class Row
     /// </summary>
     /// <param name="column"></param>
     /// <returns></returns>
-    public TpsObject GetValue(string column) =>  Values[column];
+    public ITpsObject GetValue(string column) => Values[column];
 
     /// <summary>
     /// Gets the field, memo, or blob value associated with the given column name.
@@ -53,7 +53,7 @@ public sealed class Row
     /// <param name="column">The case insensitive name of the column.</param>
     /// <param name="isRequired">Indicates that the requested field must be present, or an exception is thrown.</param>
     /// <returns></returns>
-    public TpsObject GetValueCaseInsensitive(string column, bool isRequired)
+    public ITpsObject GetValueCaseInsensitive(string column, bool isRequired)
     {
         var matchingKey = Values.Keys.FirstOrDefault(k => k.Equals(column, StringComparison.OrdinalIgnoreCase));
 

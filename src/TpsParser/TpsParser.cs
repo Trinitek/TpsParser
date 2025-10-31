@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TpsParser.Tps;
 using TpsParser.Tps.Record;
-using TpsParser.Tps.Type;
+using TpsParser.TypeModel;
 
 namespace TpsParser;
 
@@ -69,14 +69,14 @@ public sealed class TpsParser : IDisposable
         TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
     {
         var dataRecords = TpsFile.GetDataRecords(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
 
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
     {
         return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
             .SelectMany(index =>
@@ -89,7 +89,7 @@ public sealed class TpsParser : IDisposable
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
             .ToDictionary(
                 groupedPair => groupedPair.Key,
-                groupedPair => (IReadOnlyDictionary<string, TpsObject>)groupedPair
+                groupedPair => (IReadOnlyDictionary<string, ITpsObject>)groupedPair
                     .ToDictionary(pair => pair.name, pair => pair.value));
     }
 
@@ -109,7 +109,7 @@ public sealed class TpsParser : IDisposable
         var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
         var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
 
-        var unifiedRecords = new Dictionary<int, Dictionary<string, TpsObject>>();
+        var unifiedRecords = new Dictionary<int, Dictionary<string, ITpsObject>>();
 
         foreach (var dataKvp in dataRecords)
         {

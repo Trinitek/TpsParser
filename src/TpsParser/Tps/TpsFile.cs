@@ -109,7 +109,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
             fileData = ms.ToArray();
         }
 
-        Data = new TpsRandomAccess(fileData);
+        Data = new TpsRandomAccess(fileData, Encoding);
     }
 
     public RandomAccessTpsFile(Stream stream, Key key)
@@ -307,5 +307,5 @@ internal sealed class RandomAccessTpsFile : TpsFile
     }
 
     private TpsRandomAccess Merge(IEnumerable<TpsRecord> records) =>
-        new TpsRandomAccess(records.SelectMany(r => r.Data.GetRemainder()).ToArray());
+        new TpsRandomAccess(records.SelectMany(r => r.Data.GetRemainderAsByteArray()).ToArray(), Encoding);
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TpsParser.Binary;
 using TpsParser.Tps.Type;
+using TpsParser.TypeModel;
 
 namespace TpsParser.Tests.Tps.Type;
 

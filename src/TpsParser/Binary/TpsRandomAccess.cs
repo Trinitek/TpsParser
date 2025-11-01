@@ -24,6 +24,20 @@ public sealed class TpsRandomAccess
     //    //SequenceReader = new()
     //}
 
+    /// <summary>
+    /// <para>
+    /// Gets the encoding for Windows-1252 "ANSI Latin 1; Western European (Windows)" commonly used with US English.
+    /// </para>
+    /// <para>
+    /// The original Clarion TPS database driver would have used the system ANSI codepage when reading and writing strings.
+    /// </para>
+    /// <para>
+    /// See <a href="https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers"/>
+    /// for a list of other ANSI and non-Unicode codepages.
+    /// </para>
+    /// </summary>
+    public static Encoding EncodingWindows1252 => CodePagesEncodingProvider.Instance.GetEncoding("Windows-1252");
+
     private byte[] Data { get; }
     private Stack<int> PositionStack { get; }
 

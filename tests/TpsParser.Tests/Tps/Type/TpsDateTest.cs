@@ -1,9 +1,9 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Text;
 using TpsParser.Binary;
-using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests.Tps.Type;
+namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
 internal sealed class TpsDateTest
@@ -11,11 +11,17 @@ internal sealed class TpsDateTest
     [Test]
     public void ShouldReadFromRandomAccess()
     {
-        var rx = new TpsRandomAccess(new byte[] { 0x10, 0x07, 0xE3, 0x07 });
+        var rx = new TpsRandomAccess([0x10, 0x07, 0xE3, 0x07], Encoding.ASCII);
 
-        var date = new TpsDate(rx);
+        var date = rx.ReadTpsDate();
 
-        Assert.That(date.Value, Is.EqualTo(new DateTime(2019, 7, 16)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(date.Year, Is.EqualTo(2019));
+            Assert.That(date.Month, Is.EqualTo(7));
+            Assert.That(date.Day, Is.EqualTo(16));
+            Assert.That(date.ToDateTime().Value, Is.EqualTo(new DateTime(2019, 7, 16)));
+        }
     }
 
     [Test]
@@ -25,6 +31,6 @@ internal sealed class TpsDateTest
 
         var date = new TpsDate(dateTime);
 
-        Assert.That(date.Value, Is.EqualTo(dateTime));
+        Assert.That(date.ToDateTime().Value, Is.EqualTo(dateTime));
     }
 }

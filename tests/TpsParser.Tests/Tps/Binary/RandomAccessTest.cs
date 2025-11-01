@@ -12,7 +12,7 @@ internal sealed class RandomAccessTest
     [TestCase(0x81, new byte[] { 0x81 })]
     public void ShouldParseByte(byte value, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
         byte parsed = rx.ReadByte();
 
         Assert.That(parsed, Is.EqualTo(value));
@@ -22,7 +22,7 @@ internal sealed class RandomAccessTest
     [TestCase(unchecked((short)0x8182), new byte[] { 0x81, 0x82 })]
     public void ShouldParseShortBigEndian(short value, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
         short parsed = rx.ReadShortBE();
 
         Assert.That(parsed, Is.EqualTo(value));
@@ -32,7 +32,7 @@ internal sealed class RandomAccessTest
     [TestCase(unchecked((short)0x8182), new byte[] { 0x82, 0x81 })]
     public void ShouldParseShortLittleEndian(short value, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
         short parsed = rx.ReadShortLE();
 
         Assert.That(parsed, Is.EqualTo(value));
@@ -42,7 +42,7 @@ internal sealed class RandomAccessTest
     [TestCase(unchecked((int)0x81828384), new byte[] { 0x81, 0x82, 0x83, 0x84 })]
     public void ShouldParseLongBigEndian(int value, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
         var parsed = rx.ReadLongBE();
 
         Assert.That(parsed, Is.EqualTo(value));
@@ -52,36 +52,44 @@ internal sealed class RandomAccessTest
     [TestCase(unchecked((int)0x81828384), new byte[] { 0x84, 0x83, 0x82, 0x81 })]
     public void ShouldParseLongLittleEndian(int value, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
         var parsed = rx.ReadLongLE();
 
         Assert.That(parsed, Is.EqualTo(value));
     }
 
     [Test]
-    public void ShouldReadFixedLengthString()
+    public void ShouldReadFixedLengthString_Ascii()
     {
-        Assert.That(new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22 }).FixedLengthString(2), Is.EqualTo(" !"));
+        Assert.That(new TpsRandomAccess([0x20, 0x21, 0x22], Encoding.ASCII).ReadFixedLengthString(2), Is.EqualTo(" !"));
     }
 
     [Test]
-    public void ShouldReadFixedLengthStringWithCP850()
+    public void ShouldReadFixedLengthString_CP850()
     {
         var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
 
-        Assert.That(new TpsRandomAccess(new byte[] { 0x82, 0x21, 0x22 }).FixedLengthString(2, codepage850), Is.EqualTo("é!"));
+        Assert.That(new TpsRandomAccess([0x82, 0x21, 0x22], codepage850).ReadFixedLengthString(2), Is.EqualTo("é!"));
+    }
+
+    [Test]
+    public void ShouldReadFixedLengthString_Ascii_OverrideWith_CP850()
+    {
+        var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
+
+        Assert.That(new TpsRandomAccess([0x82, 0x21, 0x22], Encoding.ASCII).ReadFixedLengthString(2, codepage850), Is.EqualTo("é!"));
     }
     
     [Test]
-    public void ShouldReadZeroTerminatedString()
+    public void ShouldReadZeroTerminatedString_Ascii()
     {
-        Assert.That(new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ZeroTerminatedString(), Is.EqualTo(" !\""));
+        Assert.That(new TpsRandomAccess([0x20, 0x21, 0x22, 0x00, 0x23], Encoding.ASCII).ReadZeroTerminatedString(), Is.EqualTo(" !\""));
     }
 
     [Test]
     public void ShouldToAscii()
     {
-        Assert.That(new TpsRandomAccess(new byte[] { 0x20, 0x21, 0x22, 0x00, 0x23 }).ToAscii(), Is.EqualTo(".!\" 00 #"));
+        Assert.That(new TpsRandomAccess([0x20, 0x21, 0x22, 0x00, 0x23], Encoding.ASCII).ToAscii(), Is.EqualTo(".!\" 00 #"));
     }
 
     [Test]
@@ -89,10 +97,10 @@ internal sealed class RandomAccessTest
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ReadFloatLE(), Is.EqualTo(0.0f).Within(0.0));
-            Assert.That(float.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x80, 0x7F }).ReadFloatLE()));
-            Assert.That(float.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x80, 0xFF }).ReadFloatLE()));
-            Assert.That(new TpsRandomAccess(new byte[] { 0xCD, 0xCC, 0xCC, 0x3D }).ReadFloatLE(), Is.EqualTo(0.1f));
+            Assert.That(new TpsRandomAccess([0x00, 0x00, 0x00, 0x00], Encoding.ASCII).ReadFloatLE(), Is.EqualTo(0.0f).Within(0.0));
+            Assert.That(float.IsInfinity(new TpsRandomAccess([0x00, 0x00, 0x80, 0x7F], Encoding.ASCII).ReadFloatLE()));
+            Assert.That(float.IsInfinity(new TpsRandomAccess([0x00, 0x00, 0x80, 0xFF], Encoding.ASCII).ReadFloatLE()));
+            Assert.That(new TpsRandomAccess([0xCD, 0xCC, 0xCC, 0x3D], Encoding.ASCII).ReadFloatLE(), Is.EqualTo(0.1f));
         }
     }
 
@@ -101,10 +109,10 @@ internal sealed class RandomAccessTest
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).ReadDoubleLE(), Is.Zero.Within(0.0));
-            Assert.That(double.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F }).ReadDoubleLE()));
-            Assert.That(double.IsInfinity(new TpsRandomAccess(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF }).ReadDoubleLE()));
-            Assert.That(new TpsRandomAccess(new byte[] { 0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F }).ReadDoubleLE(), Is.EqualTo(0.1d).Within(0.0));
+            Assert.That(new TpsRandomAccess([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], Encoding.ASCII).ReadDoubleLE(), Is.Zero.Within(0.0));
+            Assert.That(double.IsInfinity(new TpsRandomAccess([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F], Encoding.ASCII).ReadDoubleLE()));
+            Assert.That(double.IsInfinity(new TpsRandomAccess([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF], Encoding.ASCII).ReadDoubleLE()));
+            Assert.That(new TpsRandomAccess([0x9a, 0x99, 0x99, 0x99, 0x99, 0x99, 0xB9, 0x3F], Encoding.ASCII).ReadDoubleLE(), Is.EqualTo(0.1d).Within(0.0));
         }
     }
 
@@ -120,7 +128,7 @@ internal sealed class RandomAccessTest
     [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
     public void ShouldParseBCD(string value, int bcdLength, byte bcdDigitsAfterDecimal, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
         var bcd = rx.ReadTpsDecimal(bcdLength, bcdDigitsAfterDecimal);
 
         Assert.That(bcd.ToString(), Is.EqualTo(value));
@@ -129,7 +137,7 @@ internal sealed class RandomAccessTest
     [Test]
     public void LEReadWriteTest()
     {
-        var ra = new TpsRandomAccess(new byte[] { 1, 2, 3, 4 });
+        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
         int value = ra.ReadLongLE();
         ra.JumpAbsolute(0);
         ra.WriteLongLE(value);
@@ -142,7 +150,7 @@ internal sealed class RandomAccessTest
     [Test]
     public void ShouldReuseBuffer()
     {
-        var ra = new TpsRandomAccess(new byte[] { 1, 2, 3, 4 });
+        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
         ra.ReadByte();
         var read = ra.Read(3);
 
@@ -171,7 +179,7 @@ internal sealed class RandomAccessTest
     [Test]
     public void ShouldFailBeyondBuffer()
     {
-        var ra = new TpsRandomAccess(new byte[] { 1, 2, 3, 4 });
+        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
         ra.ReadByte();
         var read = ra.Read(3);
 
@@ -181,7 +189,7 @@ internal sealed class RandomAccessTest
     [Test]
     public void ShouldFailBeforeBuffer()
     {
-        var ra = new TpsRandomAccess(new byte[] { 1, 2, 3, 4 });
+        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
         ra.ReadByte();
         var read = ra.Read(3);
         read.JumpAbsolute(-1);

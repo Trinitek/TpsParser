@@ -86,8 +86,8 @@ internal sealed class TpsFileTest
             Assert.That(dataRecords.Count(), Is.EqualTo(1));
             Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
             Assert.That(dataRecords[0].Values.Count(), Is.EqualTo(2));
-            Assert.That(dataRecords[0].Values.ToList()[0].Value, Is.EqualTo(1));
-            Assert.That(dataRecords[0].Values.ToList()[1].Value, Is.EqualTo(1));
+            Assert.That(((TpsShort)dataRecords[0].Values[0]).ToInt32().Value, Is.EqualTo(1));
+            Assert.That(((TpsShort)dataRecords[0].Values[1]).ToInt32().Value, Is.EqualTo(1));
         }
     }
 

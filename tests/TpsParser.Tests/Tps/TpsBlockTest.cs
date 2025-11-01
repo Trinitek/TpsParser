@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Text;
 using TpsParser.Binary;
 using TpsParser.Tps;
 
@@ -10,7 +11,7 @@ internal sealed class TpsBlockTest
     [Test]
     public void ShouldReadTwoBlocks()
     {
-        var rx = new TpsRandomAccess(new byte[4 * 256]);
+        var rx = new TpsRandomAccess(new byte[4 * 256], Encoding.ASCII);
 
         rx.WriteLongLE(0);
         rx.WriteLongLE(0x200);
@@ -34,7 +35,7 @@ internal sealed class TpsBlockTest
     [Test]
     public void ShouldReadTwoBlocksWithGap()
     {
-        var rx = new TpsRandomAccess(new byte[4 * 256]);
+        var rx = new TpsRandomAccess(new byte[4 * 256], Encoding.ASCII);
 
         rx.WriteLongLE(0);
         rx.WriteLongLE(0x100);
@@ -58,7 +59,7 @@ internal sealed class TpsBlockTest
     [Test]
     public void ShouldSkipPartiallyOverwrittenBlock()
     {
-        var rx = new TpsRandomAccess(new byte[4 * 256]);
+        var rx = new TpsRandomAccess(new byte[4 * 256], Encoding.ASCII);
 
         rx.WriteLongLE(0);
         rx.WriteLongLE(0x300);

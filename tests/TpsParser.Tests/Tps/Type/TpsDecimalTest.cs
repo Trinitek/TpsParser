@@ -1,11 +1,10 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using TpsParser.Binary;
-using TpsParser.Tps.Type;
-using TpsParser.TypeModel;
 
-namespace TpsParser.Tests.Tps.Type;
+namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
 internal sealed class TpsDecimalTest
@@ -20,12 +19,12 @@ internal sealed class TpsDecimalTest
     [TestCase("-1.23", 2, 2, new byte[] { 0xF1, 0x23 })]
     [TestCase("0.00000000", 7, 8, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })]
     [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
-    public void ShouldReadFromRandomAccess(string value, int bcdLength, int bcdDigitsAfterDecimal, byte[] data)
+    public void ShouldReadFromRandomAccess(string value, int bcdLength, byte bcdDigitsAfterDecimal, byte[] data)
     {
-        var rx = new TpsRandomAccess(data);
-        var dec = new TpsDecimal(rx, bcdLength, bcdDigitsAfterDecimal);
+        var rx = new TpsRandomAccess(data, Encoding.ASCII);
+        var dec = rx.ReadTpsDecimal(bcdLength, bcdDigitsAfterDecimal);
 
-        Assert.That(dec.Value, Is.EqualTo(value));
+        Assert.That(dec.ToString(), Is.EqualTo(value));
     }
 
     [TestCase("0")]
@@ -40,9 +39,9 @@ internal sealed class TpsDecimalTest
     [TestCase("0.50000")]
     public void ShouldReadFromString(string value)
     {
-        var dec = new TpsDecimal(value);
+        var dec = TpsDecimal.Parse(value);
 
-        Assert.That(dec.Value, Is.EqualTo(value));
+        Assert.That(dec.ToString(), Is.EqualTo(value));
     }
 
     [TestCase("")]
@@ -55,21 +54,33 @@ internal sealed class TpsDecimalTest
     [TestCase("--23")]
     public void ShouldThrowWhenStringIsMalformed(string value)
     {
-        Assert.Throws<ArgumentException>(() => new TpsDecimal(value));
+        Assert.Throws<ArgumentException>(() => TpsDecimal.Parse(value));
     }
 
     [Test]
     public void ShouldThrowWhenStringIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new TpsDecimal(null));
+        Assert.Throws<ArgumentNullException>(() => TpsDecimal.Parse(null));
     }
 
     [TestCaseSource(typeof(ShouldConvertToDecimalData), nameof(ShouldConvertToDecimalData.TestCases))]
     public void ShouldConvertToDecimal(string value, decimal expected)
     {
-        var dec = new TpsDecimal(value);
+        var dec = TpsDecimal.Parse(value);
 
-        Assert.That(((IConvertible<decimal>)dec).AsType(), Is.EqualTo(expected));
+        using (Assert.EnterMultipleScope())
+        {
+            var converted = dec.ToDecimal();
+
+            Assert.That(converted.HasValue);
+
+            if (converted.HasValue)
+            {
+                return;
+            }
+
+            Assert.That(converted.Value, Is.EqualTo(expected));
+        }
     }
 
     private class ShouldConvertToDecimalData
@@ -104,8 +115,8 @@ internal sealed class TpsDecimalTest
     [TestCase("0.50000", true)]
     public void ShouldConvertToBoolean(string value, bool expected)
     {
-        var dec = new TpsDecimal(value);
+        var dec = TpsDecimal.Parse(value);
 
-        Assert.That(((IConvertible<bool>)dec).AsType(), Is.EqualTo(expected));
+        Assert.That(dec.ToBoolean(), Is.EqualTo(expected));
     }
 }

@@ -2,9 +2,8 @@
 using System;
 using System.Text;
 using TpsParser.Binary;
-using TpsParser.Tps.Type;
 
-namespace TpsParser.Tests.Tps.Type;
+namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
 internal sealed class TpsPStringTest
@@ -12,9 +11,9 @@ internal sealed class TpsPStringTest
     [Test]
     public void ShouldReadFromRandomAccess()
     {
-        var rx = new TpsRandomAccess(new byte[] { 0x05, 0x48, 0x65, 0x6C, 0x6C, 0x6F });
+        var rx = new TpsRandomAccess([0x05, 0x48, 0x65, 0x6C, 0x6C, 0x6F], Encoding.ASCII);
 
-        var str = new TpsPString(rx, Encoding.ASCII);
+        var str = rx.ReadTpsPString();
 
         Assert.That(str.Value, Is.EqualTo("Hello"));
     }

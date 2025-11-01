@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Text;
 using TpsParser.Binary;
 
 namespace TpsParser.Tests.Tps.Binary;
@@ -11,7 +12,7 @@ internal sealed class RunLengthEncodingTest
     {
         // Skip one '1', repeat 7 '1'.
 
-        var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x07 }).UnpackRunLengthEncoding();
+        var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
 
         Assert.That(ra.Length, Is.EqualTo(8));
         Assert.That(ra.ToAscii(), Is.EqualTo("11111111"));
@@ -22,7 +23,7 @@ internal sealed class RunLengthEncodingTest
     {
         // Skip one '1', repeat 7 '1', skip '2', '3', repeat '3' 3 times
 
-        var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03 }).UnpackRunLengthEncoding();
+        var ra = new TpsRandomAccess([0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03], Encoding.ASCII).UnpackRunLengthEncoding();
 
         Assert.That(ra.Length, Is.EqualTo(13));
         Assert.That(ra.ToAscii(), Is.EqualTo("1111111123333"));
@@ -31,7 +32,7 @@ internal sealed class RunLengthEncodingTest
     [Test]
     public void ShouldEndAfterSkip()
     {
-        var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31 }).UnpackRunLengthEncoding();
+        var ra = new TpsRandomAccess([0x01, 0x31], Encoding.ASCII).UnpackRunLengthEncoding();
 
         using (Assert.EnterMultipleScope())
         {
@@ -43,7 +44,7 @@ internal sealed class RunLengthEncodingTest
     [Test]
     public void ShouldEndAfterRepeat()
     {
-        var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x07 }).UnpackRunLengthEncoding();
+        var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
 
         using (Assert.EnterMultipleScope())
         {
@@ -60,7 +61,7 @@ internal sealed class RunLengthEncodingTest
         block[1] = 0x01;
         block[130] = 0x10;
 
-        var ra = new TpsRandomAccess(block).UnpackRunLengthEncoding();
+        var ra = new TpsRandomAccess(block, Encoding.ASCII).UnpackRunLengthEncoding();
 
         Assert.That(ra.Length, Is.EqualTo(128 + 16));
     }
@@ -68,7 +69,7 @@ internal sealed class RunLengthEncodingTest
     [Test]
     public void ShouldUnpackRleLongRepeat()
     {
-        var ra = new TpsRandomAccess(new byte[] { 0x01, 0x31, 0x80, 0x01 }).UnpackRunLengthEncoding();
+        var ra = new TpsRandomAccess([0x01, 0x31, 0x80, 0x01], Encoding.ASCII).UnpackRunLengthEncoding();
 
         Assert.That(ra.Length, Is.EqualTo(129));
     }

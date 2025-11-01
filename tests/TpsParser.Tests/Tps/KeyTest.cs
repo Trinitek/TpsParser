@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using TpsParser.Binary;
 using TpsParser.Tps;
 
@@ -42,7 +43,7 @@ internal sealed class KeyTest
     [Test]
     public void ShouldDecryptBlock()
     {
-        var rx = new TpsRandomAccess(ParseHex(EncryptedHeader));
+        var rx = new TpsRandomAccess(ParseHex(EncryptedHeader), Encoding.ASCII);
         var key = new Key("a");
 
         key.Decrypt64(rx);
@@ -56,7 +57,7 @@ internal sealed class KeyTest
     [Test]
     public void ShouldEncryptBlock()
     {
-        var rx = new TpsRandomAccess(ParseHex(DecryptedHeader));
+        var rx = new TpsRandomAccess(ParseHex(DecryptedHeader), Encoding.ASCII);
         var key = new Key("a");
 
         key.Encrypt64(rx);

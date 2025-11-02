@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a fixed length string.
+/// Represents a Clarion STRING type, which is a fixed-length string.
 /// </summary>
 public readonly struct TpsString : IString, IEquatable<TpsString>
 {
@@ -28,6 +28,7 @@ public readonly struct TpsString : IString, IEquatable<TpsString>
     /// <inheritdoc/>
     public bool ToBoolean() => Value.Length > 0 && Value.Trim(' ').Length > 0;
 
+    /// <inheritdoc/>
     public override string ToString() => Value;
 
     /// <inheritdoc/>
@@ -35,7 +36,7 @@ public readonly struct TpsString : IString, IEquatable<TpsString>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsString x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsString x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

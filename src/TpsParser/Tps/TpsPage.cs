@@ -4,91 +4,121 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps;
 
-public sealed class TpsPage
+/// <summary>
+/// Represents a page within a TPS file. Pages contain records.
+/// </summary>
+public sealed record TpsPage
 {
-    public int Address { get; }
-    public int Size { get; }
-    public int SizeUncompressed { get; }
-    public int SizeUncompressedWithoutHeader { get; }
-    public int RecordCount { get; }
-    public int Flags { get; }
+    /// <summary>
+    /// Gets the offset of the page within the file.
+    /// </summary>
+    public int Address { get; init; }
 
-    private TpsRandomAccess CompressedData { get; }
-    private List<TpsRecord> Records { get; }
+    /// <summary>
+    /// Gets the size of the page in bytes.
+    /// </summary>
+    public ushort Size { get; init; }
 
-    private TpsRandomAccess _data;
+    /// <summary>
+    /// Gets the size of the page in bytes when uncompressed.
+    /// </summary>
+    public ushort SizeUncompressed { get; init; }
 
-    private bool IsFlushed => _data is null;
+    /// <summary>
+    /// Gets the size of the page without the header in bytes when uncompressed.
+    /// </summary>
+    public ushort SizeUncompressedWithoutHeader { get; init; }
 
-    public TpsPage(TpsRandomAccess rx)
+    /// <summary>
+    /// Gets the number of records in this page.
+    /// </summary>
+    public ushort RecordCount { get; init; }
+
+    public byte Flags { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="TpsRandomAccess"/> reader used to access the (probably) compressed data for this page.
+    /// </summary>
+    public required TpsRandomAccess CompressedDataRx { private get; init; }
+
+    private TpsRandomAccess? _data;
+    private IReadOnlyList<TpsRecord>? _records = null;
+
+    /// <summary>
+    /// Creates a new <see cref="TpsPage"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public static TpsPage Parse(TpsRandomAccess rx)
     {
-        if (rx == null)
+        ArgumentNullException.ThrowIfNull(rx);
+
+        int address = rx.ReadLongLE();
+        ushort size = rx.ReadUnsignedShortLE();
+
+        var header = rx.Read(size - 6);
+
+        ushort sizeUncompressed = header.ReadUnsignedShortLE();
+        ushort sizeUncompressedWithoutHeader = header.ReadUnsignedShortLE();
+        ushort recordCount = header.ReadUnsignedShortLE();
+        byte flags = header.ReadByte();
+
+        var compressedDataRx = header.Read(size - 13);
+
+        return new TpsPage
         {
-            throw new ArgumentNullException(nameof(rx));
-        }
-
-        Records = new List<TpsRecord>();
-
-        Address = rx.ReadLongLE();
-        Size = rx.ReadShortLE();
-
-        var header = rx.Read(Size - 6);
-
-        SizeUncompressed = header.ReadShortLE();
-        SizeUncompressedWithoutHeader = header.ReadShortLE();
-        RecordCount = header.ReadShortLE();
-        Flags = header.ReadByte();
-
-        CompressedData = header.Read(Size - 13);
+            Address = address,
+            Size = size,
+            SizeUncompressed = sizeUncompressed,
+            SizeUncompressedWithoutHeader = sizeUncompressedWithoutHeader,
+            RecordCount = recordCount,
+            Flags = flags,
+            CompressedDataRx = compressedDataRx
+        };
     }
 
-    private void Decompress()
+    private TpsRandomAccess Decompress()
     {
         if ((Size != SizeUncompressed)
             && (Flags == 0))
         {
             try
             {
-                CompressedData.PushPosition();
-                _data = CompressedData.UnpackRunLengthEncoding();
+                CompressedDataRx.PushPosition();
+                _data = CompressedDataRx.UnpackRunLengthEncoding();
             }
             catch (Exception ex)
             {
-                throw new RunLengthEncodingException($"Bad RLE data block at index {CompressedData} in {ToString()}", ex);
+                throw new RunLengthEncodingException($"Bad RLE data block at index {CompressedDataRx} in {ToString()}", ex);
             }
             finally
             {
-                CompressedData.PopPosition();
+                CompressedDataRx.PopPosition();
             }
         }
         else
         {
-            _data = CompressedData;
-        }
-    }
-
-    public void Flush()
-    {
-        _data = null;
-        Records.Clear();
-    }
-
-    public TpsRandomAccess GetUncompressedData()
-    {
-        if (IsFlushed)
-        {
-            Decompress();
+            _data = CompressedDataRx;
         }
 
         return _data;
     }
 
-    public void ParseRecords()
+    /// <summary>
+    /// Gets all records in this page.
+    /// </summary>
+    /// <returns></returns>
+    public IReadOnlyList<TpsRecord> GetRecords()
     {
-        var rx = GetUncompressedData();
+        if (_records is not null)
+        {
+            return _records;
+        }
 
-        Records.Clear();
+        var rx = Decompress();
 
+        List<TpsRecord> records = new(RecordCount);
+        
         // Skip pages with non 0x00 flags as they don't seem to contain TpsRecords.
         if (Flags == 0x00)
         {
@@ -96,11 +126,11 @@ public sealed class TpsPage
 
             try
             {
-                TpsRecord previousRecord = null;
+                TpsRecord? previousRecord = null;
 
                 do
                 {
-                    TpsRecord currentRecord = null;
+                    TpsRecord currentRecord;
 
                     if (previousRecord is null)
                     {
@@ -111,27 +141,21 @@ public sealed class TpsPage
                         currentRecord = new TpsRecord(previousRecord, rx);
                     }
 
-                    Records.Add(currentRecord);
+                    records.Add(currentRecord);
 
                     previousRecord = currentRecord;
                 }
-                while (!rx.IsAtEnd && Records.Count < RecordCount);
+                while (!rx.IsAtEnd && records.Count < RecordCount);
             }
             finally
             {
                 rx.PopPosition();
             }
         }
-    } 
 
-    public IEnumerable<TpsRecord> GetRecords()
-    {
-        if (IsFlushed)
-        {
-            ParseRecords();
-        }
+        _records = records;
 
-        return Records;
+        return _records;
     }
 
     public override string ToString() =>

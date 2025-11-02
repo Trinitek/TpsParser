@@ -4,7 +4,7 @@ using TpsParser.Tps.Record;
 namespace TpsParser.Tps.Header;
 
 /// <summary>
-/// Encapsulates information about a particular <see cref="IMemoRecord"/>.
+/// Encapsulates information about a particular <see cref="MemoRecord"/>.
 /// </summary>
 public interface IMemoHeader : IHeader
 {
@@ -19,7 +19,7 @@ public interface IMemoHeader : IHeader
     int SequenceNumber { get; }
 
     /// <summary>
-    /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="Record.ITableDefinitionRecord.Memos"/>.
+    /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="Record.TableDefinitionRecord.Memos"/>.
     /// </summary>
     int MemoIndex { get; }
 }

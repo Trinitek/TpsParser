@@ -11,6 +11,7 @@
     <Description>Reads and deserializes encrypted and unencrypted Clarion TopSpeed (TPS) files.</Description>
     <Version>6.0.0-alpha</Version>
     <PackageTags>clarion tps topspeed softvelocity</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

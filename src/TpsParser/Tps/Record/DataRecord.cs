@@ -15,10 +15,10 @@ public interface IDataRecord
     /// <summary>
     /// Gets the table definition for the table that owns the record.
     /// </summary>
-    ITableDefinitionRecord TableDefinition { get; }
+    TableDefinitionRecord TableDefinition { get; }
 
     /// <summary>
-    /// Gets the values for the record. The order of the values matches the order of <see cref="ITableDefinitionRecord.Fields"/>.
+    /// Gets the values for the record. The order of the values matches the order of <see cref="TableDefinitionRecord.Fields"/>.
     /// </summary>
     IReadOnlyList<ITpsObject> Values { get; }
 
@@ -45,7 +45,7 @@ internal sealed class DataRecord : IDataRecord
     private DataHeader Header { get; }
 
     /// <inheritdoc/>
-    public ITableDefinitionRecord TableDefinition { get; }
+    public TableDefinitionRecord TableDefinition { get; }
 
     /// <inheritdoc/>
     public IReadOnlyList<ITpsObject> Values { get; }
@@ -61,12 +61,12 @@ internal sealed class DataRecord : IDataRecord
     /// </summary>
     /// <param name="tpsRecord">The underlying record that contains the low-level file information.</param>
     /// <param name="tableDefinition">The table definition for the table to which the record belongs.</param>
-    public DataRecord(TpsRecord tpsRecord, ITableDefinitionRecord tableDefinition)
+    public DataRecord(TpsRecord tpsRecord, TableDefinitionRecord tableDefinition)
     {
         Record = tpsRecord ?? throw new ArgumentNullException(nameof(tpsRecord));
         TableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));
         Header = (DataHeader)Record.Header;
-        Values = TableDefinition.Parse(tpsRecord.Data.GetReaderForRemainder());
+        Values = TableDefinition.ParseFields(tpsRecord.Data.GetReaderForRemainder());
     }
 
     /// <inheritdoc/>

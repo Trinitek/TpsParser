@@ -26,7 +26,7 @@ public interface ITpsArray : ITpsObject
 public sealed class TpsArray<T> : IComplex, ITpsArray
     where T : ITpsObject
 {
-    /// <inheritdoc/>
+    /// Gets the type code of the objects in this array.
     public TpsTypeCode TypeCode { get; }
 
     /// <inheritdoc/>
@@ -134,20 +134,9 @@ internal static class TpsArrayExtensions
 
     internal static ITpsObject Parse(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
     {
-        if (rx is null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
-
-        if (encoding is null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-
-        if (enumerator is null)
-        {
-            throw new ArgumentNullException(nameof(enumerator));
-        }
+        ArgumentNullException.ThrowIfNull(rx);
+        ArgumentNullException.ThrowIfNull(encoding);
+        ArgumentNullException.ThrowIfNull(enumerator);
 
         var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 

@@ -4,7 +4,7 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a signed short.
+/// Represents a Clarion SHORT type, which is a signed 16-bit integer.
 /// </summary>
 public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
 {
@@ -76,7 +76,7 @@ public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsShort x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsShort x && Equals(x);
 
     /// <inheritdoc/>
     public bool Equals(TpsShort other) =>

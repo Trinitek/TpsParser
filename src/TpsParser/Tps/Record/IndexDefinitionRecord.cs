@@ -1,72 +1,71 @@
 ﻿using System;
 using TpsParser.Binary;
 
-namespace TpsParser.Tps.Record
+namespace TpsParser.Tps.Record;
+
+/// <summary>
+/// Represents the schema for an index.
+/// </summary>
+public sealed record IndexDefinitionRecord
 {
-    /// <summary>
-    /// Represents the schema for a particular index.
-    /// </summary>
-    public interface IIndexDefinitionRecord
-    {
-        /// <summary>
-        /// Gets the name of the index.
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// Gets the number of fields tracked by the index.
-        /// </summary>
-        int FieldsInKey { get; }
-    }
+    public required string ExternalFile { get; init; }
+    public required short[] KeyField { get; init; }
+    public required short[] KeyFieldFlag { get; init; }
+    private byte Flags { get; init; }
 
     /// <summary>
-    /// Represents the schema for a particular index.
+    /// Gets the name of the index.
     /// </summary>
-    internal sealed class IndexDefinitionRecord : IIndexDefinitionRecord
+    public required string Name { get; init; }
+
+    /// <summary>
+    /// Gets the number of fields tracked by the index.
+    /// </summary>
+    public ushort FieldsInKey { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="IndexDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static IndexDefinitionRecord Parse(TpsRandomAccess rx)
     {
-        private string ExternalFile { get; }
-        private int[] KeyField { get; }
-        private int[] KeyFieldFlag { get; }
-        private int Flags { get; }
+        ArgumentNullException.ThrowIfNull(rx);
 
-        public string Name { get; }
+        string externalFile = rx.ReadZeroTerminatedString();
 
-        public int FieldsInKey { get; }
-
-        public IndexDefinitionRecord(TpsRandomAccess rx)
+        if (externalFile.Length == 0)
         {
-            if (rx == null)
+            int read = rx.ReadByte();
+
+            if (read != 0x01)
             {
-                throw new ArgumentNullException(nameof(rx));
-            }
-
-            ExternalFile = rx.ReadZeroTerminatedString();
-
-            if (ExternalFile.Length == 0)
-            {
-                int read = rx.ReadByte();
-
-                if (read != 0x01)
-                {
-                    throw new ArgumentException($"Bad index definition: missing 0x01 after zero string ({read:X2})");
-                }
-            }
-
-            Name = rx.ReadZeroTerminatedString();
-            Flags = rx.ReadByte();
-            FieldsInKey = rx.ReadShortLE();
-
-            KeyField = new int[FieldsInKey];
-            KeyFieldFlag = new int[FieldsInKey];
-
-            for (int i = 0; i < FieldsInKey; i++)
-            {
-                KeyField[i] = rx.ReadShortLE();
-                KeyFieldFlag[i] = rx.ReadShortLE();
+                throw new ArgumentException($"Bad index definition: missing 0x01 after zero string ({read:X2})");
             }
         }
 
-        public override string ToString() =>
-            $"IndexDefinition({ExternalFile},{Name},{Flags},{FieldsInKey})";
+        string name = rx.ReadZeroTerminatedString();
+        byte flags = rx.ReadByte();
+        ushort fieldsInKey = rx.ReadUnsignedShortLE();
+
+        var keyField = new short[fieldsInKey];
+        var keyFieldFlag = new short[fieldsInKey];
+
+        for (int i = 0; i < fieldsInKey; i++)
+        {
+            keyField[i] = rx.ReadShortLE();
+            keyFieldFlag[i] = rx.ReadShortLE();
+        }
+
+        return new IndexDefinitionRecord
+        {
+            ExternalFile = externalFile,
+            Name = name,
+            Flags = flags,
+            FieldsInKey = fieldsInKey,
+            KeyField = keyField,
+            KeyFieldFlag = keyFieldFlag
+        };
     }
 }

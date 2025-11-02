@@ -14,12 +14,14 @@ public sealed class TpsBlock
     private int End { get; }
     private TpsRandomAccess Data { get; }
 
-    public TpsBlock(TpsRandomAccess rx, int start, int end, bool ignorePageErrors)
+    public TpsBlock(TpsRandomAccess rx, TpsPageRange pageRange, bool ignorePageErrors)
     {
         Data = rx ?? throw new ArgumentNullException(nameof(rx));
-        Start = start;
-        End = end;
-        _pages = new List<TpsPage>();
+        
+        Start = pageRange.StartOffset;
+        End = pageRange.EndOffset;
+
+        _pages = [];
 
         Data.PushPosition();
         Data.JumpAbsolute(Start);
@@ -33,7 +35,7 @@ public sealed class TpsBlock
                 {
                     try
                     {
-                        var page = new TpsPage(Data);
+                        var page = TpsPage.Parse(Data);
                         _pages.Add(page);
                     }
                     catch (RunLengthEncodingException ex)

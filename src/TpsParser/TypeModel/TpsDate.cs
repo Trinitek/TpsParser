@@ -4,7 +4,8 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a date. Some time keeping fields you expect to be of type <see cref="TpsDate"/>  may actually be of type <see cref="TpsLong"/>.
+/// Represents a Clarion DATE type, which represents the year, month, and day.
+/// Some time keeping fields you expect to be of type <see cref="TpsDate"/>  may actually be of type <see cref="TpsLong"/>.
 /// See the remarks section for details.
 /// </summary>
 /// <remarks>
@@ -110,14 +111,14 @@ public readonly struct TpsDate : IDate, IEquatable<TpsDate>
         : Maybe.Some(new TpsLong((Value.Value - ClarionEpoch).Days));
 
     /// <inheritdoc/>
-    public override string ToString() => Value?.ToString(CultureInfo.InvariantCulture);
+    public override string? ToString() => Value?.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
     public bool Equals(TpsDate other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsDate x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsDate x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

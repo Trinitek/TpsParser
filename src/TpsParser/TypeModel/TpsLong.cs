@@ -4,7 +4,7 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a signed 32-bit integer.
+/// Represents a Clarion LONG type, which is a signed 32-bit integer.
 /// </summary>
 public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
 {
@@ -113,7 +113,7 @@ public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsLong x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsLong x && Equals(x);
 
     /// <inheritdoc/>
     public bool Equals(TpsLong other) =>

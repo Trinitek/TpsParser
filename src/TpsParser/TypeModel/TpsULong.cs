@@ -3,7 +3,7 @@
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents an unsigned 32-bit integer.
+/// Represents a Clarion ULONG type, which is an unsigned 32-bit integer.
 /// </summary>
 public readonly struct TpsUnsignedLong : INumeric, IEquatable<TpsUnsignedLong>
 {
@@ -85,7 +85,7 @@ public readonly struct TpsUnsignedLong : INumeric, IEquatable<TpsUnsignedLong>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsUnsignedLong x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsUnsignedLong x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

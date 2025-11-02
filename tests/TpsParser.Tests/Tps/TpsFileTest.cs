@@ -46,10 +46,10 @@ internal sealed class TpsFileTest
 
         var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
 
-        Assert.That(tableDefinitions.Count(), Is.EqualTo(1));
-        Assert.That(tableDefinitions[1].Fields.Count(), Is.EqualTo(2));
-        Assert.That(tableDefinitions[1].Indexes.Count(), Is.EqualTo(2));
-        Assert.That(tableDefinitions[1].Memos.Count(), Is.Zero);
+        Assert.That(tableDefinitions, Has.Count.EqualTo(1));
+        Assert.That(tableDefinitions[1].Fields, Has.Count.EqualTo(2));
+        Assert.That(tableDefinitions[1].Indexes, Has.Count.EqualTo(2));
+        Assert.That(tableDefinitions[1].Memos.Count, Is.Zero);
     }
 
     [Test]
@@ -83,9 +83,9 @@ internal sealed class TpsFileTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(dataRecords.Count(), Is.EqualTo(1));
+            Assert.That(dataRecords, Has.Count.EqualTo(1));
             Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
-            Assert.That(dataRecords[0].Values.Count(), Is.EqualTo(2));
+            Assert.That(dataRecords[0].Values, Has.Count.EqualTo(2));
             Assert.That(((TpsShort)dataRecords[0].Values[0]).ToInt32().Value, Is.EqualTo(1));
             Assert.That(((TpsShort)dataRecords[0].Values[1]).ToInt32().Value, Is.EqualTo(1));
         }
@@ -99,13 +99,13 @@ internal sealed class TpsFileTest
         var indexes1 = file.GetIndexes(table: 1, index: 0)
             .ToList();
 
-        Assert.That(indexes1.Count(), Is.EqualTo(1));
+        Assert.That(indexes1, Has.Count.EqualTo(1));
         Assert.That(indexes1[0].RecordNumber, Is.EqualTo(2));
 
         var indexes2 = file.GetIndexes(table: 1, index: 1)
             .ToList();
 
-        Assert.That(indexes2.Count(), Is.EqualTo(1));
+        Assert.That(indexes2, Has.Count.EqualTo(1));
         Assert.That(indexes2[0].RecordNumber, Is.EqualTo(2));
     }
 

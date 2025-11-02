@@ -22,11 +22,11 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, 0, 0x300, false);
+        var block = new TpsBlock(rx, new TpsPageRange(0, 0x300), false);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(block.Pages.Count, Is.EqualTo(2));
+            Assert.That(block.Pages, Has.Count.EqualTo(2));
             Assert.That(block.Pages[0].Size, Is.EqualTo(0x200));
             Assert.That(block.Pages[1].Size, Is.EqualTo(0x100));
         }
@@ -46,11 +46,11 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, 0, 0x300, false);
+        var block = new TpsBlock(rx, new TpsPageRange(0, 0x300), false);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(block.Pages.Count, Is.EqualTo(2));
+            Assert.That(block.Pages, Has.Count.EqualTo(2));
             Assert.That(block.Pages[0].Size, Is.EqualTo(0x100));
             Assert.That(block.Pages[1].Size, Is.EqualTo(0x100));
         }
@@ -70,11 +70,11 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, 0, 0x300, false);
+        var block = new TpsBlock(rx, new TpsPageRange(0, 0x300), false);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(block.Pages.Count, Is.EqualTo(1));
+            Assert.That(block.Pages, Has.Count.EqualTo(1));
             Assert.That(block.Pages[0].Address, Is.EqualTo(0x100));
             Assert.That(block.Pages[0].Size, Is.EqualTo(0x200));
         }

@@ -44,8 +44,6 @@ internal sealed class TpsDecimalTest
         Assert.That(dec.ToString(), Is.EqualTo(value));
     }
 
-    [TestCase("")]
-    [TestCase(" ")]
     [TestCase("!")]
     [TestCase("-0. ")]
     [TestCase(" 2")]
@@ -54,13 +52,15 @@ internal sealed class TpsDecimalTest
     [TestCase("--23")]
     public void ShouldThrowWhenStringIsMalformed(string value)
     {
-        Assert.Throws<ArgumentException>(() => TpsDecimal.Parse(value));
+        Assert.Throws<FormatException>(() => TpsDecimal.Parse(value));
     }
 
-    [Test]
-    public void ShouldThrowWhenStringIsNull()
+    [TestCase(null)]
+    [TestCase("")]
+    [TestCase(" ")]
+    public void ShouldThrowWhenStringIsEmptyOrWhitespace(string value)
     {
-        Assert.Throws<ArgumentNullException>(() => TpsDecimal.Parse(null));
+        Assert.Throws<ArgumentException>(() => TpsDecimal.Parse(value));
     }
 
     [TestCaseSource(typeof(ShouldConvertToDecimalData), nameof(ShouldConvertToDecimalData.TestCases))]

@@ -12,7 +12,7 @@ internal sealed class TpsHeaderTest
     {
         var file = new RandomAccessTpsFile(new FileStream("Resources/header.dat", FileMode.Open));
 
-        var header = file.GetHeader();
+        var header = file.GetFileHeader();
 
         using (Assert.EnterMultipleScope())
         {
@@ -20,8 +20,7 @@ internal sealed class TpsHeaderTest
             Assert.That(header.FileLength1, Is.EqualTo(383744));
             Assert.That(header.LastIssuedRow, Is.EqualTo(5048));
             Assert.That(header.Changes, Is.EqualTo(15651));
-            Assert.That(header.PageStart.Count, Is.EqualTo(60));
-            Assert.That(header.PageEnd.Count, Is.EqualTo(60));
+            Assert.That(header.PageRanges, Has.Length.EqualTo(60));
         }
     }
 
@@ -30,6 +29,6 @@ internal sealed class TpsHeaderTest
     {
         var file = new RandomAccessTpsFile(new FileStream("Resources/bad-header.dat", FileMode.Open));
 
-        Assert.That(() => file.GetHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
+        Assert.That(() => file.GetFileHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
     }
 }

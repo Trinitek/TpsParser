@@ -4,7 +4,7 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a double-precision floating point number.
+/// Represents a Clarion REAL type, which is a double-precision floating point number.
 /// </summary>
 public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
 {
@@ -97,7 +97,7 @@ public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsDouble x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsDouble x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

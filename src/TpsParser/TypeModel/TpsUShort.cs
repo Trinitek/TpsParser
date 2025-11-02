@@ -3,7 +3,7 @@
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents an unsigned short.
+/// Represents a Clarion USHORT type, which is an unsigned 16-bit integer.
 /// </summary>
 public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
 {
@@ -64,7 +64,7 @@ public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
     public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
     
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsUnsignedShort x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsUnsignedShort x && Equals(x);
 
     /// <inheritdoc/>
     public bool Equals(TpsUnsignedShort other) =>

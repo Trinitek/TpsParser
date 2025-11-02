@@ -6,16 +6,19 @@ using TpsParser.TypeModel;
 namespace TpsParser.Tps.Record;
 
 /// <summary>
-/// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="IMemoDefinitionRecord"/>.
+/// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="MemoDefinitionRecord"/>.
 /// </summary>
-public interface IFieldDefinitionRecord
+public sealed record FieldDefinitionRecord
 {
     /// <summary>
     /// Gets the type code of the value contained within the field.
     /// </summary>
-    TpsTypeCode Type { get; }
+    public TpsTypeCode Type { get; init; }
 
-    int Offset { get; }
+    /// <summary>
+    /// Gets the offset, in bytes, of the field within the record.
+    /// </summary>
+    public int Offset { get; init; }
 
     /// <summary>
     /// <para>
@@ -27,7 +30,7 @@ public interface IFieldDefinitionRecord
     /// When present, it is rarely the same as the table name, if the table has a name at all.
     /// </para>
     /// </summary>
-    string FullName { get; }
+    public required string FullName { get; init; }
 
     /// <summary>
     /// <para>
@@ -35,116 +38,111 @@ public interface IFieldDefinitionRecord
     /// Use <see cref="FullName"/> for the fully qualified field name.
     /// </para>
     /// </summary>
-    string Name { get; }
-
-    int ElementCount { get; }
-
-    int Length { get; }
+    public string Name => FullName.Split(':').Last();
 
     /// <summary>
-    /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
+    /// If the field is an array of continuous values, gets the number of elements in the array. Otherwise, 1.
     /// </summary>
-    int Index { get; }
-
-    /// <summary>
-    /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the number of bytes in the string.
-    /// </summary>
-    int StringLength { get; }
-
-    /// <summary>
-    /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the string mask.
-    /// </summary>
-    string StringMask { get; }
-
-    /// <summary>
-    /// If the field contains a <see cref="TpsDecimal"/>, gets the number of places after the decimal point.
-    /// </summary>
-    byte BcdDigitsAfterDecimalPoint { get; }
-
-    /// <summary>
-    /// If the field contains a <see cref="TpsDecimal"/>, gets the number of decimal places.
-    /// </summary>
-    int BcdElementLength { get; }
+    public int ElementCount { get; init; }
 
     /// <summary>
     /// True if the field contains an array of values.
     /// </summary>
-    bool IsArray { get; }
+    public bool IsArray => ElementCount > 1;
+
+    /// <summary>
+    /// Gets the number of number of bytes in each element.
+    /// </summary>
+    public int Length { get; init; }
+
+    public short Flags { get; init; }
+
+    /// <summary>
+    /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
+    /// </summary>
+    public int Index { get; init; }
+
+    /// <summary>
+    /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the number of bytes in the string.
+    /// </summary>
+    public int StringLength { get; init; }
+
+    /// <summary>
+    /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the string mask.
+    /// </summary>
+    public required string StringMask { get; init; }
+
+    /// <summary>
+    /// If the field contains a <see cref="TpsDecimal"/>, gets the number of places after the decimal point.
+    /// </summary>
+    public byte BcdDigitsAfterDecimalPoint { get; init; }
+
+    /// <summary>
+    /// If the field contains a <see cref="TpsDecimal"/>, gets the number of decimal places.
+    /// </summary>
+    public int BcdElementLength { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="FieldDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// </summary>
+    public static FieldDefinitionRecord Parse(TpsRandomAccess rx)
+    {
+        ArgumentNullException.ThrowIfNull(rx);
+
+        var type = (TpsTypeCode)rx.ReadByte();
+        var offset = rx.ReadShortLE();
+        var fullName = rx.ReadZeroTerminatedString();
+        var elementCount = rx.ReadShortLE();
+        var length = rx.ReadShortLE();
+        var flags = rx.ReadShortLE();
+        var index = rx.ReadShortLE();
+
+        byte bcdDigitsAfterDecimalPoint = 0;
+        int bcdElementLength = 0;
+
+        int stringLength = 0;
+        string stringMask = string.Empty;
+
+        if (type == TpsTypeCode.Decimal)
+        {
+            bcdDigitsAfterDecimalPoint = rx.ReadByte();
+            bcdElementLength = rx.ReadByte();
+        }
+        else if (type == TpsTypeCode.String
+            || type == TpsTypeCode.CString
+            || type == TpsTypeCode.PString)
+        {
+            stringLength = rx.ReadShortLE();
+            stringMask = rx.ReadZeroTerminatedString();
+
+            if (stringMask.Length == 0)
+            {
+                rx.ReadByte(); // Consume one byte.
+            }
+        }
+
+        return new FieldDefinitionRecord
+        {
+            Type = type,
+            Offset = offset,
+            FullName = fullName,
+            ElementCount = elementCount,
+            Length = length,
+            Flags = flags,
+            Index = index,
+            StringLength = stringLength,
+            StringMask = stringMask,
+            BcdDigitsAfterDecimalPoint = bcdDigitsAfterDecimalPoint,
+            BcdElementLength = bcdElementLength
+        };
+    }
 
     /// <summary>
     /// Checks to see if this field fits in the given group field.
     /// </summary>
-    /// <param name="fieldDefinitionRecord">The group field to check.</param>
+    /// <param name="group">The group field to check.</param>
     /// <returns></returns>
-    bool IsInGroup(IFieldDefinitionRecord fieldDefinitionRecord);
-}
-
-internal sealed class FieldDefinitionRecord : IFieldDefinitionRecord
-{
-    public TpsTypeCode Type { get; }
-
-    public int Offset { get; }
-
-    public string FullName { get; }
-
-    public string Name => FullName.Split(':').Last();
-
-    public int ElementCount { get; }
-
-    public int Length { get; }
-
-    public int Flags { get; }
-
-    public int Index { get; }
-
-    public int StringLength { get; }
-
-    public string StringMask { get; }
-
-    public byte BcdDigitsAfterDecimalPoint { get; }
-
-    public int BcdElementLength { get; }
-
-    public bool IsArray => ElementCount > 1;
-
-    public FieldDefinitionRecord(TpsRandomAccess rx)
-    {
-        if (rx == null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
-
-        Type = (TpsTypeCode)rx.ReadByte();
-        Offset = rx.ReadShortLE();
-        FullName = rx.ReadZeroTerminatedString();
-        ElementCount = rx.ReadShortLE();
-        Length = rx.ReadShortLE();
-        Flags = rx.ReadShortLE();
-        Index = rx.ReadShortLE();
-
-        switch (Type)
-        {
-            case TpsTypeCode.Decimal:
-                BcdDigitsAfterDecimalPoint = rx.ReadByte();
-                BcdElementLength = rx.ReadByte();
-                break;
-            case TpsTypeCode.String:
-            case TpsTypeCode.CString:
-            case TpsTypeCode.PString:
-                StringLength = rx.ReadShortLE();
-                StringMask = rx.ReadZeroTerminatedString();
-                if (StringMask.Length == 0)
-                {
-                    rx.ReadByte();
-                }
-                break;
-        }
-    }
-    
-    public bool IsInGroup(IFieldDefinitionRecord group) =>
+    public bool IsInGroup(FieldDefinitionRecord group) =>
         (group.Offset <= Offset)
         && ((group.Offset + group.Length) >= (Offset + Length));
-
-    public override string ToString() =>
-        $"Field(#{Index},T:{Type},OFS:{Offset},LEN:{Length},{FullName},{ElementCount},{Flags})";
 }

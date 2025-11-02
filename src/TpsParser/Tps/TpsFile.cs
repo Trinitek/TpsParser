@@ -30,7 +30,7 @@ public abstract class TpsFile
     /// Gets the file header.
     /// </summary>
     /// <returns></returns>
-    public abstract TpsHeader GetHeader();
+    public abstract TpsFileHeader GetFileHeader();
 
     public abstract IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors);
 
@@ -41,7 +41,7 @@ public abstract class TpsFile
     /// <param name="tableDefinitionRecord">The table definition that describes the table schema.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<IDataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors);
+    public abstract IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors);
 
     /// <summary>
     /// Gets a list of table name records that describe the name of the tables included in the file.
@@ -70,7 +70,7 @@ public abstract class TpsFile
     /// <param name="table">The table number that owns the memos.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<IMemoRecord> GetMemoRecords(int table, bool ignoreErrors);
+    public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors);
 
     /// <summary>
     /// Gets a dictionary of memo and blob records for the associated table.
@@ -79,14 +79,14 @@ public abstract class TpsFile
     /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<IMemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
+    public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
 
     /// <summary>
     /// Gets a dictionary of table definitions and their associated table numbers.
     /// </summary>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IReadOnlyDictionary<int, ITableDefinitionRecord> GetTableDefinitions(bool ignoreErrors);
+    public abstract IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors);
 }
 
 /// <inheritdoc/>
@@ -143,12 +143,12 @@ internal sealed class RandomAccessTpsFile : TpsFile
     {
         key.Decrypt(new TpsRandomAccess(Data, 0, 0x200));
 
-        var header = GetHeader();
+        var header = GetFileHeader();
 
-        for (int i = 0; i < header.PageStart.Count; i++)
+        foreach (var pageRange in header.PageRanges)
         {
-            int offset = header.PageStart[i];
-            int end = header.PageEnd[i];
+            int offset = pageRange.StartOffset;
+            int end = pageRange.EndOffset;
 
             if ((offset != 0x200 || end != 0x200) && offset < Data.Length)
             {
@@ -157,11 +157,11 @@ internal sealed class RandomAccessTpsFile : TpsFile
         }
     }
 
-    public override TpsHeader GetHeader()
+    public override TpsFileHeader GetFileHeader()
     {
         Data.JumpAbsolute(0);
 
-        var header = new TpsHeader(Data);
+        var header = TpsFileHeader.Parse(Data);
 
         if (!header.IsTopSpeedFile)
         {
@@ -173,15 +173,15 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
     public override IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors)
     {
-        var header = GetHeader();
+        var header = GetFileHeader();
 
-        var blocks = Enumerable.Range(0, header.PageStart.Count)
-            .Select(i => (offset: header.PageStart[i], end: header.PageEnd[i]))
-
+        var blocks = header.PageRanges
             // Skip the first entry (0 length) and any blocks that are beyond the file size
-            .Where(pair => !(((pair.offset == 0x200) && (pair.end == 0x200)) || (pair.offset >= Data.Length)))
+            .Where(range => !(
+                ((range.StartOffset == 0x200) && (range.EndOffset == 0x200))
+                || (range.StartOffset >= Data.Length)))
 
-            .Select(pair => new TpsBlock(Data, pair.offset, pair.end, ignoreErrors));
+            .Select(range => new TpsBlock(Data, range, ignoreErrors));
 
         return blocks;
     }
@@ -192,19 +192,19 @@ internal sealed class RandomAccessTpsFile : TpsFile
         {
             foreach (var page in block.Pages)
             {
-                page.ParseRecords();
-
+                //page.ParseRecords();
+                
                 foreach (var record in page.GetRecords())
                 {
                     yield return record;
                 }
-
-                page.Flush();
+                
+                //page.Flush();
             }
         }
     }
 
-    public override IEnumerable<IDataRecord> GetDataRecords(int table, ITableDefinitionRecord tableDefinition, bool ignoreErrors)
+    public override IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinitionRecord tableDefinition, bool ignoreErrors)
     {
         return VisitRecords(ignoreErrors)
             .Where(record => record.Header is DataHeader && record.Header.TableNumber == table)
@@ -239,7 +239,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
         return VisitRecords();
     }
 
-    private IEnumerable<IMemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
+    private IEnumerable<MemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
     {
         // Records must be merged in order according to the memo's sequence number, so we order them.
         // Large memos are spread across multiple structures and must be joined later.
@@ -266,7 +266,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
         return resultingMemoRecords;
     }
 
-    public override IEnumerable<IMemoRecord> GetMemoRecords(int table, bool ignoreErrors)
+    public override IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
     {
         var memoRecords = VisitRecords(ignoreErrors)
             .Where(record =>
@@ -276,7 +276,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
         return OrderAndGroupMemos(memoRecords);
     }
 
-    public override IEnumerable<IMemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
+    public override IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
     {
         var memoRecords = VisitRecords(ignoreErrors)
             .Where(record =>
@@ -287,7 +287,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
         return OrderAndGroupMemos(memoRecords);
     }
 
-    public override IReadOnlyDictionary<int, ITableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
+    public override IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
     {
         return VisitRecords(ignoreErrors)
             .Where(record => record.Header is TableDefinitionHeader)
@@ -303,7 +303,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
             .ToDictionary(
             keySelector: group => group.Key,
-            elementSelector: group => (ITableDefinitionRecord)new TableDefinitionRecord(Merge(group), Encoding));
+            elementSelector: group => TableDefinitionRecord.Parse(Merge(group)));
     }
 
     private TpsRandomAccess Merge(IEnumerable<TpsRecord> records) =>

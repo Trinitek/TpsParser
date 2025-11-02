@@ -115,20 +115,9 @@ internal static class TpsObject
     /// <returns></returns>
     internal static ITpsObject ParseField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
     {
-        if (rx == null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
-
-        if (encoding is null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-
-        if (enumerator is null)
-        {
-            throw new ArgumentNullException(nameof(enumerator));
-        }
+        ArgumentNullException.ThrowIfNull(rx);
+        ArgumentNullException.ThrowIfNull(encoding);
+        ArgumentNullException.ThrowIfNull(enumerator);
 
         var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
@@ -151,20 +140,9 @@ internal static class TpsObject
 
     internal static ITpsObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
     {
-        if (rx is null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
-
-        if (encoding is null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-
-        if (enumerator is null)
-        {
-            throw new ArgumentNullException(nameof(enumerator));
-        }
+        ArgumentNullException.ThrowIfNull(rx);
+        ArgumentNullException.ThrowIfNull(encoding);
+        ArgumentNullException.ThrowIfNull(enumerator);
 
         var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
@@ -244,8 +222,3 @@ public interface IDate : ITpsObject
     /// <returns></returns>
     Maybe<DateTime?> ToDateTime();
 }
-
-//public interface IAny : ITpsObject, ISimple, IComplex, IString, ITime, IDate
-//{
-//
-//}

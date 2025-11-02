@@ -82,7 +82,7 @@ public sealed class TpsRecord
         var newData = new List<byte>(RecordLength);
 
         newData.AddRange(previous.Data.GetData().Take(copy));
-        newData.AddRange(rx.ReadBytes(RecordLength - copy));
+        newData.AddRange(rx.ReadBytesAsArray(RecordLength - copy));
 
         Data = new TpsRandomAccess(newData.ToArray(), rx.Encoding);
 

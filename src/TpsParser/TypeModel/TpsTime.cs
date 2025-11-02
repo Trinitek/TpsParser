@@ -3,7 +3,8 @@
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a moment in time. Some time keeping fields you expect to be of type <see cref="TpsTime"/> may actually be of type <see cref="TpsLong"/>.
+/// Represents a Clarion TIME type, which represents a moment in time.
+/// Some time keeping fields you expect to be of type <see cref="TpsTime"/> may actually be of type <see cref="TpsLong"/>.
 /// See the remarks section for details.
 /// </summary>
 /// <remarks>
@@ -35,7 +36,7 @@ namespace TpsParser.TypeModel;
 /// other external systems.
 /// </para>
 /// <para>
-/// The native time type used in the Clarion programming language when performing calculations is a LONG (<see cref = "TpsLong"/>).
+/// The native time type used in the Clarion programming language when performing calculations is a LONG (<see cref="TpsLong"/>).
 /// This is called a Clarion Standard Time value and counts the number of centiseconds since midnight, plus 1 centisecond.
 /// The valid Clarion Standard Time range is 00:00:00.00 through 23:59:59.99, that is, an inclusive numerical range from 1
 /// to 8,640,000, with 0 used to represent a null value.
@@ -66,24 +67,24 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     public int TotalCentiseconds { get; }
 
     /// <summary>
-    /// Gets the number of hours, between 0 and 23 inclusive, or null.
+    /// Gets the number of hours between 0 and 23 inclusive.
     /// </summary>
-    public byte Hours => (byte)((TotalCentiseconds - 1) / (60 * 60 * 100));
+    public byte Hours => (byte)(TotalCentiseconds / (60 * 60 * 100));
 
     /// <summary>
-    /// Gets the number of minutes, between 0 and 59 inclusive, or null.
+    /// Gets the number of minutes between 0 and 59 inclusive.
     /// </summary>
-    public byte Minutes => (byte)((TotalCentiseconds - 1) / (60 * 100) % 60);
+    public byte Minutes => (byte)(TotalCentiseconds / (60 * 100) % 60);
 
     /// <summary>
-    /// Gets the number of seconds, between 0 and 59 inclusive, or null.
+    /// Gets the number of seconds between 0 and 59 inclusive.
     /// </summary>
-    public byte Seconds => (byte)((TotalCentiseconds - 1) / 100 % 60);
+    public byte Seconds => (byte)(TotalCentiseconds / 100 % 60);
 
     /// <summary>
-    /// Gets the number of centiseconds (hundredths of a second), between 0 and 99 inclusive, or null.
+    /// Gets the number of centiseconds (hundredths of a second) between 0 and 99 inclusive.
     /// </summary>
-    public byte Centiseconds => (byte)((TotalCentiseconds - 1) % 100);
+    public byte Centiseconds => (byte)(TotalCentiseconds % 100);
 
     /// <inheritdoc/>
     public TpsTypeCode TypeCode => TpsTypeCode.Time;
@@ -159,7 +160,13 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     public bool ToBoolean() => TotalCentiseconds != 0;
 
     /// <inheritdoc/>
-    public Maybe<TimeSpan?> ToTimeSpan() => Maybe.Some<TimeSpan?>(new TimeSpan(0, Hours, Minutes, Seconds, Centiseconds * 10));
+    public Maybe<TimeSpan?> ToTimeSpan() => Maybe.Some<TimeSpan?>(
+        new TimeSpan(
+            days: 0,
+            hours: Hours,
+            minutes: Minutes,
+            seconds: Seconds,
+            milliseconds: Centiseconds * 10));
 
     /// <summary>
     /// Gets a <see cref="TpsLong"/> instance representing the Clarion Standard Time, or number of centiseconds since midnight plus 1.
@@ -171,7 +178,7 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     public override string ToString() => $"{Hours:00}:{Minutes:00}:{Seconds:00}.{Centiseconds:00}";
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsTime x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsTime x && Equals(x);
 
     /// <inheritdoc/>
     public bool Equals(TpsTime other) =>

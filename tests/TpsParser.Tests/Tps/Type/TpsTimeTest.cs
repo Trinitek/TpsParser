@@ -25,8 +25,21 @@ internal sealed class TpsTimeTest
 
             using (Assert.EnterMultipleScope())
             {
-                Assert.That(((TpsTime)valuePairs["ClockIn"]).ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 6, 23, 15, 0)));
-                Assert.That(((TpsTime)valuePairs["ClockOut"]).ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 0)));
+                TpsTime clockIn = (TpsTime)valuePairs["ClockIn"];
+                TpsTime clockOut = (TpsTime)valuePairs["ClockOut"];
+
+                Assert.That(clockIn.Hours, Is.EqualTo(6));
+                Assert.That(clockIn.Minutes, Is.EqualTo(23));
+                Assert.That(clockIn.Seconds, Is.EqualTo(15));
+                Assert.That(clockIn.Centiseconds, Is.EqualTo(0));
+
+                Assert.That(clockOut.Hours, Is.EqualTo(12));
+                Assert.That(clockOut.Minutes, Is.EqualTo(59));
+                Assert.That(clockOut.Seconds, Is.EqualTo(59));
+                Assert.That(clockOut.Centiseconds, Is.EqualTo(0));
+
+                Assert.That(clockIn.ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 6, 23, 15, 0)));
+                Assert.That(clockOut.ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 0)));
             }
         }
     }
@@ -46,6 +59,7 @@ internal sealed class TpsTimeTest
             Assert.That(time.Minutes, Is.EqualTo(59));
             Assert.That(time.Seconds, Is.EqualTo(59));
             Assert.That(time.Centiseconds, Is.EqualTo(99));
+
             Assert.That(time.ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 990)));
         }
     }

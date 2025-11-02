@@ -10,91 +10,78 @@ namespace TpsParser.Tps.Record;
 /// <summary>
 /// Represents a file structure that encapsulates a table's schema.
 /// </summary>
-public interface ITableDefinitionRecord
+public sealed record TableDefinitionRecord
 {
     /// <summary>
-    /// Gets the field definitions for this table.  For MEMOs and BLOBs, see <see cref="Memos"/>.
+    /// Gets the Clarion database driver version that created the table.
     /// </summary>
-    IReadOnlyList<IFieldDefinitionRecord> Fields { get; }
+    public int DriverVersion { get; init; }
 
     /// <summary>
-    /// Gets the memo definitions for this table.  The index of each definition corresponds to <see cref="Header.IMemoHeader.MemoIndex"/>.
+    /// Gets the number of bytes in each record.
     /// </summary>
-    IReadOnlyList<IMemoDefinitionRecord> Memos { get; }
+    public int RecordLength { get; init; }
+
+    /// <summary>
+    /// Gets the field definitions for this table. For MEMOs and BLOBs, see <see cref="Memos"/>.
+    /// </summary>
+    public required IReadOnlyList<FieldDefinitionRecord> Fields { get; init; }
+
+    /// <summary>
+    /// Gets the MEMO and BLOB definitions for this table. The index of each definition corresponds to <see cref="Header.IMemoHeader.MemoIndex"/>.
+    /// </summary>
+    public required IReadOnlyList<MemoDefinitionRecord> Memos { get; init; }
 
     /// <summary>
     /// Gets the index definitions for this table.
     /// </summary>
-    IReadOnlyList<IIndexDefinitionRecord> Indexes { get; }
+    public required IReadOnlyList<IndexDefinitionRecord> Indexes { get; init; }
 
     /// <summary>
-    /// Gets a list of field values by parsing the given byte reader.
+    /// Creates a new <see cref="TableDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
     /// </summary>
-    /// <param name="rx"></param>
-    /// <returns></returns>
-    IReadOnlyList<ITpsObject> Parse(TpsRandomAccess rx);
-}
-
-/// <summary>
-/// Represents a file structure that encapsulates a table's schema.
-/// </summary>
-internal sealed class TableDefinitionRecord : ITableDefinitionRecord
-{
-    public int DriverVersion { get; }
-    public int RecordLength { get; }
-
-    /// <inheritdoc/>
-    public IReadOnlyList<IFieldDefinitionRecord> Fields => _fields;
-    private readonly List<FieldDefinitionRecord> _fields;
-
-    /// <inheritdoc/>
-    public IReadOnlyList<IMemoDefinitionRecord> Memos => _memos;
-    private readonly List<MemoDefinitionRecord> _memos;
-
-    /// <inheritdoc/>
-    public IReadOnlyList<IIndexDefinitionRecord> Indexes => _indexes;
-    private readonly List<IndexDefinitionRecord> _indexes;
-
-    private Encoding Encoding { get; }
-
-    public TableDefinitionRecord(TpsRandomAccess rx, Encoding encoding)
+    public static TableDefinitionRecord Parse(TpsRandomAccess rx)
     {
-        if (rx == null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
+        ArgumentNullException.ThrowIfNull(rx);
 
-        Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+        short DriverVersion = rx.ReadShortLE();
+        short RecordLength = rx.ReadShortLE();
 
-        DriverVersion = rx.ReadShortLE();
-        RecordLength = rx.ReadShortLE();
         int fieldCount = rx.ReadShortLE();
         int memoCount = rx.ReadShortLE();
         int indexCount = rx.ReadShortLE();
 
-        _fields = new List<FieldDefinitionRecord>();
-        _memos = new List<MemoDefinitionRecord>();
-        _indexes = new List<IndexDefinitionRecord>();
+        List<FieldDefinitionRecord> fields = [];
+        List<MemoDefinitionRecord> memos = [];
+        List<IndexDefinitionRecord> indexes = [];
 
-        try
+        for (int i = 0; i < fieldCount; i++)
         {
-            for (int i = 0; i < fieldCount; i++)
-            {
-                _fields.Add(new FieldDefinitionRecord(rx));
-            }
-            for (int i = 0; i < memoCount; i++)
-            {
-                _memos.Add(new MemoDefinitionRecord(rx));
-            }
-            for (int i = 0; i < indexCount; i++)
-            {
-                _indexes.Add(new IndexDefinitionRecord(rx));
-            }
+            var fdr = FieldDefinitionRecord.Parse(rx);
+
+            fields.Add(fdr);
         }
-        catch (ArgumentException ex)
+        for (int i = 0; i < memoCount; i++)
         {
-            throw new ArgumentException($"Bad table definition: {ToString()}", ex);
+            var mdr = MemoDefinitionRecord.Parse(rx);
+
+            memos.Add(mdr);
         }
+        for (int i = 0; i < indexCount; i++)
+        {
+            var idr = IndexDefinitionRecord.Parse(rx);
+
+            indexes.Add(idr);
+        }
+
+        return new TableDefinitionRecord
+        {
+            DriverVersion = DriverVersion,
+            RecordLength = RecordLength,
+            Fields = fields.AsReadOnly(),
+            Memos = memos.AsReadOnly(),
+            Indexes = indexes.AsReadOnly()
+        };
     }
 
     /// <inheritdoc/>
@@ -122,7 +109,12 @@ internal sealed class TableDefinitionRecord : ITableDefinitionRecord
         return sb.ToString();
     }
 
-    public IReadOnlyList<ITpsObject> Parse(TpsRandomAccess rx)
+    /// <summary>
+    /// Gets a list of field values by parsing the given byte reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public IReadOnlyList<ITpsObject> ParseFields(TpsRandomAccess rx)
     {
         var values = new List<ITpsObject>(Fields.Count());
 
@@ -146,7 +138,7 @@ internal sealed class TableDefinitionRecord : ITableDefinitionRecord
         return values.AsReadOnly();
     }
 
-    private ITpsObject ParseField(TpsTypeCode type, int length, IFieldDefinitionRecord fieldDefinitionRecord, TpsRandomAccess rx)
+    private ITpsObject ParseField(TpsTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, TpsRandomAccess rx)
     {
         if (fieldDefinitionRecord == null)
         {
@@ -188,11 +180,11 @@ internal sealed class TableDefinitionRecord : ITableDefinitionRecord
             case TpsTypeCode.Decimal:
                 return rx.ReadTpsDecimal(length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
             case TpsTypeCode.String:
-                return rx.ReadTpsString(Encoding);
+                return rx.ReadTpsString();
             case TpsTypeCode.CString:
-                return rx.ReadTpsCString(Encoding);
+                return rx.ReadTpsCString();
             case TpsTypeCode.PString:
-                return rx.ReadTpsPString(Encoding);
+                return rx.ReadTpsPString();
             case TpsTypeCode.Group:
                 //return new TpsGroup(rx, length);
             default:

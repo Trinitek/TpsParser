@@ -4,7 +4,7 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a byte.
+/// Represents a Clarion BYTE type.
 /// </summary>
 public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
 {
@@ -68,7 +68,7 @@ public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsByte x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsByte x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

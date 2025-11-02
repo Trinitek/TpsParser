@@ -4,7 +4,7 @@ using System.Text;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a 128-bit binary coded decimal that can hold up to 31 digits.
+/// Represents a Clarion DECIMAL type, which is a 128-bit binary coded decimal that can hold up to 31 digits.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -356,7 +356,7 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
         && Scale == other.Scale;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsDecimal x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsDecimal x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

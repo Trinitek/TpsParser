@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Pascal string where the length is specified at the beginning of the string.
+/// Represents a Clarion PSTRING type, which is a Pascal string where the length is specified at the beginning of the string.
 /// </summary>
 public readonly struct TpsPString : IString, IEquatable<TpsPString>
 {
@@ -30,6 +30,7 @@ public readonly struct TpsPString : IString, IEquatable<TpsPString>
     /// </summary>
     public bool ToBoolean() => Value.Length > 0 && Value.Trim(' ').Length > 0;
 
+    /// <inheritdoc/>
     public override string ToString() => Value;
 
     /// <inheritdoc/>
@@ -37,7 +38,7 @@ public readonly struct TpsPString : IString, IEquatable<TpsPString>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsPString x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsPString x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

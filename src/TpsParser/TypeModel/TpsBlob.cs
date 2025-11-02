@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents an arbitrary array of bytes. Unlike <see cref="TpsMemo"/>,
+/// Represents a Clarion BLOB type, which is an arbitrary array of bytes. Unlike <see cref="TpsMemo"/>,
 /// a BLOB can be larger than 65,536 bytes.
 /// </summary>
 public sealed class TpsBlob : ITpsObject
@@ -15,15 +14,14 @@ public sealed class TpsBlob : ITpsObject
     /// <summary>
     /// Gets the byte array backing this type.
     /// </summary>
-    public IReadOnlyList<byte> Value => _value;
-    private readonly byte[] _value;
+    public ReadOnlyMemory<byte> Value { get; }
 
     /// <summary>
     /// Instantiates a new BLOB.
     /// </summary>
     /// <param name="value"></param>
-    public TpsBlob(byte[] value)
+    public TpsBlob(ReadOnlyMemory<byte> value)
     {
-        _value = value ?? throw new ArgumentNullException(nameof(value));
+        Value = value;
     }
 }

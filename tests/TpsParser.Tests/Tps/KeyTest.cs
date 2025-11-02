@@ -80,7 +80,7 @@ internal sealed class KeyTest
             var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
             var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
 
-            Assert.That(encryptedDefinitions.Count, Is.EqualTo(decryptedDefinitions.Count));
+            Assert.That(encryptedDefinitions, Has.Count.EqualTo(decryptedDefinitions.Count));
 
             // Note that record IDs may differ.
             var encryptedRecords = encryptedFile.GetDataRecords(table: 2, tableDefinition: encryptedDefinitions[2], ignoreErrors: false);
@@ -104,7 +104,7 @@ internal sealed class KeyTest
         {
             var encryptedFile = new RandomAccessTpsFile(fsEncrypted);
 
-            Assert.That(() => encryptedFile.GetHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
+            Assert.That(() => encryptedFile.GetFileHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
         }
     }
 }

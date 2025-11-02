@@ -1,8 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using TpsParser.TypeModel;
 //using TpsParser.Tests.DeserializerModels;
 
 namespace TpsParser.Tests;
@@ -20,33 +19,33 @@ internal sealed partial class TpsParserTest
 
             using (Assert.EnterMultipleScope())
             {
-                Assert.That(rows.Count(), Is.EqualTo(4));
+                Assert.That(rows, Has.Count.EqualTo(4));
 
                 // Fixed length strings. Dead area is padded with spaces, except for memos.
 
-                Assert.That(rows[0].Values.Count(), Is.EqualTo(4));
-                Assert.That(rows[0].Values["Name"].Value, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
-                Assert.That(rows[0].Values["Date"].Value, Is.EqualTo(new DateTime(2016, 2, 9)));
-                Assert.That(rows[0].Values["Notes"].Value, Is.EqualTo("Joe is a great guy to work with."));
-                Assert.That(rows[0].Values["AdditionalNotes"].Value, Is.EqualTo("He also likes sushi."));
+                Assert.That(rows[0].Values, Has.Count.EqualTo(4));
+                Assert.That(((TpsString)rows[0].Values["Name"]).Value, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
+                Assert.That(((TpsDate)rows[0].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2016, 2, 9)));
+                Assert.That(((TpsMemo)rows[0].Values["Notes"]).Value, Is.EqualTo("Joe is a great guy to work with."));
+                Assert.That(((TpsMemo)rows[0].Values["AdditionalNotes"]).Value, Is.EqualTo("He also likes sushi."));
 
-                Assert.That(rows[1].Values.Count(), Is.EqualTo(4));
-                Assert.That(rows[1].Values["Name"].Value, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
-                Assert.That(rows[1].Values["Date"].Value, Is.EqualTo(new DateTime(2019, 8, 22)));
-                Assert.That(rows[1].Values["Notes"].Value, Is.EqualTo("Jane knows how to make a great pot of coffee."));
-                Assert.That(rows[1].Values["AdditionalNotes"].Value, Is.EqualTo("She doesn't like sushi as much as Joe."));
+                Assert.That(rows[1].Values, Has.Count.EqualTo(4));
+                Assert.That(((TpsString)rows[1].Values["Name"]).Value, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
+                Assert.That(((TpsDate)rows[1].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2019, 8, 22)));
+                Assert.That(((TpsMemo)rows[1].Values["Notes"]).Value, Is.EqualTo("Jane knows how to make a great pot of coffee."));
+                Assert.That(((TpsMemo)rows[1].Values["AdditionalNotes"]).Value, Is.EqualTo("She doesn't like sushi as much as Joe."));
 
-                Assert.That(rows[2].Values.Count(), Is.EqualTo(2));
-                Assert.That(rows[2].Values["Name"].Value, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
-                Assert.That(rows[2].Values["Date"].Value, Is.EqualTo(new DateTime(2019, 10, 7)));
+                Assert.That(rows[2].Values, Has.Count.EqualTo(2));
+                Assert.That(((TpsString)rows[2].Values["Name"]).Value, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
+                Assert.That(((TpsDate)rows[2].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2019, 10, 7)));
                 Assert.That(rows[2].Values.TryGetValue("Notes", out var _), Is.False);
                 Assert.That(rows[2].Values.TryGetValue("AdditionalNotes", out var _), Is.False);
 
-                Assert.That(rows[3].Values.Count(), Is.EqualTo(3));
-                Assert.That(rows[3].Values["Name"].Value, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
-                Assert.That(rows[3].Values["Date"].Value, Is.EqualTo(new DateTime(2013, 3, 14)));
+                Assert.That(rows[3].Values, Has.Count.EqualTo(3));
+                Assert.That(((TpsString)rows[3].Values["Name"]).Value, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
+                Assert.That(((TpsDate)rows[3].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2013, 3, 14)));
                 Assert.That(rows[3].Values.TryGetValue("Notes", out var _), Is.False);
-                Assert.That(rows[3].Values["AdditionalNotes"].Value, Is.EqualTo("Has a strange last name."));
+                Assert.That(((TpsMemo)rows[3].Values["AdditionalNotes"]).Value, Is.EqualTo("Has a strange last name."));
             }
         }
     }

@@ -12,32 +12,6 @@ namespace TpsParser.Binary;
 /// </summary>
 public sealed class TpsRandomAccess
 {
-    //private SequenceReader<byte> SequenceReader { get; }
-    //private ReadOnlySequence<byte> Sequence { get; }
-
-    //private void X()
-    //{
-    //    //ReadOnlySequence<byte> seq;
-    //    //Sequence.
-    //    //new ReadOnlySequence<byte>();
-    //    //new ReadOnlySequenceSegment<byte>()
-    //    //SequenceReader = new()
-    //}
-
-    /// <summary>
-    /// <para>
-    /// Gets the encoding for Windows-1252 "ANSI Latin 1; Western European (Windows)" commonly used with US English.
-    /// </para>
-    /// <para>
-    /// The original Clarion TPS database driver would have used the system ANSI codepage when reading and writing strings.
-    /// </para>
-    /// <para>
-    /// See <a href="https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers"/>
-    /// for a list of other ANSI and non-Unicode codepages.
-    /// </para>
-    /// </summary>
-    public static Encoding EncodingWindows1252 => CodePagesEncodingProvider.Instance.GetEncoding("Windows-1252");
-
     private byte[] Data { get; }
     private Stack<int> PositionStack { get; }
 
@@ -114,7 +88,7 @@ public sealed class TpsRandomAccess
     /// <param name="additiveOffset"></param>
     /// <param name="length"></param>
     /// <param name="encoding">The encoding to use, or null if the encoding should be inherited from <paramref name="encoding"/>.</param>
-    public TpsRandomAccess(TpsRandomAccess existing, int additiveOffset, int length, Encoding encoding = null)
+    public TpsRandomAccess(TpsRandomAccess existing, int additiveOffset, int length, Encoding? encoding = null)
         : this(
               data: existing?.Data ?? throw new ArgumentNullException(nameof(existing)),
               baseOffset: existing.BaseOffset + additiveOffset,
@@ -358,7 +332,7 @@ public sealed class TpsRandomAccess
     /// <param name="length">The length of the string to read.</param>
     /// <param name="encoding">The encoding of the string.</param>
     /// <returns></returns>
-    public string ReadFixedLengthString(int length, Encoding encoding = null)
+    public string ReadFixedLengthString(int length, Encoding? encoding = null)
     {
         AssertSpace(length);
 
@@ -376,7 +350,7 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <param name="encoding">The encoding of the string to use.</param>
     /// <returns></returns>
-    public string ReadZeroTerminatedString(Encoding encoding = null)
+    public string ReadZeroTerminatedString(Encoding? encoding = null)
     {
         var bytes = new List<byte>();
 
@@ -403,7 +377,7 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <param name="encoding">The encoding of the string.</param>
     /// <returns></returns>
-    public string ReadPascalString(Encoding encoding = null)
+    public string ReadPascalString(Encoding? encoding = null)
     {
         int length = ReadByte();
 
@@ -487,13 +461,31 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <param name="length"></param>
     /// <returns></returns>
-    public byte[] ReadBytes(int length)
+    public byte[] ReadBytesAsArray(int length)
     {
+        AssertSpace(length);
+
         var dest = PeekBytes(length);
 
         Position += length;
 
         return dest;
+    }
+
+    /// <summary>
+    /// Reads a region of bytes and advances the position.
+    /// </summary>
+    /// <param name="length"></param>
+    /// <returns></returns>
+    public ReadOnlyMemory<byte> ReadBytesAsMemory(int length)
+    {
+        AssertSpace(length);
+
+        var rom = new ReadOnlyMemory<byte>(Data, start: Position, length: length);
+
+        Position += length;
+
+        return rom;
     }
 
     /// <summary>
@@ -537,7 +529,7 @@ public sealed class TpsRandomAccess
                 skip = (msb << 7 & 0xFF00) + lsb + shift;
             }
 
-            bytes.AddRange(ReadBytes(skip));
+            bytes.AddRange(ReadBytesAsArray(skip));
 
             if (!IsOneByteLeft)
             {
@@ -609,7 +601,7 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <returns></returns>
     public TpsRandomAccess GetReaderForRemainder() =>
-        new TpsRandomAccess(
+        new(
             existing: this,
             additiveOffset: Position,
             length: Length - Position,
@@ -725,19 +717,19 @@ public sealed class TpsRandomAccess
     /// Reads a <see cref="TpsByte"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsByte ReadTpsByte() => new TpsByte(ReadByte());
+    public TpsByte ReadTpsByte() => new(ReadByte());
 
     /// <summary>
     /// Reads a <see cref="TpsShort"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsShort ReadTpsShort() => new TpsShort(ReadShortLE());
+    public TpsShort ReadTpsShort() => new(ReadShortLE());
 
     /// <summary>
     /// Reads a <see cref="TpsUnsignedShort"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsUnsignedShort ReadTpsUnsignedShort() => new TpsUnsignedShort(ReadUnsignedShortLE());
+    public TpsUnsignedShort ReadTpsUnsignedShort() => new(ReadUnsignedShortLE());
 
     /// <summary>
     /// Reads a <see cref="TpsDate"/> and advances the current position.
@@ -780,32 +772,32 @@ public sealed class TpsRandomAccess
         // Centiseconds (seconds/100) 0 - 99
         int centi = time & 0x000000FF;
 
-        return new TpsTime((byte)hours, (byte)mins, (byte)secs, (byte)(centi * 10));
+        return new TpsTime((byte)hours, (byte)mins, (byte)secs, (byte)centi);
     }
 
     /// <summary>
     /// Reads a <see cref="TpsLong"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsLong ReadTpsLong() => new TpsLong(ReadLongLE());
+    public TpsLong ReadTpsLong() => new(ReadLongLE());
 
     /// <summary>
     /// Reads a <see cref="TpsUnsignedLong"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsUnsignedLong ReadTpsUnsignedLong() => new TpsUnsignedLong(ReadUnsignedLongLE());
+    public TpsUnsignedLong ReadTpsUnsignedLong() => new(ReadUnsignedLongLE());
 
     /// <summary>
     /// Reads a <see cref="TpsFloat"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsFloat ReadTpsFloat() => new TpsFloat(ReadFloatLE());
+    public TpsFloat ReadTpsFloat() => new(ReadFloatLE());
 
     /// <summary>
     /// Reads a <see cref="TpsDouble"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsDouble ReadTpsDouble() => new TpsDouble(ReadDoubleLE());
+    public TpsDouble ReadTpsDouble() => new(ReadDoubleLE());
 
     /// <summary>
     /// Reads a <see cref="TpsDecimal"/> and advances the current position.
@@ -826,7 +818,7 @@ public sealed class TpsRandomAccess
 
         ref ulong current = ref (length > 16) ? ref high : ref low;
 
-        byte[] data = ReadBytes(length);
+        byte[] data = ReadBytesAsArray(length);
 
         int shift = 0;
 
@@ -860,7 +852,7 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public TpsString ReadTpsString(Encoding encoding = null)
+    public TpsString ReadTpsString(Encoding? encoding = null)
     {
         encoding ??= Encoding;
 
@@ -873,7 +865,7 @@ public sealed class TpsRandomAccess
     /// <param name="length">The length of the string in bytes.</param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public TpsString ReadTpsString(int length, Encoding encoding = null)
+    public TpsString ReadTpsString(int length, Encoding? encoding = null)
     {
         if (length < 0)
         {
@@ -889,19 +881,19 @@ public sealed class TpsRandomAccess
     /// Reads a <see cref="TpsCString"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsCString ReadTpsCString(Encoding encoding = null) => new TpsCString(ReadZeroTerminatedString(encoding));
+    public TpsCString ReadTpsCString(Encoding? encoding = null) => new(ReadZeroTerminatedString(encoding));
 
     /// <summary>
     /// Reads a <see cref="TpsPString"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsPString ReadTpsPString(Encoding encoding = null) => new TpsPString(ReadPascalString(encoding));
+    public TpsPString ReadTpsPString(Encoding? encoding = null) => new(ReadPascalString(encoding));
 
     /// <summary>
     /// Reads a <see cref="TpsMemo"/> and consumes the entire data array.
     /// </summary>
     /// <returns></returns>
-    public TpsMemo ReadMemo(Encoding encoding = null) => new TpsMemo(ReadTpsString(encoding).Value);
+    public TpsMemo ReadMemo(Encoding? encoding = null) => new(ReadTpsString(encoding).Value);
 
     /// <summary>
     /// Reads a <see cref="TpsBlob"/> and advances the current position.
@@ -910,7 +902,7 @@ public sealed class TpsRandomAccess
     public TpsBlob ReadBlob()
     {
         int length = ReadLongLE();
-        var bytes = ReadBytes(length);
+        var bytes = ReadBytesAsMemory(length);
 
         return new TpsBlob(bytes);
     }

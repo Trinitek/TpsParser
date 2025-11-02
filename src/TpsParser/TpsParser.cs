@@ -67,14 +67,14 @@ public sealed class TpsParser : IDisposable
         TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherDataRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
     {
         var dataRecords = TpsFile.GetDataRecords(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
 
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherMemoRecords(int table, ITableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
     {
         return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
             .SelectMany(index =>

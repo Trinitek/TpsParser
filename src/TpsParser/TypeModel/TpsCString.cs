@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a null-terminated string.
+/// Represents a Clarion CSTRING type, which is a null-terminated string.
 /// </summary>
 public readonly struct TpsCString : IString, IEquatable<TpsCString>
 {
@@ -39,7 +39,7 @@ public readonly struct TpsCString : IString, IEquatable<TpsCString>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object obj) => obj is TpsCString x && Equals(x);
+    public override bool Equals(object? obj) => obj is TpsCString x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()

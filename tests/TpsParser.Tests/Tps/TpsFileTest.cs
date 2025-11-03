@@ -64,11 +64,11 @@ internal sealed class TpsFileTest
         {
             Assert.That(fields[0].FullName, Is.EqualTo("CON1:OUDNR"));
             Assert.That(fields[0].Name, Is.EqualTo("OUDNR"));
-            Assert.That(fields[0].Type, Is.EqualTo(TpsTypeCode.Short));
+            Assert.That(fields[0].Type, Is.EqualTo(ClaTypeCode.Short));
 
             Assert.That(fields[1].FullName, Is.EqualTo("CON1:NEWNR"));
             Assert.That(fields[1].Name, Is.EqualTo("NEWNR"));
-            Assert.That(fields[1].Type, Is.EqualTo(TpsTypeCode.Short));
+            Assert.That(fields[1].Type, Is.EqualTo(ClaTypeCode.Short));
         }
     }
 
@@ -86,8 +86,8 @@ internal sealed class TpsFileTest
             Assert.That(dataRecords, Has.Count.EqualTo(1));
             Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
             Assert.That(dataRecords[0].Values, Has.Count.EqualTo(2));
-            Assert.That(((TpsShort)dataRecords[0].Values[0]).ToInt32().Value, Is.EqualTo(1));
-            Assert.That(((TpsShort)dataRecords[0].Values[1]).ToInt32().Value, Is.EqualTo(1));
+            Assert.That(((ClaShort)dataRecords[0].Values[0]).ToInt32().Value, Is.EqualTo(1));
+            Assert.That(((ClaShort)dataRecords[0].Values[1]).ToInt32().Value, Is.EqualTo(1));
         }
     }
 

@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion PSTRING type, which is a Pascal string where the length is specified at the beginning of the string.
 /// </summary>
-public readonly struct TpsPString : IString, IEquatable<TpsPString>
+public readonly struct ClaPString : IClaString, IEquatable<ClaPString>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.PString;
+    public ClaTypeCode TypeCode => ClaTypeCode.PString;
 
     /// <summary>
     /// Gets the string backing this type.
@@ -20,7 +20,7 @@ public readonly struct TpsPString : IString, IEquatable<TpsPString>
     /// Instantiate a new PSTRING.
     /// </summary>
     /// <param name="value">The string value. Must not be null.</param>
-    public TpsPString(string value)
+    public ClaPString(string value)
     {
         Value = value ?? throw new ArgumentNullException(nameof(value));
     }
@@ -34,11 +34,11 @@ public readonly struct TpsPString : IString, IEquatable<TpsPString>
     public override string ToString() => Value;
 
     /// <inheritdoc/>
-    public bool Equals(TpsPString other) =>
+    public bool Equals(ClaPString other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsPString x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaPString x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -47,8 +47,8 @@ public readonly struct TpsPString : IString, IEquatable<TpsPString>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsPString left, TpsPString right) => left.Equals(right);
+    public static bool operator ==(ClaPString left, ClaPString right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsPString left, TpsPString right) => !(left == right);
+    public static bool operator !=(ClaPString left, ClaPString right) => !(left == right);
 }

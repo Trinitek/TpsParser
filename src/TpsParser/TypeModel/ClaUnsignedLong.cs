@@ -5,10 +5,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion ULONG type, which is an unsigned 32-bit integer.
 /// </summary>
-public readonly struct TpsUnsignedLong : INumeric, IEquatable<TpsUnsignedLong>
+public readonly struct ClaUnsignedLong : IClaNumeric, IEquatable<ClaUnsignedLong>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.ULong;
+    public ClaTypeCode TypeCode => ClaTypeCode.ULong;
 
     private uint Value { get; }
 
@@ -16,7 +16,7 @@ public readonly struct TpsUnsignedLong : INumeric, IEquatable<TpsUnsignedLong>
     /// Instantiates a new ULONG.
     /// </summary>
     /// <param name="value"></param>
-    public TpsUnsignedLong(uint value)
+    public ClaUnsignedLong(uint value)
     {
         Value = value;
     }
@@ -81,11 +81,11 @@ public readonly struct TpsUnsignedLong : INumeric, IEquatable<TpsUnsignedLong>
     }
 
     /// <inheritdoc/>
-    public bool Equals(TpsUnsignedLong other) =>
+    public bool Equals(ClaUnsignedLong other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsUnsignedLong x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaUnsignedLong x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -94,8 +94,8 @@ public readonly struct TpsUnsignedLong : INumeric, IEquatable<TpsUnsignedLong>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsUnsignedLong left, TpsUnsignedLong right) => left.Equals(right);
+    public static bool operator ==(ClaUnsignedLong left, ClaUnsignedLong right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsUnsignedLong left, TpsUnsignedLong right) => !(left == right);
+    public static bool operator !=(ClaUnsignedLong left, ClaUnsignedLong right) => !(left == right);
 }

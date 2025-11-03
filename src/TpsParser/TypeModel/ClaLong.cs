@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion LONG type, which is a signed 32-bit integer.
 /// </summary>
-public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
+public readonly struct ClaLong : IClaNumeric, IClaDate, IClaTime, IEquatable<ClaLong>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Long;
+    public ClaTypeCode TypeCode => ClaTypeCode.Long;
 
     private int Value { get; }
 
@@ -17,7 +17,7 @@ public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
     /// Instantiates a new LONG value from the given value.
     /// </summary>
     /// <param name="value"></param>
-    public TpsLong(int value)
+    public ClaLong(int value)
     {
         Value = value;
     }
@@ -79,18 +79,18 @@ public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
     public Maybe<double> ToDouble() => Maybe.Some((double)Value);
 
     /// <summary>
-    /// Gets a <see cref="DateTime"/> by interpreting the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/> plus 4 days.
-    /// For more information about the Clarion Standard Date and the valid ranges, see the remarks section of <see cref="TpsDate"/>. Values outside of the valid range
+    /// Gets a <see cref="DateTime"/> by interpreting the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClaDate.ClarionEpoch"/> plus 4 days.
+    /// For more information about the Clarion Standard Date and the valid ranges, see the remarks section of <see cref="ClaDate"/>. Values outside of the valid range
     /// will return <see cref="Maybe.None{T}"/>.
     /// </summary>
     public Maybe<DateTime?> ToDateTime() =>
-        TpsDate.ClarionStandardDateMinValue < Value || TpsDate.ClarionStandardDateMaxValue > Value
+        ClaDate.ClarionStandardDateMinValue < Value || ClaDate.ClarionStandardDateMaxValue > Value
         ? Maybe.None<DateTime?>()
-        : Maybe.Some<DateTime?>(TpsDate.ClarionEpoch.AddDays(Value));
+        : Maybe.Some<DateTime?>(ClaDate.ClarionEpoch.AddDays(Value));
 
     /// <summary>
     /// Gets a <see cref="TimeSpan"/> by interpreting the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight plus 1 centisecond.
-    /// For more information about the Clarion Standard Time and the valid ranges, see the remarks section of <see cref="TpsTime"/>. Values that are zero will return null per
+    /// For more information about the Clarion Standard Time and the valid ranges, see the remarks section of <see cref="ClaTime"/>. Values that are zero will return null per
     /// the Standard Time rules, and every other value outside of the valid range will return <see cref="Maybe.None{T}"/>.
     /// </summary>
     public Maybe<TimeSpan?> ToTimeSpan()
@@ -99,7 +99,7 @@ public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
         {
             return Maybe.Some<TimeSpan?>(null);
         }
-        else if (TpsTime.ClarionStandardTimeMinValue < Value || TpsTime.ClarionStandardTimeMaxValue > Value)
+        else if (ClaTime.ClarionStandardTimeMinValue < Value || ClaTime.ClarionStandardTimeMaxValue > Value)
         {
             return Maybe.None<TimeSpan?>();
         }
@@ -113,10 +113,10 @@ public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsLong x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaLong x && Equals(x);
 
     /// <inheritdoc/>
-    public bool Equals(TpsLong other) =>
+    public bool Equals(ClaLong other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
@@ -126,8 +126,8 @@ public readonly struct TpsLong : INumeric, IDate, ITime, IEquatable<TpsLong>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsLong left, TpsLong right) => left.Equals(right);
+    public static bool operator ==(ClaLong left, ClaLong right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsLong left, TpsLong right) => !(left == right);
+    public static bool operator !=(ClaLong left, ClaLong right) => !(left == right);
 }

@@ -4,7 +4,7 @@ namespace TpsParser.TypeModel;
 
 /// <summary>
 /// Represents a Clarion TIME type, which represents a moment in time.
-/// Some time keeping fields you expect to be of type <see cref="TpsTime"/> may actually be of type <see cref="TpsLong"/>.
+/// Some time keeping fields you expect to be of type <see cref="ClaTime"/> may actually be of type <see cref="ClaLong"/>.
 /// See the remarks section for details.
 /// </summary>
 /// <remarks>
@@ -36,13 +36,13 @@ namespace TpsParser.TypeModel;
 /// other external systems.
 /// </para>
 /// <para>
-/// The native time type used in the Clarion programming language when performing calculations is a LONG (<see cref="TpsLong"/>).
+/// The native time type used in the Clarion programming language when performing calculations is a LONG (<see cref="ClaLong"/>).
 /// This is called a Clarion Standard Time value and counts the number of centiseconds since midnight, plus 1 centisecond.
 /// The valid Clarion Standard Time range is 00:00:00.00 through 23:59:59.99, that is, an inclusive numerical range from 1
 /// to 8,640,000, with 0 used to represent a null value.
 /// </para>
 /// </remarks>
-public readonly struct TpsTime : ITime, IEquatable<TpsTime>
+public readonly struct ClaTime : IClaTime, IEquatable<ClaTime>
 {
     /// <summary>
     /// The maximum number of centiseconds this type can represent.
@@ -87,14 +87,14 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     public byte Centiseconds => (byte)(TotalCentiseconds % 100);
 
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Time;
+    public ClaTypeCode TypeCode => ClaTypeCode.Time;
 
     /// <summary>
     /// Instantiates a new TIME from the given total number of centiseconds (hundredths of a second) since midnight.
     /// </summary>
     /// <param name="totalCentiseconds">The number of centiseconds since midnight. Note that this is not a Clarion Standard Time value.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public TpsTime(int totalCentiseconds)
+    public ClaTime(int totalCentiseconds)
     {
         if (totalCentiseconds < 0 || totalCentiseconds > MaxTotalCentiseconds)
         {
@@ -112,7 +112,7 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     /// <param name="seconds">Seconds since midnight. Must be between 0 and 59 inclusive.</param>
     /// <param name="centiseconds">Centiseconds (hundredths of a second) since midnight. Must be between 0 and 99 inclusive.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public TpsTime(byte hours, byte minutes, byte seconds, byte centiseconds)
+    public ClaTime(byte hours, byte minutes, byte seconds, byte centiseconds)
     {
         if (hours > 23)
         {
@@ -142,7 +142,7 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     /// Instantiates a new TIME from the given TimeSpan.
     /// </summary>
     /// <param name="timeSpan"></param>
-    public TpsTime(TimeSpan timeSpan)
+    public ClaTime(TimeSpan timeSpan)
     {
         if (timeSpan < TimeSpan.Zero || timeSpan > new TimeSpan(0, 23, 59, 59, 990))
         {
@@ -169,19 +169,19 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
             milliseconds: Centiseconds * 10));
 
     /// <summary>
-    /// Gets a <see cref="TpsLong"/> instance representing the Clarion Standard Time, or number of centiseconds since midnight plus 1.
+    /// Gets a <see cref="ClaLong"/> instance representing the Clarion Standard Time, or number of centiseconds since midnight plus 1.
     /// </summary>
     /// <returns></returns>
-    public Maybe<TpsLong> AsClarionStandardTime() => Maybe.Some(new TpsLong(TotalCentiseconds + 1));
+    public Maybe<ClaLong> AsClarionStandardTime() => Maybe.Some(new ClaLong(TotalCentiseconds + 1));
 
     /// <inheritdoc/>
     public override string ToString() => $"{Hours:00}:{Minutes:00}:{Seconds:00}.{Centiseconds:00}";
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsTime x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaTime x && Equals(x);
 
     /// <inheritdoc/>
-    public bool Equals(TpsTime other) =>
+    public bool Equals(ClaTime other) =>
         TotalCentiseconds == other.TotalCentiseconds;
 
     /// <inheritdoc/>
@@ -191,8 +191,8 @@ public readonly struct TpsTime : ITime, IEquatable<TpsTime>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsTime left, TpsTime right) => left.Equals(right);
+    public static bool operator ==(ClaTime left, ClaTime right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsTime left, TpsTime right) => !(left == right);
+    public static bool operator !=(ClaTime left, ClaTime right) => !(left == right);
 }

@@ -18,20 +18,20 @@ public sealed class Row
 
     /// <summary>
     /// <para>
-    /// Gets the field values that belong to the record, where each <see cref="TpsObject"/> is associated with the name of its column.
+    /// Gets the field values that belong to the record, where each <see cref="ClaObject"/> is associated with the name of its column.
     /// </para>
     /// <para>
     /// This contains data fields as well as any associated memos or blobs.
     /// </para>
     /// </summary>
-    public IReadOnlyDictionary<string, ITpsObject> Values { get; }
+    public IReadOnlyDictionary<string, IClaObject> Values { get; }
 
     /// <summary>
     /// Instantiates a new row.
     /// </summary>
     /// <param name="recordNumber">The record number of the row.</param>
     /// <param name="values">The values in the row, keyed by their column names.</param>
-    public Row(int recordNumber, IReadOnlyDictionary<string, ITpsObject> values)
+    public Row(int recordNumber, IReadOnlyDictionary<string, IClaObject> values)
     {
         Id = recordNumber;
         Values = values ?? throw new ArgumentNullException(nameof(values));
@@ -42,7 +42,7 @@ public sealed class Row
     /// </summary>
     /// <param name="column"></param>
     /// <returns></returns>
-    public ITpsObject GetValue(string column) => Values[column];
+    public IClaObject GetValue(string column) => Values[column];
 
     /// <summary>
     /// Gets the field, memo, or blob value associated with the given column name.
@@ -51,7 +51,7 @@ public sealed class Row
     /// <param name="column">The case insensitive name of the column.</param>
     /// <param name="isRequired">Indicates that the requested field must be present, or an exception is thrown.</param>
     /// <returns></returns>
-    public ITpsObject GetValueCaseInsensitive(string column, bool isRequired)
+    public IClaObject? GetValueCaseInsensitive(string column, bool isRequired)
     {
         var matchingKey = Values.Keys.FirstOrDefault(k => k.Equals(column, StringComparison.OrdinalIgnoreCase));
 

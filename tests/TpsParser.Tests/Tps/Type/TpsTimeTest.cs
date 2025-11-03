@@ -25,8 +25,8 @@ internal sealed class TpsTimeTest
 
             using (Assert.EnterMultipleScope())
             {
-                TpsTime clockIn = (TpsTime)valuePairs["ClockIn"];
-                TpsTime clockOut = (TpsTime)valuePairs["ClockOut"];
+                ClaTime clockIn = (ClaTime)valuePairs["ClockIn"];
+                ClaTime clockOut = (ClaTime)valuePairs["ClockOut"];
 
                 Assert.That(clockIn.Hours, Is.EqualTo(6));
                 Assert.That(clockIn.Minutes, Is.EqualTo(23));
@@ -49,7 +49,7 @@ internal sealed class TpsTimeTest
     {
         var rx = new TpsRandomAccess([99, 59, 59, 12], Encoding.ASCII);
 
-        var time = rx.ReadTpsTime();
+        var time = rx.ReadClaTime();
 
         // 99/100 seconds = 990 milliseconds
 

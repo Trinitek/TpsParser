@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion BYTE type.
 /// </summary>
-public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
+public readonly struct ClaByte : IClaNumeric, IEquatable<ClaByte>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Byte;
+    public ClaTypeCode TypeCode => ClaTypeCode.Byte;
 
     private byte Value { get; }
 
@@ -17,7 +17,7 @@ public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
     /// Instantiates a new BYTE.
     /// </summary>
     /// <param name="value"></param>
-    public TpsByte(byte value) => Value = value;
+    public ClaByte(byte value) => Value = value;
 
     /// <summary>
     /// Returns true if the value is not zero.
@@ -64,11 +64,11 @@ public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public bool Equals(TpsByte other) =>
+    public bool Equals(ClaByte other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsByte x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaByte x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -77,8 +77,8 @@ public readonly struct TpsByte : INumeric, IEquatable<TpsByte>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsByte left, TpsByte right) => left.Equals(right);
+    public static bool operator ==(ClaByte left, ClaByte right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsByte left, TpsByte right) => !(left == right);
+    public static bool operator !=(ClaByte left, ClaByte right) => !(left == right);
 }

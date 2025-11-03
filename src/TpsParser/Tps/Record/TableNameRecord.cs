@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Tps.Header;
 
 namespace TpsParser.Tps.Record;
 
@@ -11,7 +10,7 @@ public sealed class TableNameRecord
     /// <summary>
     /// Gets the header of the record.
     /// </summary>
-    public ITableNameHeader Header { get; }
+    public TableNameHeader Header { get; }
 
     /// <summary>
     /// Gets the associated table number.
@@ -29,7 +28,7 @@ public sealed class TableNameRecord
             throw new ArgumentNullException(nameof(record));
         }
 
-        Header = (ITableNameHeader)record.Header;
+        Header = (TableNameHeader)record.Header;
         TableNumber = record.Data.ReadLongBE();
     }
 

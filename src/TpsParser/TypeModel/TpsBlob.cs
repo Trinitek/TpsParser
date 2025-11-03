@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// Represents a Clarion BLOB type, which is an arbitrary array of bytes. Unlike <see cref="TpsMemo"/>,
 /// a BLOB can be larger than 65,536 bytes.
 /// </summary>
-public sealed class TpsBlob : ITpsObject
+public sealed class TpsBlob : IClaObject
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.None;
+    public ClaTypeCode TypeCode => ClaTypeCode.None;
 
     /// <summary>
     /// Gets the byte array backing this type.

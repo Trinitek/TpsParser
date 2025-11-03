@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using TpsParser.Binary;
-using TpsParser.Tps.Header;
 
 namespace TpsParser.Tps;
 
@@ -100,30 +99,26 @@ public sealed class TpsRecord
 
         if (rx.Length >= 5)
         {
-            if (rx.Peek(0) == 0xFE)
+            if (rx.Peek(0) == (byte)RecordType.TableName)
             {
-                Header = new TableNameHeader(rx);
+                var preHeader = PreHeader.Parse(rx, readTableNumber: false);
+
+                Header = TableNameHeader.Parse(preHeader, rx);
             }
             else
             {
-                switch (rx.Peek(4))
+                var preHeader = PreHeader.Parse(rx, readTableNumber: true);
+
+                Header = preHeader.Type switch
                 {
-                    case 0xF3:
-                        Header = new DataHeader(rx);
-                        break;
-                    case 0xF6:
-                        Header = new MetadataHeader(rx);
-                        break;
-                    case 0xFA:
-                        Header = new TableDefinitionHeader(rx);
-                        break;
-                    case 0xFC:
-                        Header = new MemoHeader(rx);
-                        break;
-                    default:
-                        Header = new IndexHeader(rx);
-                        break;
-                }
+                    RecordType.TableName => TableNameHeader.Parse(preHeader, rx),
+                    RecordType.Data => DataHeader.Parse(preHeader, rx),
+                    RecordType.Metadata => MetadataHeader.Parse(preHeader, rx),
+                    RecordType.TableDef => TableDefinitionHeader.Parse(preHeader, rx),
+                    RecordType.Memo => MemoHeader.Parse(preHeader, rx),
+                    RecordType.Index => IndexHeader.Parse(preHeader, rx),
+                    _ => IndexHeader.Parse(preHeader, rx)
+                };
             }
         }
     }

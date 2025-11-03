@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion REAL type, which is a double-precision floating point number.
 /// </summary>
-public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
+public readonly struct ClaReal : IClaNumeric, IEquatable<ClaReal>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Real;
+    public ClaTypeCode TypeCode => ClaTypeCode.Real;
 
     private double Value { get; }
 
@@ -19,7 +19,7 @@ public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
     /// Instantiates a new REAL.
     /// </summary>
     /// <param name="value"></param>
-    public TpsDouble(double value)
+    public ClaReal(double value)
     {
         Value = value;
     }
@@ -93,11 +93,11 @@ public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public bool Equals(TpsDouble other) =>
+    public bool Equals(ClaReal other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsDouble x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaReal x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -106,8 +106,8 @@ public readonly struct TpsDouble : INumeric, IEquatable<TpsDouble>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsDouble left, TpsDouble right) => left.Equals(right);
+    public static bool operator ==(ClaReal left, ClaReal right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsDouble left, TpsDouble right) => !(left == right);
+    public static bool operator !=(ClaReal left, ClaReal right) => !(left == right);
 }

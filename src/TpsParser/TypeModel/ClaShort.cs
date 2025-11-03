@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion SHORT type, which is a signed 16-bit integer.
 /// </summary>
-public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
+public readonly struct ClaShort : IClaNumeric, IEquatable<ClaShort>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Short;
+    public ClaTypeCode TypeCode => ClaTypeCode.Short;
 
     private short Value { get; }
 
@@ -17,7 +17,7 @@ public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
     /// Instantiates a new SHORT.
     /// </summary>
     /// <param name="value"></param>
-    public TpsShort(short value) => Value = value;
+    public ClaShort(short value) => Value = value;
 
     /// <summary>
     /// Returns true if the value is not zero.
@@ -76,10 +76,10 @@ public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsShort x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaShort x && Equals(x);
 
     /// <inheritdoc/>
-    public bool Equals(TpsShort other) =>
+    public bool Equals(ClaShort other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
@@ -89,8 +89,8 @@ public readonly struct TpsShort : INumeric, IEquatable<TpsShort>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsShort left, TpsShort right) => left.Equals(right);
+    public static bool operator ==(ClaShort left, ClaShort right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsShort left, TpsShort right) => !(left == right);
+    public static bool operator !=(ClaShort left, ClaShort right) => !(left == right);
 }

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using TpsParser.Binary;
-using TpsParser.Tps.Header;
 using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;
@@ -145,7 +144,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
         var header = GetFileHeader();
 
-        foreach (var pageRange in header.PageRanges)
+        foreach (var pageRange in header.PageDescriptors)
         {
             int offset = pageRange.StartOffset;
             int end = pageRange.EndOffset;
@@ -175,11 +174,9 @@ internal sealed class RandomAccessTpsFile : TpsFile
     {
         var header = GetFileHeader();
 
-        var blocks = header.PageRanges
-            // Skip the first entry (0 length) and any blocks that are beyond the file size
-            .Where(range => !(
-                ((range.StartOffset == 0x200) && (range.EndOffset == 0x200))
-                || (range.StartOffset >= Data.Length)))
+        var blocks = header.PageDescriptors
+            // Skip zero-length pages and any blocks that are beyond the file size.
+            .Where(range => !((range.Length == 0) || (range.StartOffset >= Data.Length)))
 
             .Select(range => new TpsBlock(Data, range, ignoreErrors));
 
@@ -214,7 +211,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
     public override IEnumerable<TableNameRecord> GetTableNameRecords()
     {
         return VisitRecords()
-            .Where(record => record.Header is ITableNameHeader)
+            .Where(record => record.Header is TableNameHeader)
             .Select(record => new TableNameRecord(record));
     }
 
@@ -244,24 +241,24 @@ internal sealed class RandomAccessTpsFile : TpsFile
         // Records must be merged in order according to the memo's sequence number, so we order them.
         // Large memos are spread across multiple structures and must be joined later.
         var orderedBySequenceNumber = memoRecords
-            .OrderBy(record => ((IMemoHeader)record.Header).SequenceNumber);
+            .OrderBy(record => ((MemoHeader)record.Header).SequenceNumber);
 
         // Group the records by their owner and index.
         var groupedByOwnerAndIndex = orderedBySequenceNumber
             .GroupBy(record =>
             {
-                var header = (IMemoHeader)record.Header;
+                var header = (MemoHeader)record.Header;
                 return (owner: header.OwningRecord, index: header.MemoIndex);
             });
 
         // Drop memos that have skipped sequence numbers, as this means the memo is missing a chunk of data.
         // Sequence numbers are zero-based.
         var filteredByCompleteSequences = groupedByOwnerAndIndex
-            .Where(group => group.Count() - 1 == ((IMemoHeader)group.First().Header).SequenceNumber);
+            .Where(group => group.Count() - 1 == ((MemoHeader)group.First().Header).SequenceNumber);
 
         // Merge memo sequences into a single memo record.
         var resultingMemoRecords = filteredByCompleteSequences
-            .Select(group => new MemoRecord((IMemoHeader)group.First().Header, Merge(group)));
+            .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
 
         return resultingMemoRecords;
     }
@@ -270,7 +267,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
     {
         var memoRecords = VisitRecords(ignoreErrors)
             .Where(record =>
-                record.Header is IMemoHeader header
+                record.Header is MemoHeader header
                 && header.TableNumber == table);
 
         return OrderAndGroupMemos(memoRecords);
@@ -280,7 +277,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
     {
         var memoRecords = VisitRecords(ignoreErrors)
             .Where(record =>
-                record.Header is IMemoHeader header
+                record.Header is MemoHeader header
                 && header.TableNumber == table
                 && header.MemoIndex == memoIndex);
 

@@ -129,7 +129,7 @@ internal sealed class RandomAccessTest
     public void ShouldParseBCD(string value, int bcdLength, byte bcdDigitsAfterDecimal, byte[] data)
     {
         var rx = new TpsRandomAccess(data, Encoding.ASCII);
-        var bcd = rx.ReadTpsDecimal(bcdLength, bcdDigitsAfterDecimal);
+        var bcd = rx.ReadClaDecimal(bcdLength, bcdDigitsAfterDecimal);
 
         Assert.That(bcd.ToString(), Is.EqualTo(value));
     }

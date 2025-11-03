@@ -8,19 +8,20 @@ namespace TpsParser.TypeModel;
 
 /// <summary>
 /// Represents a typed object within the TopSpeed file.
+/// <see cref="IClaObject"/> types are modeled to correspond directly to types found in the Clarion runtime.
 /// </summary>
-public interface ITpsObject
+public interface IClaObject
 {
     /// <summary>
     /// Gets the type code of the object.
     /// </summary>
-    TpsTypeCode TypeCode { get; }
+    ClaTypeCode TypeCode { get; }
 }
 
 /// <summary>
-/// Represents a simple Clarion type.
+/// Represents a Clarion type with boolean semantics.
 /// </summary>
-public interface ISimple : ITpsObject
+public interface IClaBoolean : IClaObject
 {
     /// <summary>
     /// Gets a <see cref="bool"/> representation of the value as governed by Clarion logic evaluation rules for the type.
@@ -34,7 +35,7 @@ public interface ISimple : ITpsObject
 /// <summary>
 /// Represents a numeric Clarion type.
 /// </summary>
-public interface INumeric : ISimple
+public interface IClaNumeric : IClaBoolean
 {
     /// <summary>
     /// Gets an <see cref="sbyte"/> representation of the value, if it can be converted.
@@ -103,17 +104,17 @@ public interface INumeric : ISimple
     Maybe<decimal> ToDecimal();
 }
 
-internal static class TpsObject
+internal static class ClaObject
 {
     /// <summary>
-    /// Builds a <see cref="ITpsObject"/> from the given binary reader and field definition information.
+    /// Builds a <see cref="IClaObject"/> from the given binary reader and field definition information.
     /// </summary>
     /// <param name="rx">The binary reader.</param>
     /// <param name="encoding">The text encoding to use when reading string values.</param>
     /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
     /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
     /// <returns></returns>
-    internal static ITpsObject ParseField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
+    internal static IClaObject ParseField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
     {
         ArgumentNullException.ThrowIfNull(rx);
         ArgumentNullException.ThrowIfNull(encoding);
@@ -131,14 +132,14 @@ internal static class TpsObject
         }
     }
 
-    private static ITpsObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
+    private static IClaObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
         ParseScalarField(
             rx: rx,
             encoding: encoding,
             length: enumerator.Current?.Length ?? throw new ArgumentException("The current element is null.", nameof(enumerator)),
             enumerator: enumerator);
 
-    internal static ITpsObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
+    internal static IClaObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
     {
         ArgumentNullException.ThrowIfNull(rx);
         ArgumentNullException.ThrowIfNull(encoding);
@@ -148,33 +149,33 @@ internal static class TpsObject
 
         switch (current.Type)
         {
-            case TpsTypeCode.Byte:
-                return rx.ReadTpsByte();
-            case TpsTypeCode.Short:
-                return rx.ReadTpsShort();
-            case TpsTypeCode.UShort:
-                return rx.ReadTpsUnsignedShort();
-            case TpsTypeCode.Date:
-                return rx.ReadTpsDate();
-            case TpsTypeCode.Time:
-                return rx.ReadTpsTime();
-            case TpsTypeCode.Long:
-                return rx.ReadTpsLong();
-            case TpsTypeCode.ULong:
-                return rx.ReadTpsUnsignedLong();
-            case TpsTypeCode.SReal:
-                return rx.ReadTpsFloat();
-            case TpsTypeCode.Real:
-                return rx.ReadTpsDouble();
-            case TpsTypeCode.Decimal:
-                return rx.ReadTpsDecimal(length, current.BcdDigitsAfterDecimalPoint);
-            case TpsTypeCode.String:
-                return rx.ReadTpsString(length, encoding);
-            case TpsTypeCode.CString:
-                return rx.ReadTpsCString(encoding);
-            case TpsTypeCode.PString:
-                return rx.ReadTpsPString(encoding);
-            case TpsTypeCode.Group:
+            case ClaTypeCode.Byte:
+                return rx.ReadClaByte();
+            case ClaTypeCode.Short:
+                return rx.ReadClaShort();
+            case ClaTypeCode.UShort:
+                return rx.ReadClaUnsignedShort();
+            case ClaTypeCode.Date:
+                return rx.ReadClaDate();
+            case ClaTypeCode.Time:
+                return rx.ReadClaTime();
+            case ClaTypeCode.Long:
+                return rx.ReadClaLong();
+            case ClaTypeCode.ULong:
+                return rx.ReadClaUnsignedLong();
+            case ClaTypeCode.SReal:
+                return rx.ReadClaFloat();
+            case ClaTypeCode.Real:
+                return rx.ReadClaDouble();
+            case ClaTypeCode.Decimal:
+                return rx.ReadClaDecimal(length, current.BcdDigitsAfterDecimalPoint);
+            case ClaTypeCode.FString:
+                return rx.ReadClaFString(length, encoding);
+            case ClaTypeCode.CString:
+                return rx.ReadClaCString(encoding);
+            case ClaTypeCode.PString:
+                return rx.ReadClaPString(encoding);
+            case ClaTypeCode.Group:
                 return TpsGroup.BuildFromFieldDefinitions(rx, encoding, enumerator);
             default:
                 throw new ArgumentException($"Unsupported type {current.Type} ({length})", nameof(enumerator));
@@ -183,15 +184,15 @@ internal static class TpsObject
 }
 
 /// <summary>
-/// Represents a complex Clarion type that owns one or more instances of <see cref="ITpsObject"/>.
+/// Represents a complex Clarion type that owns one or more instances of <see cref="IClaObject"/>.
 /// </summary>
-public interface IComplex : ITpsObject
+public interface IComplex : IClaObject
 { }
 
 /// <summary>
 /// Represents a Clarion string type.
 /// </summary>
-public interface IString : ISimple
+public interface IClaString : IClaBoolean
 {
     /// <summary>
     /// Gets the string value.
@@ -202,7 +203,7 @@ public interface IString : ISimple
 /// <summary>
 /// Represents a Clarion type that can be interpreted as a point in time.
 /// </summary>
-public interface ITime : ITpsObject
+public interface IClaTime : IClaObject
 {
     /// <summary>
     /// Gets a <see cref="TimeSpan"/> representation of the value, if it can be converted.
@@ -214,7 +215,7 @@ public interface ITime : ITpsObject
 /// <summary>
 /// Represents a Clarion type that can be interpreted as a date.
 /// </summary>
-public interface IDate : ITpsObject
+public interface IClaDate : IClaObject
 {
     /// <summary>
     /// Gets a <see cref="DateTime"/> representation of the value, if it can be converted.

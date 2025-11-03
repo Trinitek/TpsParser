@@ -14,7 +14,7 @@ public sealed class TpsBlock
     private int End { get; }
     private TpsRandomAccess Data { get; }
 
-    public TpsBlock(TpsRandomAccess rx, TpsPageRange pageRange, bool ignorePageErrors)
+    public TpsBlock(TpsRandomAccess rx, TpsPageDescriptor pageRange, bool ignorePageErrors)
     {
         Data = rx ?? throw new ArgumentNullException(nameof(rx));
         

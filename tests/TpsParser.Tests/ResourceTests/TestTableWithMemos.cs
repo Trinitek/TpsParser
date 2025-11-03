@@ -27,7 +27,7 @@ internal sealed class TestTableWithMemos
             Assert.That(header.LastIssuedRow, Is.EqualTo(5));
             Assert.That(header.Changes, Is.EqualTo(11));
             Assert.That(header.ManagementPageReferenceOffset, Is.EqualTo(512));
-            Assert.That(header.PageRanges, Is.EqualTo(new TpsPageRange[] {
+            Assert.That(header.PageDescriptors, Is.EqualTo(new TpsPageDescriptor[] {
                 new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 1792),  new(1792, 1792), new(1792, 1792),
                 new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
                 new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
@@ -49,7 +49,7 @@ internal sealed class TestTableWithMemos
                 LastIssuedRow = 5,
                 Changes = 11,
                 ManagementPageReferenceOffset = 512,
-                PageRanges = [
+                PageDescriptors = [
                     new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 1792),  new(1792, 1792), new(1792, 1792),
                     new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
                     new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
@@ -117,7 +117,7 @@ internal sealed class TestTableWithMemos
             Assert.That(f0.Length, Is.EqualTo(64));
             Assert.That(f0.StringLength, Is.EqualTo(64));
             Assert.That(f0.StringMask, Is.EqualTo(string.Empty));
-            Assert.That(f0.Type, Is.EqualTo(TpsTypeCode.String));
+            Assert.That(f0.Type, Is.EqualTo(ClaTypeCode.FString));
 
             var f1 = def.Fields[1];
 
@@ -130,7 +130,7 @@ internal sealed class TestTableWithMemos
             Assert.That(f1.Length, Is.EqualTo(4));
             Assert.That(f1.StringLength, Is.Zero);
             Assert.That(f1.StringMask, Is.EqualTo(string.Empty));
-            Assert.That(f1.Type, Is.EqualTo(TpsTypeCode.Date));
+            Assert.That(f1.Type, Is.EqualTo(ClaTypeCode.Date));
 
             var m0 = def.Memos[0];
 

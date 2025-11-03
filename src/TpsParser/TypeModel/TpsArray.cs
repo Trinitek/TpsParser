@@ -9,7 +9,7 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents an array of objects.
 /// </summary>
-public interface ITpsArray : ITpsObject
+public interface ITpsArray : IClaObject
 {
     // /// <inheritdoc/>
     //TpsTypeCode TypeCode { get; }
@@ -17,30 +17,30 @@ public interface ITpsArray : ITpsObject
     /// <summary>
     /// Gets the collection of objects in this array.
     /// </summary>
-    IReadOnlyList<ITpsObject> Objects { get; }
+    IReadOnlyList<IClaObject> Objects { get; }
 }
 
 /// <summary>
 /// Represents an array of objects.
 /// </summary>
 public sealed class TpsArray<T> : IComplex, ITpsArray
-    where T : ITpsObject
+    where T : IClaObject
 {
     /// Gets the type code of the objects in this array.
-    public TpsTypeCode TypeCode { get; }
+    public ClaTypeCode TypeCode { get; }
 
     /// <inheritdoc/>
     public IReadOnlyList<T> Objects => _objects;
     private readonly IReadOnlyList<T> _objects;
 
-    IReadOnlyList<ITpsObject> ITpsArray.Objects => (IReadOnlyList<ITpsObject>)_objects;
+    IReadOnlyList<IClaObject> ITpsArray.Objects => (IReadOnlyList<IClaObject>)_objects;
 
     /// <summary>
     /// Instantiates a new array.
     /// </summary>
     /// <param name="typeCode"></param>
     /// <param name="items"></param>
-    public TpsArray(TpsTypeCode typeCode, IReadOnlyList<T> items)
+    public TpsArray(ClaTypeCode typeCode, IReadOnlyList<T> items)
     {
         TypeCode = typeCode;
         _objects = items ?? throw new ArgumentNullException(nameof(items));
@@ -54,85 +54,85 @@ public sealed class TpsArray<T> : IComplex, ITpsArray
 
 internal static class TpsArrayExtensions
 {
-    private static ITpsArray Create(TpsTypeCode typeCode, IReadOnlyList<ITpsObject> items)
+    private static ITpsArray Create(ClaTypeCode typeCode, IReadOnlyList<IClaObject> items)
     {
         switch (typeCode)
         {
-            case TpsTypeCode.Byte:
-                return new TpsArray<TpsByte>(typeCode, (IReadOnlyList<TpsByte>)items);
-            case TpsTypeCode.Short:
-                return new TpsArray<TpsShort>(typeCode, (IReadOnlyList<TpsShort>)items);
-            case TpsTypeCode.UShort:
-                return new TpsArray<TpsUnsignedShort>(typeCode, (IReadOnlyList<TpsUnsignedShort>)items);
-            case TpsTypeCode.Date:
-                return new TpsArray<TpsDate>(typeCode, (IReadOnlyList<TpsDate>)items);
-            case TpsTypeCode.Time:
-                return new TpsArray<TpsTime>(typeCode, (IReadOnlyList<TpsTime>)items);
-            case TpsTypeCode.Long:
-                return new TpsArray<TpsLong>(typeCode, (IReadOnlyList<TpsLong>)items);
-            case TpsTypeCode.ULong:
-                return new TpsArray<TpsUnsignedLong>(typeCode, (IReadOnlyList<TpsUnsignedLong>)items);
-            case TpsTypeCode.SReal:
-                return new TpsArray<TpsFloat>(typeCode, (IReadOnlyList<TpsFloat>)items);
-            case TpsTypeCode.Real:
-                return new TpsArray<TpsDouble>(typeCode, (IReadOnlyList<TpsDouble>)items);
-            case TpsTypeCode.Decimal:
-                return new TpsArray<TpsDecimal>(typeCode, (IReadOnlyList<TpsDecimal>)items);
-            case TpsTypeCode.String:
-                return new TpsArray<TpsString>(typeCode, (IReadOnlyList<TpsString>)items);
-            case TpsTypeCode.CString:
-                return new TpsArray<TpsCString>(typeCode, (IReadOnlyList<TpsCString>)items);
-            case TpsTypeCode.PString:
-                return new TpsArray<TpsPString>(typeCode, (IReadOnlyList<TpsPString>)items);
-            case TpsTypeCode.Group:
+            case ClaTypeCode.Byte:
+                return new TpsArray<ClaByte>(typeCode, (IReadOnlyList<ClaByte>)items);
+            case ClaTypeCode.Short:
+                return new TpsArray<ClaShort>(typeCode, (IReadOnlyList<ClaShort>)items);
+            case ClaTypeCode.UShort:
+                return new TpsArray<ClaUnsignedShort>(typeCode, (IReadOnlyList<ClaUnsignedShort>)items);
+            case ClaTypeCode.Date:
+                return new TpsArray<ClaDate>(typeCode, (IReadOnlyList<ClaDate>)items);
+            case ClaTypeCode.Time:
+                return new TpsArray<ClaTime>(typeCode, (IReadOnlyList<ClaTime>)items);
+            case ClaTypeCode.Long:
+                return new TpsArray<ClaLong>(typeCode, (IReadOnlyList<ClaLong>)items);
+            case ClaTypeCode.ULong:
+                return new TpsArray<ClaUnsignedLong>(typeCode, (IReadOnlyList<ClaUnsignedLong>)items);
+            case ClaTypeCode.SReal:
+                return new TpsArray<ClaSingleReal>(typeCode, (IReadOnlyList<ClaSingleReal>)items);
+            case ClaTypeCode.Real:
+                return new TpsArray<ClaReal>(typeCode, (IReadOnlyList<ClaReal>)items);
+            case ClaTypeCode.Decimal:
+                return new TpsArray<ClaDecimal>(typeCode, (IReadOnlyList<ClaDecimal>)items);
+            case ClaTypeCode.FString:
+                return new TpsArray<ClaFString>(typeCode, (IReadOnlyList<ClaFString>)items);
+            case ClaTypeCode.CString:
+                return new TpsArray<ClaCString>(typeCode, (IReadOnlyList<ClaCString>)items);
+            case ClaTypeCode.PString:
+                return new TpsArray<ClaPString>(typeCode, (IReadOnlyList<ClaPString>)items);
+            case ClaTypeCode.Group:
                 return new TpsArray<TpsGroup>(typeCode, (IReadOnlyList<TpsGroup>)items);
             default:
                 throw new ArgumentException($"Arrays of type '{typeCode}' are not supported.", nameof(typeCode));
         }
     }
 
-    private static IList<ITpsObject> CreateArray(TpsTypeCode typeCode, int size)
+    private static IList<IClaObject> CreateArray(ClaTypeCode typeCode, int size)
     {
-        IList<ITpsObject> CreateArrayCore<T>() where T : ITpsObject, new()
+        IList<IClaObject> CreateArrayCore<T>() where T : IClaObject, new()
         {
-            return (IList<ITpsObject>)new List<T>(capacity: size);
+            return (IList<IClaObject>)new List<T>(capacity: size);
         }
 
         switch (typeCode)
         {
-            case TpsTypeCode.Byte:
-                return CreateArrayCore<TpsByte>();
-            case TpsTypeCode.Short:
-                return CreateArrayCore<TpsShort>();
-            case TpsTypeCode.UShort:
-                return CreateArrayCore<TpsUnsignedShort>();
-            case TpsTypeCode.Date:
-                return CreateArrayCore<TpsDate>();
-            case TpsTypeCode.Time:
-                return CreateArrayCore<TpsTime>();
-            case TpsTypeCode.Long:
-                return CreateArrayCore<TpsLong>();
-            case TpsTypeCode.ULong:
-                return CreateArrayCore<TpsUnsignedLong>();
-            case TpsTypeCode.SReal:
-                return CreateArrayCore<TpsFloat>();
-            case TpsTypeCode.Real:
-                return CreateArrayCore<TpsDouble>();
-            case TpsTypeCode.Decimal:
-                return CreateArrayCore<TpsDecimal>();
-            case TpsTypeCode.String:
-                return CreateArrayCore<TpsString>();
-            case TpsTypeCode.CString:
-                return CreateArrayCore<TpsCString>();
-            case TpsTypeCode.PString:
-                return CreateArrayCore<TpsPString>();
-            case TpsTypeCode.Group:
+            case ClaTypeCode.Byte:
+                return CreateArrayCore<ClaByte>();
+            case ClaTypeCode.Short:
+                return CreateArrayCore<ClaShort>();
+            case ClaTypeCode.UShort:
+                return CreateArrayCore<ClaUnsignedShort>();
+            case ClaTypeCode.Date:
+                return CreateArrayCore<ClaDate>();
+            case ClaTypeCode.Time:
+                return CreateArrayCore<ClaTime>();
+            case ClaTypeCode.Long:
+                return CreateArrayCore<ClaLong>();
+            case ClaTypeCode.ULong:
+                return CreateArrayCore<ClaUnsignedLong>();
+            case ClaTypeCode.SReal:
+                return CreateArrayCore<ClaSingleReal>();
+            case ClaTypeCode.Real:
+                return CreateArrayCore<ClaReal>();
+            case ClaTypeCode.Decimal:
+                return CreateArrayCore<ClaDecimal>();
+            case ClaTypeCode.FString:
+                return CreateArrayCore<ClaFString>();
+            case ClaTypeCode.CString:
+                return CreateArrayCore<ClaCString>();
+            case ClaTypeCode.PString:
+                return CreateArrayCore<ClaPString>();
+            case ClaTypeCode.Group:
             default:
                 throw new ArgumentException($"Arrays of type '{typeCode}' are not supported.", nameof(typeCode));
         }
     }
 
-    internal static ITpsObject Parse(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
+    internal static IClaObject Parse(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
     {
         ArgumentNullException.ThrowIfNull(rx);
         ArgumentNullException.ThrowIfNull(encoding);
@@ -154,7 +154,7 @@ internal static class TpsArrayExtensions
         for (int i = 0; i < current.ElementCount; i++)
         {
             enumerator.Position = nextEnumeratorPosition;
-            arrayValues[i] = TpsObject.ParseScalarField(rx, encoding, fieldSize, enumerator);
+            arrayValues[i] = ClaObject.ParseScalarField(rx, encoding, fieldSize, enumerator);
         }
 
         return Create(current.Type, arrayValues.AsReadOnly());

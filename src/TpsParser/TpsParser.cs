@@ -67,14 +67,14 @@ public sealed class TpsParser : IDisposable
         TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
     {
         var dataRecords = TpsFile.GetDataRecords(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
 
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsObject>> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors)
     {
         return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
             .SelectMany(index =>
@@ -87,7 +87,7 @@ public sealed class TpsParser : IDisposable
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
             .ToDictionary(
                 groupedPair => groupedPair.Key,
-                groupedPair => (IReadOnlyDictionary<string, ITpsObject>)groupedPair
+                groupedPair => (IReadOnlyDictionary<string, IClaObject>)groupedPair
                     .ToDictionary(pair => pair.name, pair => pair.value));
     }
 
@@ -107,7 +107,7 @@ public sealed class TpsParser : IDisposable
         var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
         var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
 
-        var unifiedRecords = new Dictionary<int, Dictionary<string, ITpsObject>>();
+        var unifiedRecords = new Dictionary<int, Dictionary<string, IClaObject>>();
 
         foreach (var dataKvp in dataRecords)
         {

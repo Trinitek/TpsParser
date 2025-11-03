@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TpsParser.Tps.Header;
 using TpsParser.TypeModel;
 
 namespace TpsParser.Tps.Record;
@@ -20,7 +19,7 @@ public interface IDataRecord
     /// <summary>
     /// Gets the values for the record. The order of the values matches the order of <see cref="TableDefinitionRecord.Fields"/>.
     /// </summary>
-    IReadOnlyList<ITpsObject> Values { get; }
+    IReadOnlyList<IClaObject> Values { get; }
 
     /// <summary>
     /// Gets the low level representation of the record in the file.
@@ -36,7 +35,7 @@ public interface IDataRecord
     /// Gets a dictionary of field names and their associated values.
     /// </summary>
     /// <returns></returns>
-    IReadOnlyDictionary<string, ITpsObject> GetFieldValuePairs();
+    IReadOnlyDictionary<string, IClaObject> GetFieldValuePairs();
 }
 
 /// <inheritdoc/>
@@ -48,7 +47,7 @@ internal sealed class DataRecord : IDataRecord
     public TableDefinitionRecord TableDefinition { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ITpsObject> Values { get; }
+    public IReadOnlyList<IClaObject> Values { get; }
 
     /// <inheritdoc/>
     public TpsRecord Record { get; }
@@ -70,7 +69,7 @@ internal sealed class DataRecord : IDataRecord
     }
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, ITpsObject> GetFieldValuePairs() =>
+    public IReadOnlyDictionary<string, IClaObject> GetFieldValuePairs() =>
         TableDefinition.Fields
             .Zip(Values, (field, value) => (field, value))
             .ToDictionary(pair => pair.field.Name, pair => pair.value);

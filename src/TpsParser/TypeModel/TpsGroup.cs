@@ -8,22 +8,22 @@ using TpsParser.Tps;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a compound data structure composed of one or more <see cref="ITpsObject"/> instances.
+/// Represents a compound data structure composed of one or more <see cref="IClaObject"/> instances.
 /// </summary>
 public sealed class TpsGroup : IComplex
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Group;
+    public ClaTypeCode TypeCode => ClaTypeCode.Group;
 
     /// <summary>
     /// Gets the list of objects in this group.
     /// </summary>
-    public IReadOnlyList<ITpsObject> Objects { get; }
+    public IReadOnlyList<IClaObject> Objects { get; }
 
     /// <summary>
     /// Instantiates a new group that encapsulates the given values.
     /// </summary>
-    public TpsGroup(IReadOnlyList<ITpsObject> values)
+    public TpsGroup(IReadOnlyList<IClaObject> values)
     {
         Objects = values ?? throw new ArgumentNullException(nameof(values));
     }
@@ -38,17 +38,10 @@ public sealed class TpsGroup : IComplex
     /// <returns></returns>
     internal static TpsGroup BuildFromFieldDefinitions(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
     {
-        if (rx is null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
+        ArgumentNullException.ThrowIfNull(rx);
+        ArgumentNullException.ThrowIfNull(enumerator);
 
-        if (enumerator is null)
-        {
-            throw new ArgumentNullException(nameof(enumerator));
-        }
-
-        var values = new List<ITpsObject>();
+        var values = new List<IClaObject>();
 
         var groupDefinition = enumerator.Current;
         int expectedGroupLength = groupDefinition.Length / groupDefinition.ElementCount;
@@ -63,7 +56,7 @@ public sealed class TpsGroup : IComplex
                 throw new TpsParserException($"The expected length of the group ({expectedGroupLength}) and the following fields ({sumOfFollowingLengths}) do not match.");
             }
 
-            values.Add(TpsObject.ParseField(rx, encoding, enumerator));
+            values.Add(ClaObject.ParseField(rx, encoding, enumerator));
 
             if (sumOfFollowingLengths == expectedGroupLength)
             {

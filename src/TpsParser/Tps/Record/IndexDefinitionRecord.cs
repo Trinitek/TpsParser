@@ -1,7 +1,26 @@
 ﻿using System;
+using System.Collections.Immutable;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record;
+
+
+public enum SortDirection
+{
+    /// <summary></summary>
+    Ascending   = 0,
+
+    /// <summary></summary>
+    Descending  = 1
+}
+
+public sealed record KeyField(ushort FieldIndex, ushort Flags)
+{
+    public SortDirection SortDirection =>
+        (Flags & 0x1) == 0
+        ? SortDirection.Ascending
+        : SortDirection.Descending;
+}
 
 /// <summary>
 /// Represents the schema for an index.
@@ -9,9 +28,8 @@ namespace TpsParser.Tps.Record;
 public sealed record IndexDefinitionRecord
 {
     public required string ExternalFile { get; init; }
-    public required short[] KeyField { get; init; }
-    public required short[] KeyFieldFlag { get; init; }
-    private byte Flags { get; init; }
+    public required ImmutableArray<KeyField> Keys { get; init; }
+    public byte Flags { get; init; }
 
     /// <summary>
     /// Gets the name of the index.
@@ -49,13 +67,13 @@ public sealed record IndexDefinitionRecord
         byte flags = rx.ReadByte();
         ushort fieldsInKey = rx.ReadUnsignedShortLE();
 
-        var keyField = new short[fieldsInKey];
-        var keyFieldFlag = new short[fieldsInKey];
+        KeyField[] keys = new KeyField[fieldsInKey];
 
         for (int i = 0; i < fieldsInKey; i++)
         {
-            keyField[i] = rx.ReadShortLE();
-            keyFieldFlag[i] = rx.ReadShortLE();
+            keys[i] = new(
+                FieldIndex: rx.ReadUnsignedShortLE(),
+                Flags: rx.ReadUnsignedShortLE());
         }
 
         return new IndexDefinitionRecord
@@ -64,8 +82,7 @@ public sealed record IndexDefinitionRecord
             Name = name,
             Flags = flags,
             FieldsInKey = fieldsInKey,
-            KeyField = keyField,
-            KeyFieldFlag = keyFieldFlag
+            Keys = [.. keys]
         };
     }
 }

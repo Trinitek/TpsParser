@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// Represents a Clarion MEMO type, which contains a string encoded using the Windows ANSI codepage of the machine on which the
 /// text was written. MEMOs are variable-length text fields that can be up to 65,536 bytes long.
 /// </summary>
-public sealed class TpsMemo : ITpsObject
+public sealed class TpsMemo : IClaObject
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.None;
+    public ClaTypeCode TypeCode => ClaTypeCode.None;
 
     /// <summary>
     /// Gets the string backing this type.

@@ -6,10 +6,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion SREAL type, which is a single-precision floating point number.
 /// </summary>
-public readonly struct TpsFloat : INumeric, IEquatable<TpsFloat>
+public readonly struct ClaSingleReal : IClaNumeric, IEquatable<ClaSingleReal>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.SReal;
+    public ClaTypeCode TypeCode => ClaTypeCode.SReal;
 
     private float Value { get; }
 
@@ -19,7 +19,7 @@ public readonly struct TpsFloat : INumeric, IEquatable<TpsFloat>
     /// Instantiates a new SREAL.
     /// </summary>
     /// <param name="value"></param>
-    public TpsFloat(float value)
+    public ClaSingleReal(float value)
     {
         Value = value;
     }
@@ -93,11 +93,11 @@ public readonly struct TpsFloat : INumeric, IEquatable<TpsFloat>
     public override string ToString() => Value.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public bool Equals(TpsFloat other) =>
+    public bool Equals(ClaSingleReal other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsFloat x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaSingleReal x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -106,8 +106,8 @@ public readonly struct TpsFloat : INumeric, IEquatable<TpsFloat>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsFloat left, TpsFloat right) => left.Equals(right);
+    public static bool operator ==(ClaSingleReal left, ClaSingleReal right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsFloat left, TpsFloat right) => !(left == right);
+    public static bool operator !=(ClaSingleReal left, ClaSingleReal right) => !(left == right);
 }

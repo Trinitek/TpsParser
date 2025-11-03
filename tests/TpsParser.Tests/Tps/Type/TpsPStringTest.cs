@@ -13,7 +13,7 @@ internal sealed class TpsPStringTest
     {
         var rx = new TpsRandomAccess([0x05, 0x48, 0x65, 0x6C, 0x6C, 0x6F], Encoding.ASCII);
 
-        var str = rx.ReadTpsPString();
+        var str = rx.ReadClaPString();
 
         Assert.That(str.Value, Is.EqualTo("Hello"));
     }
@@ -21,7 +21,7 @@ internal sealed class TpsPStringTest
     [Test]
     public void ShouldReadFromString()
     {
-        var str = new TpsPString("Hello");
+        var str = new ClaPString("Hello");
 
         Assert.That(str.Value, Is.EqualTo("Hello"));
     }
@@ -29,6 +29,6 @@ internal sealed class TpsPStringTest
     [Test]
     public void ShouldThrowWhenStringCtorIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new TpsPString(null));
+        Assert.Throws<ArgumentNullException>(() => new ClaPString(null));
     }
 }

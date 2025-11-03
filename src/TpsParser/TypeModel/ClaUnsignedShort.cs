@@ -5,10 +5,10 @@ namespace TpsParser.TypeModel;
 /// <summary>
 /// Represents a Clarion USHORT type, which is an unsigned 16-bit integer.
 /// </summary>
-public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
+public readonly struct ClaUnsignedShort : IClaNumeric, IEquatable<ClaUnsignedShort>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.UShort;
+    public ClaTypeCode TypeCode => ClaTypeCode.UShort;
 
     private ushort Value { get; }
 
@@ -16,7 +16,7 @@ public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
     /// Instantiates a new USHORT.
     /// </summary>
     /// <param name="value"></param>
-    public TpsUnsignedShort(ushort value) => Value = value;
+    public ClaUnsignedShort(ushort value) => Value = value;
 
     /// <inheritdoc/>
     public bool ToBoolean() => Value != 0;
@@ -64,10 +64,10 @@ public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
     public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
     
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsUnsignedShort x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaUnsignedShort x && Equals(x);
 
     /// <inheritdoc/>
-    public bool Equals(TpsUnsignedShort other) =>
+    public bool Equals(ClaUnsignedShort other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
@@ -77,8 +77,8 @@ public readonly struct TpsUnsignedShort : INumeric, IEquatable<TpsUnsignedShort>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsUnsignedShort left, TpsUnsignedShort right) => Equals(left, right);
+    public static bool operator ==(ClaUnsignedShort left, ClaUnsignedShort right) => Equals(left, right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsUnsignedShort left, TpsUnsignedShort right) => !(left == right);
+    public static bool operator !=(ClaUnsignedShort left, ClaUnsignedShort right) => !(left == right);
 }

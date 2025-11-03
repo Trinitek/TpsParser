@@ -13,7 +13,7 @@ internal sealed class TpsDateTest
     {
         var rx = new TpsRandomAccess([0x10, 0x07, 0xE3, 0x07], Encoding.ASCII);
 
-        var date = rx.ReadTpsDate();
+        var date = rx.ReadClaDate();
 
         using (Assert.EnterMultipleScope())
         {
@@ -29,7 +29,7 @@ internal sealed class TpsDateTest
     {
         var dateTime = new DateTime(2019, 7, 16);
 
-        var date = new TpsDate(dateTime);
+        var date = new ClaDate(dateTime);
 
         Assert.That(date.ToDateTime().Value, Is.EqualTo(dateTime));
     }

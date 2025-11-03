@@ -21,7 +21,7 @@ namespace TpsParser.TypeModel;
 /// If you need to handle values with more than 27 digits, consider using <see cref="ToString()"/> instead.
 /// </para>
 /// </remarks>
-public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
+public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal>
 {
     /// <summary>
     /// The maximum allowable number of decimal digits.
@@ -29,7 +29,7 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
     public const int MaxLength = 31;
 
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Decimal;
+    public ClaTypeCode TypeCode => ClaTypeCode.Decimal;
 
     /// <summary>
     /// Gets the upper 64 bits of the packed decimal, including the sign in the highest nibble.
@@ -67,7 +67,7 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
     /// <param name="high"></param>
     /// <param name="low"></param>
     /// <param name="scale"></param>
-    public TpsDecimal(ulong high, ulong low, byte scale)
+    public ClaDecimal(ulong high, ulong low, byte scale)
     {
         if (scale > MaxLength)
         {
@@ -84,7 +84,7 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static TpsDecimal Parse(string value)
+    public static ClaDecimal Parse(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -160,11 +160,11 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
                         break;
                     }
                 default:
-                    throw new FormatException($"Unexpected character '{c}' at index {i} when parsing string as {nameof(TpsDecimal)}");
+                    throw new FormatException($"Unexpected character '{c}' at index {i} when parsing string as {nameof(ClaDecimal)}");
             }
         }
 
-        return new TpsDecimal(high, low, places ?? 0);
+        return new ClaDecimal(high, low, places ?? 0);
     }
 
     /// <summary>
@@ -338,25 +338,25 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
     public Maybe<double> ToDouble() => ToDecimal().ConvertSome(d => (double)d);
 
     /// <summary>
-    /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="TpsDate.ClarionEpoch"/>.
-    /// For more information about the Clarion Standard Date, see the remarks section of <see cref="TpsDate"/>.
+    /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClaDate.ClarionEpoch"/>.
+    /// For more information about the Clarion Standard Date, see the remarks section of <see cref="ClaDate"/>.
     /// </summary>
     public Maybe<DateTime?> ToDateTime()
     {
         var i = ToInt32();
         return i.HasValue
-            ? Maybe.Some<DateTime?>(TpsDate.ClarionEpoch.Add(new TimeSpan(i.Value, 0, 0, 0)))
+            ? Maybe.Some<DateTime?>(ClaDate.ClarionEpoch.Add(new TimeSpan(i.Value, 0, 0, 0)))
             : Maybe.None<DateTime?>();
     }
 
     /// <inheritdoc/>
-    public bool Equals(TpsDecimal other) =>
+    public bool Equals(ClaDecimal other) =>
         ValueHigh == other.ValueHigh
         && ValueLow == other.ValueLow
         && Scale == other.Scale;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsDecimal x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaDecimal x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -369,8 +369,8 @@ public readonly struct TpsDecimal : INumeric, IDate, IEquatable<TpsDecimal>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsDecimal left, TpsDecimal right) => left.Equals(right);
+    public static bool operator ==(ClaDecimal left, ClaDecimal right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsDecimal left, TpsDecimal right) => !(left == right);
+    public static bool operator !=(ClaDecimal left, ClaDecimal right) => !(left == right);
 }

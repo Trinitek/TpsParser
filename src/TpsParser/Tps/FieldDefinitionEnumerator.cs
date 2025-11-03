@@ -5,7 +5,7 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;
 
-internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinitionRecord?>
+internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinitionRecord>
 {
     private IReadOnlyList<FieldDefinitionRecord> Records { get; }
 
@@ -16,7 +16,8 @@ internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinitionRec
         _position = -1;
     }
 
-    public FieldDefinitionRecord? Current { get; private set; }
+    public FieldDefinitionRecord Current => _current ?? throw new InvalidOperationException("Enumeration has either not started or has already completed.");
+    private FieldDefinitionRecord? _current;
 
     object? IEnumerator.Current => Current;
 
@@ -27,11 +28,11 @@ internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinitionRec
         {
             if (value < 0 || value >= Records.Count)
             {
-                Current = null;
+                _current = null;
             }
             else if (_position != value)
             {
-                Current = Records[value];
+                _current = Records[value];
             }
 
             _position = value;

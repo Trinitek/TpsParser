@@ -13,7 +13,7 @@ public sealed record FieldDefinitionRecord
     /// <summary>
     /// Gets the type code of the value contained within the field.
     /// </summary>
-    public TpsTypeCode Type { get; init; }
+    public ClaTypeCode Type { get; init; }
 
     /// <summary>
     /// Gets the offset, in bytes, of the field within the record.
@@ -63,22 +63,22 @@ public sealed record FieldDefinitionRecord
     public int Index { get; init; }
 
     /// <summary>
-    /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the number of bytes in the string.
+    /// If the field contains a <see cref="ClaFString"/>, <see cref="ClaCString"/>, or <see cref="ClaPString"/>, gets the number of bytes in the string.
     /// </summary>
     public int StringLength { get; init; }
 
     /// <summary>
-    /// If the field contains a <see cref="TpsString"/>, <see cref="TpsCString"/>, or <see cref="TpsPString"/>, gets the string mask.
+    /// If the field contains a <see cref="ClaFString"/>, <see cref="ClaCString"/>, or <see cref="ClaPString"/>, gets the string mask.
     /// </summary>
     public required string StringMask { get; init; }
 
     /// <summary>
-    /// If the field contains a <see cref="TpsDecimal"/>, gets the number of places after the decimal point.
+    /// If the field contains a <see cref="ClaDecimal"/>, gets the number of places after the decimal point.
     /// </summary>
     public byte BcdDigitsAfterDecimalPoint { get; init; }
 
     /// <summary>
-    /// If the field contains a <see cref="TpsDecimal"/>, gets the number of decimal places.
+    /// If the field contains a <see cref="ClaDecimal"/>, gets the number of decimal places.
     /// </summary>
     public int BcdElementLength { get; init; }
 
@@ -89,7 +89,7 @@ public sealed record FieldDefinitionRecord
     {
         ArgumentNullException.ThrowIfNull(rx);
 
-        var type = (TpsTypeCode)rx.ReadByte();
+        var type = (ClaTypeCode)rx.ReadByte();
         var offset = rx.ReadShortLE();
         var fullName = rx.ReadZeroTerminatedString();
         var elementCount = rx.ReadShortLE();
@@ -103,14 +103,14 @@ public sealed record FieldDefinitionRecord
         int stringLength = 0;
         string stringMask = string.Empty;
 
-        if (type == TpsTypeCode.Decimal)
+        if (type == ClaTypeCode.Decimal)
         {
             bcdDigitsAfterDecimalPoint = rx.ReadByte();
             bcdElementLength = rx.ReadByte();
         }
-        else if (type == TpsTypeCode.String
-            || type == TpsTypeCode.CString
-            || type == TpsTypeCode.PString)
+        else if (type == ClaTypeCode.FString
+            || type == ClaTypeCode.CString
+            || type == ClaTypeCode.PString)
         {
             stringLength = rx.ReadShortLE();
             stringMask = rx.ReadZeroTerminatedString();

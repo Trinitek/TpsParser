@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps;
@@ -18,7 +16,12 @@ public sealed record TpsFileHeader
     public const string TopSpeedMagicNumber = "tOpS";
 
     public int Address { get; init; }
+
+    /// <summary>
+    /// Gets the number of bytes in the file header.
+    /// </summary>
     public int HeaderSize { get; init; }
+
     public int FileLength1 { get; init; }
     public int FileLength2 { get; init; }
 
@@ -34,6 +37,9 @@ public sealed record TpsFileHeader
     /// </summary>
     public int LastIssuedRow { get; init; }
 
+    /// <summary>
+    /// Gets the number of changes made to the file by the TopSpeed database driver.
+    /// </summary>
     public int Changes { get; init; }
 
     /// <summary>
@@ -41,7 +47,16 @@ public sealed record TpsFileHeader
     /// </summary>
     public int ManagementPageReferenceOffset { get; init; }
 
-    public ImmutableArray<TpsPageRange> PageRanges { get; init; }
+    /// <summary>
+    /// <para>
+    /// Gets the array of locations and sizes of <see cref="TpsPage"/> objects that are stored in the file.
+    /// </para>
+    /// <para>
+    /// The header has predefined space for 60 page descriptors.
+    /// For smaller files, most of the pages will have a length of zero.
+    /// </para>
+    /// </summary>
+    public ImmutableArray<TpsPageDescriptor> PageDescriptors { get; init; }
 
     /// <summary>
     /// Returns true if the header represents a valid TopSpeed file.
@@ -77,17 +92,17 @@ public sealed record TpsFileHeader
         int changes = header.ReadLongLE();
         int managementPageReferenceOffset = TpsRandomAccess.GetFileOffset(header.ReadLongLE());
 
-        // 60 pages are hard-defined in the header but most of them will be duplicates.
+        // 60 pages are hard-defined in the header but many of them will be zero-length and/or duplicates.
         const int maxNumberOfPages = 60;
 
-        var pageRanges = new TpsPageRange[maxNumberOfPages];
+        var pageRanges = new TpsPageDescriptor[maxNumberOfPages];
 
         var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(maxNumberOfPages));
         var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(maxNumberOfPages));
 
         for (int i = 0; i < maxNumberOfPages; i++)
         {
-            pageRanges[i] = new TpsPageRange(
+            pageRanges[i] = new TpsPageDescriptor(
                 StartOffset: pageStart[i],
                 EndOffset: pageEnd[i]);
         }
@@ -103,7 +118,7 @@ public sealed record TpsFileHeader
             LastIssuedRow = lastIssuedRow,
             Changes = changes,
             ManagementPageReferenceOffset = managementPageReferenceOffset,
-            PageRanges = [.. pageRanges]
+            PageDescriptors = [.. pageRanges]
         };
     }
 
@@ -120,7 +135,7 @@ public sealed record TpsFileHeader
             && LastIssuedRow == other.LastIssuedRow
             && Changes == other.Changes
             && ManagementPageReferenceOffset == other.ManagementPageReferenceOffset
-            && PageRanges.SequenceEqual(other.PageRanges);
+            && PageDescriptors.SequenceEqual(other.PageDescriptors);
     }
 
     /// <inheritdoc/>
@@ -136,20 +151,4 @@ public sealed record TpsFileHeader
             LastIssuedRow,
             Changes);
     }
-
-    ///// <inheritdoc/>
-    //public override string ToString()
-    //{
-    //    var sb = new StringBuilder();
-    //
-    //    sb.AppendLine($"TpsHeader({StringUtils.ToHex8(Address)},{StringUtils.ToHex4(HeaderSize)},{StringUtils.ToHex8(FileLength1)},{StringUtils.ToHex8(FileLength2)}," +
-    //        $"{MagicNumber},{StringUtils.ToHex4(Zeroes)},{StringUtils.ToHex8(LastIssuedRow)},{StringUtils.ToHex8(Changes)},{StringUtils.ToHex8(ManagementPageReferenceOffset)})");
-    //
-    //    for (int i = 0; i < PageStart.Length; i++)
-    //    {
-    //        sb.AppendLine($"{PageStart[i]}..{PageEnd[i]}");
-    //    }
-    //
-    //    return sb.ToString();
-    //}
 }

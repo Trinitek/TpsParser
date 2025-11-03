@@ -114,9 +114,9 @@ public sealed record TableDefinitionRecord
     /// </summary>
     /// <param name="rx"></param>
     /// <returns></returns>
-    public IReadOnlyList<ITpsObject> ParseFields(TpsRandomAccess rx)
+    public IReadOnlyList<IClaObject> ParseFields(TpsRandomAccess rx)
     {
-        var values = new List<ITpsObject>(Fields.Count());
+        var values = new List<IClaObject>(Fields.Count());
 
         foreach (var field in Fields)
         {
@@ -138,7 +138,7 @@ public sealed record TableDefinitionRecord
         return values.AsReadOnly();
     }
 
-    private ITpsObject ParseField(TpsTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, TpsRandomAccess rx)
+    private IClaObject ParseField(ClaTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, TpsRandomAccess rx)
     {
         if (fieldDefinitionRecord == null)
         {
@@ -152,40 +152,40 @@ public sealed record TableDefinitionRecord
 
         switch (type)
         {
-            case TpsTypeCode.Byte:
+            case ClaTypeCode.Byte:
                 AssertEqual(1, length);
-                return rx.ReadTpsByte();
-            case TpsTypeCode.Short:
+                return rx.ReadClaByte();
+            case ClaTypeCode.Short:
                 AssertEqual(2, length);
-                return rx.ReadTpsShort();
-            case TpsTypeCode.UShort:
+                return rx.ReadClaShort();
+            case ClaTypeCode.UShort:
                 AssertEqual(2, length);
-                return rx.ReadTpsUnsignedShort();
-            case TpsTypeCode.Date:
-                return rx.ReadTpsDate();
-            case TpsTypeCode.Time:
-                return rx.ReadTpsTime();
-            case TpsTypeCode.Long:
+                return rx.ReadClaUnsignedShort();
+            case ClaTypeCode.Date:
+                return rx.ReadClaDate();
+            case ClaTypeCode.Time:
+                return rx.ReadClaTime();
+            case ClaTypeCode.Long:
                 AssertEqual(4, length);
-                return rx.ReadTpsLong();
-            case TpsTypeCode.ULong:
+                return rx.ReadClaLong();
+            case ClaTypeCode.ULong:
                 AssertEqual(4, length);
-                return rx.ReadTpsUnsignedLong();
-            case TpsTypeCode.SReal:
+                return rx.ReadClaUnsignedLong();
+            case ClaTypeCode.SReal:
                 AssertEqual(4, length);
-                return rx.ReadTpsFloat();
-            case TpsTypeCode.Real:
+                return rx.ReadClaFloat();
+            case ClaTypeCode.Real:
                 AssertEqual(8, length);
-                return rx.ReadTpsDouble();
-            case TpsTypeCode.Decimal:
-                return rx.ReadTpsDecimal(length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
-            case TpsTypeCode.String:
-                return rx.ReadTpsString();
-            case TpsTypeCode.CString:
-                return rx.ReadTpsCString();
-            case TpsTypeCode.PString:
-                return rx.ReadTpsPString();
-            case TpsTypeCode.Group:
+                return rx.ReadClaDouble();
+            case ClaTypeCode.Decimal:
+                return rx.ReadClaDecimal(length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
+            case ClaTypeCode.FString:
+                return rx.ReadClaFString();
+            case ClaTypeCode.CString:
+                return rx.ReadClaCString();
+            case ClaTypeCode.PString:
+                return rx.ReadClaPString();
+            case ClaTypeCode.Group:
                 //return new TpsGroup(rx, length);
             default:
                 throw new ArgumentException($"Unsupported type {type} ({length})", nameof(type));

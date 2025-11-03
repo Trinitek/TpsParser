@@ -22,7 +22,7 @@ internal sealed class TpsDecimalTest
     public void ShouldReadFromRandomAccess(string value, int bcdLength, byte bcdDigitsAfterDecimal, byte[] data)
     {
         var rx = new TpsRandomAccess(data, Encoding.ASCII);
-        var dec = rx.ReadTpsDecimal(bcdLength, bcdDigitsAfterDecimal);
+        var dec = rx.ReadClaDecimal(bcdLength, bcdDigitsAfterDecimal);
 
         Assert.That(dec.ToString(), Is.EqualTo(value));
     }
@@ -39,7 +39,7 @@ internal sealed class TpsDecimalTest
     [TestCase("0.50000")]
     public void ShouldReadFromString(string value)
     {
-        var dec = TpsDecimal.Parse(value);
+        var dec = ClaDecimal.Parse(value);
 
         Assert.That(dec.ToString(), Is.EqualTo(value));
     }
@@ -52,7 +52,7 @@ internal sealed class TpsDecimalTest
     [TestCase("--23")]
     public void ShouldThrowWhenStringIsMalformed(string value)
     {
-        Assert.Throws<FormatException>(() => TpsDecimal.Parse(value));
+        Assert.Throws<FormatException>(() => ClaDecimal.Parse(value));
     }
 
     [TestCase(null)]
@@ -60,13 +60,13 @@ internal sealed class TpsDecimalTest
     [TestCase(" ")]
     public void ShouldThrowWhenStringIsEmptyOrWhitespace(string value)
     {
-        Assert.Throws<ArgumentException>(() => TpsDecimal.Parse(value));
+        Assert.Throws<ArgumentException>(() => ClaDecimal.Parse(value));
     }
 
     [TestCaseSource(typeof(ShouldConvertToDecimalData), nameof(ShouldConvertToDecimalData.TestCases))]
     public void ShouldConvertToDecimal(string value, decimal expected)
     {
-        var dec = TpsDecimal.Parse(value);
+        var dec = ClaDecimal.Parse(value);
 
         using (Assert.EnterMultipleScope())
         {
@@ -115,7 +115,7 @@ internal sealed class TpsDecimalTest
     [TestCase("0.50000", true)]
     public void ShouldConvertToBoolean(string value, bool expected)
     {
-        var dec = TpsDecimal.Parse(value);
+        var dec = ClaDecimal.Parse(value);
 
         Assert.That(dec.ToBoolean(), Is.EqualTo(expected));
     }

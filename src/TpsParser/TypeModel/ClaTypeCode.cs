@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a code point in a TopSpeed file that represents a particular data type.
 /// </summary>
-public enum TpsTypeCode : byte
+public enum ClaTypeCode : byte
 {
     /// <summary>
     /// Represents a code point that is not defined in the file format.
@@ -11,72 +11,72 @@ public enum TpsTypeCode : byte
     None    = 0x00,
 
     /// <summary>
-    /// 1-byte unsigned integer
+    /// Clarion BYTE. 1-byte unsigned integer.
     /// </summary>
     Byte    = 0x01,
 
     /// <summary>
-    /// 2-byte signed integer
+    /// Clarion SHORT. 2-byte signed integer.
     /// </summary>
     Short   = 0x02,
 
     /// <summary>
-    /// 2-byte unsigned integer
+    /// Clarion USHORT. 2-byte unsigned integer.
     /// </summary>
     UShort  = 0x03,
 
     /// <summary>
-    /// 4-byte date
+    /// Clarion DATE. 4-byte date.
     /// </summary>
     Date    = 0x04,
 
     /// <summary>
-    /// 4-byte time
+    /// Clarion TIME. 4-byte time.
     /// </summary>
     Time    = 0x05,
 
     /// <summary>
-    /// 4-byte signed integer
+    /// Clarion LONG. 4-byte signed integer.
     /// </summary>
     Long    = 0x06,
 
     /// <summary>
-    /// 4-byte unsigned integer
+    /// Clarion ULONG. 4-byte unsigned integer.
     /// </summary>
     ULong   = 0x07,
 
     /// <summary>
-    /// 4-byte signed floating point
+    /// Clarion SREAL. 4-byte signed floating point.
     /// </summary>
     SReal   = 0x08,
 
     /// <summary>
-    /// 8-byte signed floating point
+    /// Clarion REAL. 8-byte signed floating point.
     /// </summary>
     Real    = 0x09,
 
     /// <summary>
-    /// Signed packed decimal
+    /// Clarion DECIMAL. Signed packed decimal.
     /// </summary>
     Decimal = 0x0A,
 
     /// <summary>
-    /// Fixed length string, padded with spaces
+    /// Clarion STRING. Fixed length string, padded with spaces.
     /// </summary>
-    String  = 0x12,
+    FString  = 0x12,
 
     /// <summary>
-    /// Null terminated string
+    /// Clarion CSTRING. Null terminated string.
     /// </summary>
     CString = 0x13,
 
     /// <summary>
-    /// Embedded length-byte "Pascal" string
+    /// Clarion PSTRING. Embedded length-byte "Pascal" string.
     /// </summary>
     PString = 0x14,
 
     /// <summary>
-    /// Compound data structure
+    /// Clarion GROUP. Compound data structure.
     /// </summary>
     Group   = 0x16
 }

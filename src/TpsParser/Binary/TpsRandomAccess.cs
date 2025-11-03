@@ -110,7 +110,7 @@ public sealed class TpsRandomAccess
     {
         if (Position + numberOfBytes > Length)
         {
-            throw new IndexOutOfRangeException($"Data type of size {numberOfBytes} exceeds the end of the data array at offset {Position} by {Length - Position + numberOfBytes}. Array is {Length} bytes long.");
+            throw new IndexOutOfRangeException($"Data type of size {numberOfBytes} exceeds the end of the data array at offset {Position} by {Position - Length + numberOfBytes}. Array is {Length} bytes long.");
         }
         if (Position < 0)
         {
@@ -714,28 +714,28 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a <see cref="TpsByte"/> and advances the current position.
+    /// Reads a <see cref="ClaByte"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsByte ReadTpsByte() => new(ReadByte());
+    public ClaByte ReadClaByte() => new(ReadByte());
 
     /// <summary>
-    /// Reads a <see cref="TpsShort"/> and advances the current position.
+    /// Reads a <see cref="ClaShort"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsShort ReadTpsShort() => new(ReadShortLE());
+    public ClaShort ReadClaShort() => new(ReadShortLE());
 
     /// <summary>
-    /// Reads a <see cref="TpsUnsignedShort"/> and advances the current position.
+    /// Reads a <see cref="ClaUnsignedShort"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsUnsignedShort ReadTpsUnsignedShort() => new(ReadUnsignedShortLE());
+    public ClaUnsignedShort ReadClaUnsignedShort() => new(ReadUnsignedShortLE());
 
     /// <summary>
-    /// Reads a <see cref="TpsDate"/> and advances the current position.
+    /// Reads a <see cref="ClaDate"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsDate ReadTpsDate()
+    public ClaDate ReadClaDate()
     {
         long date = ReadUnsignedLongLE();
 
@@ -744,19 +744,19 @@ public sealed class TpsRandomAccess
             long years = (date & 0xFFFF0000) >> 16;
             long months = (date & 0x0000FF00) >> 8;
             long days = date & 0x000000FF;
-            return new TpsDate(new DateTime((int)years, (int)months, (int)days));
+            return new ClaDate(new DateTime((int)years, (int)months, (int)days));
         }
         else
         {
-            return new TpsDate(null);
+            return new ClaDate(null);
         }
     }
 
     /// <summary>
-    /// Reads a <see cref="TpsTime"/> and advances the current position.
+    /// Reads a <see cref="ClaTime"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsTime ReadTpsTime()
+    public ClaTime ReadClaTime()
     {
         int time = ReadLongLE();
 
@@ -772,40 +772,40 @@ public sealed class TpsRandomAccess
         // Centiseconds (seconds/100) 0 - 99
         int centi = time & 0x000000FF;
 
-        return new TpsTime((byte)hours, (byte)mins, (byte)secs, (byte)centi);
+        return new ClaTime((byte)hours, (byte)mins, (byte)secs, (byte)centi);
     }
 
     /// <summary>
-    /// Reads a <see cref="TpsLong"/> and advances the current position.
+    /// Reads a <see cref="ClaLong"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsLong ReadTpsLong() => new(ReadLongLE());
+    public ClaLong ReadClaLong() => new(ReadLongLE());
 
     /// <summary>
-    /// Reads a <see cref="TpsUnsignedLong"/> and advances the current position.
+    /// Reads a <see cref="ClaUnsignedLong"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsUnsignedLong ReadTpsUnsignedLong() => new(ReadUnsignedLongLE());
+    public ClaUnsignedLong ReadClaUnsignedLong() => new(ReadUnsignedLongLE());
 
     /// <summary>
-    /// Reads a <see cref="TpsFloat"/> and advances the current position.
+    /// Reads a <see cref="ClaSingleReal"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsFloat ReadTpsFloat() => new(ReadFloatLE());
+    public ClaSingleReal ReadClaFloat() => new(ReadFloatLE());
 
     /// <summary>
-    /// Reads a <see cref="TpsDouble"/> and advances the current position.
+    /// Reads a <see cref="ClaReal"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsDouble ReadTpsDouble() => new(ReadDoubleLE());
+    public ClaReal ReadClaDouble() => new(ReadDoubleLE());
 
     /// <summary>
-    /// Reads a <see cref="TpsDecimal"/> and advances the current position.
+    /// Reads a <see cref="ClaDecimal"/> and advances the current position.
     /// </summary>
     /// <param name="length">The total number of bytes that represent the number.</param>
     /// <param name="digitsAfterDecimalPoint">The number of digits in the fractional part of the number.</param>
     /// <returns></returns>
-    public TpsDecimal ReadTpsDecimal(int length, byte digitsAfterDecimalPoint)
+    public ClaDecimal ReadClaDecimal(int length, byte digitsAfterDecimalPoint)
     {
         if (length < 1 || length > 16)
         {
@@ -844,28 +844,28 @@ public sealed class TpsRandomAccess
         // Sign
         high |= ((ulong)data[0] & 0xF0) << 56;
 
-        return new TpsDecimal(high, low, places);
+        return new ClaDecimal(high, low, places);
     }
 
     /// <summary>
-    /// Reads a <see cref="TpsString"/> and consumes the entire data array.
+    /// Reads a <see cref="ClaFString"/> and consumes the entire data array.
     /// </summary>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public TpsString ReadTpsString(Encoding? encoding = null)
+    public ClaFString ReadClaFString(Encoding? encoding = null)
     {
         encoding ??= Encoding;
 
-        return new TpsString(encoding.GetString(GetSpan()));
+        return new ClaFString(encoding.GetString(GetSpan()));
     }
 
     /// <summary>
-    /// Reads a <see cref="TpsString"/> and advances the current position.
+    /// Reads a <see cref="ClaFString"/> and advances the current position.
     /// </summary>
     /// <param name="length">The length of the string in bytes.</param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public TpsString ReadTpsString(int length, Encoding? encoding = null)
+    public ClaFString ReadClaFString(int length, Encoding? encoding = null)
     {
         if (length < 0)
         {
@@ -874,26 +874,26 @@ public sealed class TpsRandomAccess
 
         encoding ??= Encoding;
 
-        return new TpsString(ReadFixedLengthString(length, encoding));
+        return new ClaFString(ReadFixedLengthString(length, encoding));
     }
 
     /// <summary>
-    /// Reads a <see cref="TpsCString"/> and advances the current position.
+    /// Reads a <see cref="ClaCString"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsCString ReadTpsCString(Encoding? encoding = null) => new(ReadZeroTerminatedString(encoding));
+    public ClaCString ReadClaCString(Encoding? encoding = null) => new(ReadZeroTerminatedString(encoding));
 
     /// <summary>
-    /// Reads a <see cref="TpsPString"/> and advances the current position.
+    /// Reads a <see cref="ClaPString"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public TpsPString ReadTpsPString(Encoding? encoding = null) => new(ReadPascalString(encoding));
+    public ClaPString ReadClaPString(Encoding? encoding = null) => new(ReadPascalString(encoding));
 
     /// <summary>
     /// Reads a <see cref="TpsMemo"/> and consumes the entire data array.
     /// </summary>
     /// <returns></returns>
-    public TpsMemo ReadMemo(Encoding? encoding = null) => new(ReadTpsString(encoding).Value);
+    public TpsMemo ReadMemo(Encoding? encoding = null) => new(ReadClaFString(encoding).Value);
 
     /// <summary>
     /// Reads a <see cref="TpsBlob"/> and advances the current position.

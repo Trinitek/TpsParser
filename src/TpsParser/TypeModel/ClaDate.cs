@@ -5,7 +5,7 @@ namespace TpsParser.TypeModel;
 
 /// <summary>
 /// Represents a Clarion DATE type, which represents the year, month, and day.
-/// Some time keeping fields you expect to be of type <see cref="TpsDate"/>  may actually be of type <see cref="TpsLong"/>.
+/// Some time keeping fields you expect to be of type <see cref="ClaDate"/>  may actually be of type <see cref="ClaLong"/>.
 /// See the remarks section for details.
 /// </summary>
 /// <remarks>
@@ -36,16 +36,16 @@ namespace TpsParser.TypeModel;
 /// other external systems.
 /// </para>
 /// <para>
-/// The native date type used in the Clarion programming language when performing calculations is a LONG (<see cref="TpsLong"/>).
+/// The native date type used in the Clarion programming language when performing calculations is a LONG (<see cref="ClaLong"/>).
 /// This is called a Clarion Standard Date value and counts the number of days since December 28, 1800.
 /// The valid Clarion Standard Date range is January 1, 1801 through December 31, 9999, that is, an inclusive numerical range from 4
-/// to 2,994,626. However, the <see cref="TpsDate"/> type is not subject to this restriction and can represent any date between
-/// 0001-01-01 and 9999-12-31, with 0000-00-00 used to represent a null value. Unlike a Clarion Standard Time (see <see cref="TpsTime"/>),
+/// to 2,994,626. However, the <see cref="ClaDate"/> type is not subject to this restriction and can represent any date between
+/// 0001-01-01 and 9999-12-31, with 0000-00-00 used to represent a null value. Unlike a Clarion Standard Time (see <see cref="ClaTime"/>),
 /// a Clarion Standard Date does not have a null-equivalent value, and the documentation only says that values outside of the valid range
 /// will yield undefined behavior when used with date functions.
 /// </para>
 /// </remarks>
-public readonly struct TpsDate : IDate, IEquatable<TpsDate>
+public readonly struct ClaDate : IClaDate, IEquatable<ClaDate>
 {
     /// <summary>
     /// Gets a <see cref="DateTime"/> representing December 28, 1800, which is the reference date for Clarion Standard Date values.
@@ -63,7 +63,7 @@ public readonly struct TpsDate : IDate, IEquatable<TpsDate>
     public static readonly int ClarionStandardDateMaxValue = 2994626;
 
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.Date;
+    public ClaTypeCode TypeCode => ClaTypeCode.Date;
 
     private DateTime? Value { get; }
 
@@ -86,7 +86,7 @@ public readonly struct TpsDate : IDate, IEquatable<TpsDate>
     /// Instantiates a new DATE.
     /// </summary>
     /// <param name="date"></param>
-    public TpsDate(DateTime? date)
+    public ClaDate(DateTime? date)
     {
         Value = date;
     }
@@ -101,24 +101,24 @@ public readonly struct TpsDate : IDate, IEquatable<TpsDate>
     public Maybe<DateTime?> ToDateTime() => Maybe.Some(Value);
 
     /// <summary>
-    /// Gets a <see cref="TpsLong"/> instance representing the Clarion Standard Date, or number of days since December 28, 1800.
+    /// Gets a <see cref="ClaLong"/> instance representing the Clarion Standard Date, or number of days since December 28, 1800.
     /// For dates before January 1, 1801 (four days after <see cref="ClarionEpoch"/>), this returns <see cref="Maybe.None{T}"/>.
     /// </summary>
     /// <returns></returns>
-    public Maybe<TpsLong> AsClarionStandardDate() =>
+    public Maybe<ClaLong> AsClarionStandardDate() =>
         Value is null || Value < ClarionEpoch.AddDays(ClarionStandardDateMinValue)
-        ? Maybe.None<TpsLong>()
-        : Maybe.Some(new TpsLong((Value.Value - ClarionEpoch).Days));
+        ? Maybe.None<ClaLong>()
+        : Maybe.Some(new ClaLong((Value.Value - ClarionEpoch).Days));
 
     /// <inheritdoc/>
     public override string? ToString() => Value?.ToString(CultureInfo.InvariantCulture);
 
     /// <inheritdoc/>
-    public bool Equals(TpsDate other) =>
+    public bool Equals(ClaDate other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsDate x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaDate x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -127,8 +127,8 @@ public readonly struct TpsDate : IDate, IEquatable<TpsDate>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsDate left, TpsDate right) => left.Equals(right);
+    public static bool operator ==(ClaDate left, ClaDate right) => left.Equals(right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsDate left, TpsDate right) => !(left == right);
+    public static bool operator !=(ClaDate left, ClaDate right) => !(left == right);
 }

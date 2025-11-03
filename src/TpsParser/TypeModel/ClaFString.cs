@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion CSTRING type, which is a null-terminated string.
+/// Represents a Clarion STRING type, which is a fixed-length string.
 /// </summary>
-public readonly struct TpsCString : IString, IEquatable<TpsCString>
+public readonly struct ClaFString : IClaString, IEquatable<ClaFString>
 {
     /// <inheritdoc/>
-    public TpsTypeCode TypeCode => TpsTypeCode.CString;
+    public ClaTypeCode TypeCode => ClaTypeCode.FString;
 
     /// <summary>
     /// Gets the string backing this type.
@@ -17,29 +17,26 @@ public readonly struct TpsCString : IString, IEquatable<TpsCString>
     public string Value { get; }
 
     /// <summary>
-    /// Instantiates a new CSTRING.
+    /// Instantiates a new STRING.
     /// </summary>
     /// <param name="value">The string value. Must not be null.</param>
-    public TpsCString(string value)
+    public ClaFString(string value)
     {
         Value = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <summary>
-    /// Returns true if the string's length is greater than zero.
-    /// </summary>
+    /// <inheritdoc/>
     public bool ToBoolean() => Value.Length > 0 && Value.Trim(' ').Length > 0;
-
 
     /// <inheritdoc/>
     public override string ToString() => Value;
 
     /// <inheritdoc/>
-    public bool Equals(TpsCString other) =>
+    public bool Equals(ClaFString other) =>
         Value == other.Value;
 
     /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is TpsCString x && Equals(x);
+    public override bool Equals(object? obj) => obj is ClaFString x && Equals(x);
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -48,8 +45,8 @@ public readonly struct TpsCString : IString, IEquatable<TpsCString>
     }
 
     /// <inheritdoc/>
-    public static bool operator ==(TpsCString left, TpsCString right) => left.Equals(right);
+    public static bool operator ==(ClaFString left, ClaFString right) => EqualityComparer<ClaFString>.Default.Equals(left, right);
 
     /// <inheritdoc/>
-    public static bool operator !=(TpsCString left, TpsCString right) => !(left == right);
+    public static bool operator !=(ClaFString left, ClaFString right) => !(left == right);
 }

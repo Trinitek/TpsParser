@@ -22,7 +22,7 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, new TpsPageRange(0, 0x300), false);
+        var block = new TpsBlock(rx, new TpsPageDescriptor(0, 0x300), false);
 
         using (Assert.EnterMultipleScope())
         {
@@ -46,7 +46,7 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, new TpsPageRange(0, 0x300), false);
+        var block = new TpsBlock(rx, new TpsPageDescriptor(0, 0x300), false);
 
         using (Assert.EnterMultipleScope())
         {
@@ -70,7 +70,7 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, new TpsPageRange(0, 0x300), false);
+        var block = new TpsBlock(rx, new TpsPageDescriptor(0, 0x300), false);
 
         using (Assert.EnterMultipleScope())
         {

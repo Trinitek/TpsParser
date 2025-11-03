@@ -469,7 +469,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ReadOnlySpan<byte> GetSpan()
     {
-        return new ReadOnlySpan<byte>(Data, BaseOffset, Length);
+        return new ReadOnlySpan<byte>(array: Data, start: BaseOffset, length: Length);
     }
 
     /// <summary>
@@ -515,7 +515,8 @@ public sealed class TpsRandomAccess
         ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
-        var rom = new ReadOnlyMemory<byte>(Data, start: Position, length: length);
+        // TODO test coverage for Position versus AbsolutePosition
+        var rom = new ReadOnlyMemory<byte>(Data, start: AbsolutePosition, length: length);
 
         Position += length;
 

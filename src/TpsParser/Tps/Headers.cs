@@ -263,7 +263,7 @@ public sealed class TableDefinitionHeader : IHeader
 /// </summary>
 public sealed class TableNameHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType">
+    /// <inheritdoc cref="IHeader.RecordType"/>
     public RecordType RecordType { get; init; }
 
     /// <summary>

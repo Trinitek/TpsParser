@@ -16,7 +16,7 @@ public sealed class IndexRecord
 
         Header = (IndexHeader)tpsRecord.Header;
 
-        var data = tpsRecord.Data;
+        var data = tpsRecord.DataRx;
         data.JumpAbsolute(data.Length - 4);
 
         RecordNumber = data.ReadLongBE();

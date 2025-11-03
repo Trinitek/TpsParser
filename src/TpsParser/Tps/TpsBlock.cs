@@ -32,6 +32,12 @@ public sealed record TpsBlock
 
     private IReadOnlyList<TpsPage>? _pages = null;
 
+    /// <summary>
+    /// Creates a new <see cref="TpsBlock"/> from the given descriptor and data reader.
+    /// </summary>
+    /// <param name="blockDescriptor"></param>
+    /// <param name="rx"></param>
+    /// <returns></returns>
     public static TpsBlock Parse(TpsBlockDescriptor blockDescriptor, TpsRandomAccess rx)
     {
         ArgumentNullException.ThrowIfNull(blockDescriptor);

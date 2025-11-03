@@ -29,7 +29,7 @@ public sealed class TableNameRecord
         }
 
         Header = (TableNameHeader)record.Header;
-        TableNumber = record.Data.ReadLongBE();
+        TableNumber = record.DataRx.ReadLongBE();
     }
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member

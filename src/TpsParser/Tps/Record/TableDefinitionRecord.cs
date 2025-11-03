@@ -28,7 +28,7 @@ public sealed record TableDefinitionRecord
     public required IReadOnlyList<FieldDefinitionRecord> Fields { get; init; }
 
     /// <summary>
-    /// Gets the MEMO and BLOB definitions for this table. The index of each definition corresponds to <see cref="Header.IMemoHeader.MemoIndex"/>.
+    /// Gets the MEMO and BLOB definitions for this table. The index of each definition corresponds to <see cref="MemoHeader.MemoIndex"/>.
     /// </summary>
     public required IReadOnlyList<MemoDefinitionRecord> Memos { get; init; }
 

@@ -13,7 +13,8 @@ namespace TpsParser.Binary;
 public sealed class TpsRandomAccess
 {
     private byte[] Data { get; }
-    private Stack<int> PositionStack { get; }
+
+    private Stack<int>? _positionStack;
 
     /// <summary>
     /// Gets the default encoding used when reading strings.
@@ -72,12 +73,14 @@ public sealed class TpsRandomAccess
     /// <param name="encoding"></param>
     public TpsRandomAccess(byte[] data, int baseOffset, int length, Encoding encoding)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(baseOffset);
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+
         Position = 0;
         Data = data ?? throw new ArgumentNullException(nameof(data));
         BaseOffset = baseOffset;
         Length = length;
 
-        PositionStack = new Stack<int>();
         Encoding = encoding;
     }
 
@@ -99,12 +102,24 @@ public sealed class TpsRandomAccess
     /// <summary>
     /// Saves the current position on the stack.
     /// </summary>
-    public void PushPosition() => PositionStack.Push(Position);
+    public void PushPosition()
+    {
+        _positionStack ??= [];
+        _positionStack.Push(Position);
+    }
 
     /// <summary>
     /// Restores the previous position saved to the stack with <see cref="PushPosition"/>.
     /// </summary>
-    public void PopPosition() => Position = PositionStack.Pop();
+    public void PopPosition()
+    {
+        if (_positionStack is null)
+        {
+            throw new InvalidOperationException("Cannot pop without pushing first.");
+        }
+
+        Position = _positionStack.Pop();
+    }
 
     private void AssertSpace(int numberOfBytes)
     {
@@ -345,6 +360,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public string ReadFixedLengthString(int length, Encoding? encoding = null)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
         encoding ??= Encoding;
@@ -447,6 +463,10 @@ public sealed class TpsRandomAccess
         }
     }
 
+    /// <summary>
+    /// Gets a span that reflects the data starting from the base offset.
+    /// </summary>
+    /// <returns></returns>
     public ReadOnlySpan<byte> GetSpan()
     {
         return new ReadOnlySpan<byte>(Data, BaseOffset, Length);
@@ -459,6 +479,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public TpsRandomAccess Read(int length)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
         int reference = AbsolutePosition;
@@ -474,6 +495,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public byte[] ReadBytesAsArray(int length)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
         var dest = PeekBytes(length);
@@ -490,6 +512,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ReadOnlyMemory<byte> ReadBytesAsMemory(int length)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
         var rom = new ReadOnlyMemory<byte>(Data, start: Position, length: length);
@@ -506,6 +529,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public byte[] PeekBytes(int length)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
         byte[] dest = new byte[length];
@@ -579,6 +603,8 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public int[] LongArrayLE(int length)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
+
         int[] results = new int[length];
 
         for (int i = 0; i < length; i++)
@@ -649,20 +675,20 @@ public sealed class TpsRandomAccess
 
             if (value < 32 | value > 127)
             {
-                stringBuilder.Append(" ");
-                stringBuilder.Append(StringUtils.ToHex2(value));
+                stringBuilder.Append(' ');
+                stringBuilder.Append(value.ToString("x2"));
                 wasHex = true;
             }
             else
             {
                 if (wasHex)
                 {
-                    stringBuilder.Append(" ");
+                    stringBuilder.Append(' ');
                     wasHex = false;
                 }
                 if (value == 32)
                 {
-                    stringBuilder.Append(".");
+                    stringBuilder.Append('.');
                 }
                 else
                 {
@@ -698,7 +724,7 @@ public sealed class TpsRandomAccess
 
             if (ascii)
             {
-                sb.Append(" ");
+                sb.Append(' ');
 
                 for (int y = 0; y < step; y++)
                 {
@@ -708,7 +734,7 @@ public sealed class TpsRandomAccess
 
                         if (ch < 32 && ch > 127)
                         {
-                            sb.Append(".");
+                            sb.Append('.');
                         }
                         else
                         {
@@ -878,10 +904,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ClaFString ReadClaFString(int length, Encoding? encoding = null)
     {
-        if (length < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length), "String length must not be negative.");
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
 
         encoding ??= Encoding;
 

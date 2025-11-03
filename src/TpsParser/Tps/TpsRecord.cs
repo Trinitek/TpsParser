@@ -1,42 +1,83 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using TpsParser.Binary;
 
 namespace TpsParser.Tps;
 
-public sealed class TpsRecord
+/// <summary>
+/// Represents a record within a TPS file.
+/// </summary>
+public sealed record TpsRecord
 {
-    public byte Flags { get; }
-    public int RecordLength { get; }
-    public int HeaderLength { get; }
-    public TpsRandomAccess Data { get; }
-    public IHeader Header { get; private set; }
+    /// <summary></summary>
+    public byte Flags { get; init; }
+
+    /// <summary>
+    /// True if <see cref="Flags"/> indicates that the record data has <see cref="RecordLength"/>; false if it was inherited from the previous record.
+    /// </summary>
+    public bool OwnsRecordLength => (Flags & 0x80) != 0;
+
+    /// <summary>
+    /// True if <see cref="Flags"/> indicates that the record data has <see cref="HeaderLength"/>; false if it was inherited from the previous record.
+    /// </summary>
+    public bool OwnsHeaderLength => (Flags & 0x40) != 0;
+
+    /// <summary>
+    /// From <see cref="Flags"/>, gets the number of bytes (no more than 63) that describe the next <see cref="TpsRecord"/>.
+    /// </summary>
+    public byte NextRecordBytes => (byte)(Flags & 0x3F);
+
+    /// <summary>
+    /// Gets the length of the record in bytes.
+    /// </summary>
+    public ushort RecordLength { get; init; }
+
+    /// <summary>
+    /// Gets the length of the header in bytes.
+    /// </summary>
+    public ushort HeaderLength { get; init; }
+
+    /// <summary>
+    /// Gets the header defined in this record, if any.
+    /// </summary>
+    public IHeader? Header { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="TpsRandomAccess"/> reader used to access the data for this record.
+    /// </summary>
+    public required TpsRandomAccess DataRx { internal get; init; }
 
     /// <summary>
     /// Creates a new <see cref="TpsRecord"/>. This is typically done on the first of a list.
     /// </summary>
     /// <param name="rx">The data to read from.</param>
-    public TpsRecord(TpsRandomAccess rx)
+    public static TpsRecord Parse(TpsRandomAccess rx)
     {
-        if (rx == null)
+        ArgumentNullException.ThrowIfNull(rx);
+
+        byte flags = rx.ReadByte();
+
+        if ((flags & 0xC0) != 0xC0)
         {
-            throw new ArgumentNullException(nameof(rx));
+            throw new TpsParserException($"Cannot construct a TpsRecord without record and header lengths (0x{flags:x2})");
         }
 
-        Flags = rx.ReadByte();
+        ushort recordLength = rx.ReadUnsignedShortLE();
+        ushort headerLength = rx.ReadUnsignedShortLE();
 
-        if ((Flags & 0xC0) != 0xC0)
+        var newRx = rx.Read(recordLength);
+
+        var headerRx = newRx.Read(headerLength);
+
+        var header = BuildHeader(headerRx);
+
+        return new TpsRecord
         {
-            throw new TpsParserException($"Cannot construct a TpsRecord without record lengths (0x{StringUtils.ToHex2(Flags)})");
-        }
-
-        RecordLength = rx.ReadShortLE();
-        HeaderLength = rx.ReadShortLE();
-
-        Data = rx.Read(RecordLength);
-
-        BuildHeader();
+            Flags = flags,
+            RecordLength = recordLength,
+            HeaderLength = headerLength,
+            Header = header,
+            DataRx = newRx
+        };
     }
 
     /// <summary>
@@ -44,82 +85,103 @@ public sealed class TpsRecord
     /// </summary>
     /// <param name="previous">The previous record.</param>
     /// <param name="rx">The data to read from.</param>
-    public TpsRecord(TpsRecord previous, TpsRandomAccess rx)
+    public static TpsRecord Parse(TpsRecord previous, TpsRandomAccess rx)
     {
-        if (previous == null)
-        {
-            throw new ArgumentNullException(nameof(previous));
-        }
+        ArgumentNullException.ThrowIfNull(previous);
+        ArgumentNullException.ThrowIfNull(rx);
 
-        if (rx == null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
+        byte flags = rx.ReadByte();
 
-        Flags = rx.ReadByte();
+        ushort recordLength;
 
-        if ((Flags & 0x80) != 0)
+        if ((flags & 0x80) != 0)
         {
-            RecordLength = rx.ReadShortLE();
+            recordLength = rx.ReadUnsignedShortLE();
         }
         else
         {
-            RecordLength = previous.RecordLength;
+            recordLength = previous.RecordLength;
         }
 
-        if ((Flags & 0x40) != 0)
+        ushort headerLength;
+
+        if ((flags & 0x40) != 0)
         {
-            HeaderLength = rx.ReadShortLE();
+            headerLength = rx.ReadUnsignedShortLE();
         }
         else
         {
-            HeaderLength = previous.HeaderLength;
+            headerLength = previous.HeaderLength;
         }
 
-        int copy = Flags & 0x3F;
+        int bytesToCopy = flags & 0x3F; // no more than 63 bytes
 
-        var newData = new List<byte>(RecordLength);
+        byte[] newData = new byte[recordLength];
+        var newDataMemory = newData.AsMemory();
 
-        newData.AddRange(previous.Data.GetData().Take(copy));
-        newData.AddRange(rx.ReadBytesAsArray(RecordLength - copy));
-
-        Data = new TpsRandomAccess(newData.ToArray(), rx.Encoding);
-
-        if (Data.Length != RecordLength)
+        if (bytesToCopy > recordLength)
         {
-            throw new TpsParserException("Data and record length mismatch.");
+            throw new TpsParserException($"Number of bytes to copy ({bytesToCopy}) exceeds the record length ({recordLength}).");
         }
 
-        BuildHeader();
+        previous.DataRx.GetSpan()[..bytesToCopy]
+            .CopyTo(newData);
+        
+        rx.ReadBytesAsMemory(recordLength - bytesToCopy)
+            .CopyTo(newDataMemory[bytesToCopy..]);
+
+        var newRx = new TpsRandomAccess(newData, rx.Encoding);
+
+        if (newRx.Length != recordLength)
+        {
+            throw new TpsParserException($"Data and record length mismatch: expected {recordLength} but was {newRx.Length}.");
+        }
+
+        var headerRx = newRx.Read(headerLength);
+
+        var header = BuildHeader(headerRx);
+
+        return new TpsRecord
+        {
+            Flags = flags,
+            RecordLength = recordLength,
+            HeaderLength = headerLength,
+            Header = header,
+            DataRx = newRx
+        };
     }
 
-    private void BuildHeader()
+    private static IHeader? BuildHeader(TpsRandomAccess rx)
     {
-        var rx = Data.Read(HeaderLength);
-
-        if (rx.Length >= 5)
+        if (rx.Length < 5)
         {
-            if (rx.PeekByte(0) == (byte)RecordType.TableName)
-            {
-                var preHeader = PreHeader.Parse(rx, readTableNumber: false);
+            return null;
+        }
 
-                Header = TableNameHeader.Parse(preHeader, rx);
-            }
-            else
-            {
-                var preHeader = PreHeader.Parse(rx, readTableNumber: true);
+        if (rx.PeekByte(0) == (byte)RecordType.TableName)
+        {
+            var preHeader = PreHeader.Parse(rx, readTableNumber: false);
 
-                Header = preHeader.Type switch
-                {
-                    RecordType.TableName => TableNameHeader.Parse(preHeader, rx),
-                    RecordType.Data => DataHeader.Parse(preHeader, rx),
-                    RecordType.Metadata => MetadataHeader.Parse(preHeader, rx),
-                    RecordType.TableDef => TableDefinitionHeader.Parse(preHeader, rx),
-                    RecordType.Memo => MemoHeader.Parse(preHeader, rx),
-                    RecordType.Index => IndexHeader.Parse(preHeader, rx),
-                    _ => IndexHeader.Parse(preHeader, rx)
-                };
-            }
+            IHeader header = TableNameHeader.Parse(preHeader, rx);
+
+            return header;
+        }
+        else
+        {
+            var preHeader = PreHeader.Parse(rx, readTableNumber: true);
+
+            IHeader header = preHeader.Type switch
+            {
+                RecordType.TableName => TableNameHeader.Parse(preHeader, rx),
+                RecordType.Data => DataHeader.Parse(preHeader, rx),
+                RecordType.Metadata => MetadataHeader.Parse(preHeader, rx),
+                RecordType.TableDef => TableDefinitionHeader.Parse(preHeader, rx),
+                RecordType.Memo => MemoHeader.Parse(preHeader, rx),
+                RecordType.Index => IndexHeader.Parse(preHeader, rx),
+                _ => IndexHeader.Parse(preHeader, rx)
+            };
+
+            return header;
         }
     }
 }

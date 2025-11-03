@@ -134,11 +134,11 @@ public sealed record TpsPage
 
                     if (previousRecord is null)
                     {
-                        currentRecord = new TpsRecord(rx);
+                        currentRecord = TpsRecord.Parse(rx);
                     }
                     else
                     {
-                        currentRecord = new TpsRecord(previousRecord, rx);
+                        currentRecord = TpsRecord.Parse(previousRecord, rx);
                     }
 
                     records.Add(currentRecord);

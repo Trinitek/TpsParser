@@ -300,5 +300,5 @@ internal sealed class RandomAccessTpsFile : TpsFile
     }
 
     private TpsRandomAccess Merge(IEnumerable<TpsRecord> records) =>
-        new TpsRandomAccess(records.SelectMany(r => r.Data.GetRemainderAsByteArray()).ToArray(), Encoding);
+        new TpsRandomAccess(records.SelectMany(r => r.DataRx.GetRemainderAsByteArray()).ToArray(), Encoding);
 }

@@ -65,7 +65,7 @@ internal sealed class DataRecord : IDataRecord
         Record = tpsRecord ?? throw new ArgumentNullException(nameof(tpsRecord));
         TableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));
         Header = (DataHeader)Record.Header;
-        Values = TableDefinition.ParseFields(tpsRecord.Data.GetReaderForRemainder());
+        Values = TableDefinition.ParseFields(tpsRecord.DataRx.GetReaderForRemainder());
     }
 
     /// <inheritdoc/>

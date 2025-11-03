@@ -81,7 +81,7 @@ public sealed record IndexDefinitionRecord
     /// <summary>
     /// Gets the number of fields tracked by the key or index.
     /// </summary>
-    public ushort FieldsCount { get; init; }
+    public ushort FieldCount { get; init; }
 
     /// <summary>
     /// Creates a new <see cref="IndexDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
@@ -123,7 +123,7 @@ public sealed record IndexDefinitionRecord
             ExternalFile = externalFile,
             Name = name,
             Flags = flags,
-            FieldsCount = fieldsInKey,
+            FieldCount = fieldsInKey,
             KeyFields = [.. keys]
         };
     }

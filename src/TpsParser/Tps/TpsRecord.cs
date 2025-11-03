@@ -7,7 +7,7 @@ namespace TpsParser.Tps;
 
 public sealed class TpsRecord
 {
-    public int Flags { get; }
+    public byte Flags { get; }
     public int RecordLength { get; }
     public int HeaderLength { get; }
     public TpsRandomAccess Data { get; }
@@ -28,7 +28,7 @@ public sealed class TpsRecord
 
         if ((Flags & 0xC0) != 0xC0)
         {
-            throw new ArgumentException($"Cannot construct a TpsRecord without record lengths (0x{StringUtils.ToHex2(Flags)})");
+            throw new TpsParserException($"Cannot construct a TpsRecord without record lengths (0x{StringUtils.ToHex2(Flags)})");
         }
 
         RecordLength = rx.ReadShortLE();
@@ -87,7 +87,7 @@ public sealed class TpsRecord
 
         if (Data.Length != RecordLength)
         {
-            throw new ArgumentException("Data and record length mismatch.");
+            throw new TpsParserException("Data and record length mismatch.");
         }
 
         BuildHeader();
@@ -122,8 +122,4 @@ public sealed class TpsRecord
             }
         }
     }
-
-    /// <inheritdoc/>
-    public override string ToString() =>
-        $"TpsRecord(L:{RecordLength},H:{HeaderLength},{Header})";
 }

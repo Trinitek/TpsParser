@@ -31,7 +31,7 @@ public abstract class TpsFile
     /// <returns></returns>
     public abstract TpsFileHeader GetFileHeader();
 
-    public abstract IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors);
+    public abstract IEnumerable<TpsBlock> GetBlocks();
 
     /// <summary>
     /// Gets a list of data records for the associated table and its table definition.
@@ -144,7 +144,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
         var header = GetFileHeader();
 
-        foreach (var pageRange in header.PageDescriptors)
+        foreach (var pageRange in header.BlockDescriptors)
         {
             int offset = pageRange.StartOffset;
             int end = pageRange.EndOffset;
@@ -170,33 +170,29 @@ internal sealed class RandomAccessTpsFile : TpsFile
         return header;
     }
 
-    public override IEnumerable<TpsBlock> GetBlocks(bool ignoreErrors)
+    public override IEnumerable<TpsBlock> GetBlocks()
     {
         var header = GetFileHeader();
 
-        var blocks = header.PageDescriptors
+        var blocks = header.BlockDescriptors
             // Skip zero-length pages and any blocks that are beyond the file size.
             .Where(range => !((range.Length == 0) || (range.StartOffset >= Data.Length)))
 
-            .Select(range => new TpsBlock(Data, range, ignoreErrors));
+            .Select(range => TpsBlock.Parse(range, Data));
 
         return blocks;
     }
 
     private IEnumerable<TpsRecord> VisitRecords(bool ignoreErrors = false)
     {
-        foreach (var block in GetBlocks(ignoreErrors))
+        foreach (var block in GetBlocks())
         {
-            foreach (var page in block.Pages)
+            foreach (var page in block.GetPages(ignoreErrors))
             {
-                //page.ParseRecords();
-                
                 foreach (var record in page.GetRecords())
                 {
                     yield return record;
                 }
-                
-                //page.Flush();
             }
         }
     }

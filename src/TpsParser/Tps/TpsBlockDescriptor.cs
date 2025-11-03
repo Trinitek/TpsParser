@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="StartOffset"></param>
 /// <param name="EndOffset"></param>
-public sealed record TpsPageDescriptor(int StartOffset, int EndOffset)
+public sealed record TpsBlockDescriptor(int StartOffset, int EndOffset)
 {
     /// <summary>
     /// Gets the length of the page in bytes.

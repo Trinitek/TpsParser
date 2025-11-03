@@ -27,7 +27,7 @@ internal sealed class TestTableWithMemos
             Assert.That(header.LastIssuedRow, Is.EqualTo(5));
             Assert.That(header.Changes, Is.EqualTo(11));
             Assert.That(header.ManagementPageReferenceOffset, Is.EqualTo(512));
-            Assert.That(header.PageDescriptors, Is.EqualTo(new TpsPageDescriptor[] {
+            Assert.That(header.BlockDescriptors, Is.EqualTo(new TpsBlockDescriptor[] {
                 new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 1792),  new(1792, 1792), new(1792, 1792),
                 new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
                 new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
@@ -49,7 +49,7 @@ internal sealed class TestTableWithMemos
                 LastIssuedRow = 5,
                 Changes = 11,
                 ManagementPageReferenceOffset = 512,
-                PageDescriptors = [
+                BlockDescriptors = [
                     new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 1792),  new(1792, 1792), new(1792, 1792),
                     new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
                     new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
@@ -68,17 +68,18 @@ internal sealed class TestTableWithMemos
     {
         using var parser = new TpsParser(Filename);
 
-        var blocks = parser.TpsFile.GetBlocks(ignoreErrors: false).ToList();
+        var blocks = parser.TpsFile.GetBlocks().ToList();
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(blocks, Has.Count.EqualTo(1));
 
             var b0 = blocks[0];
+            var b0pages = b0.GetPages(ignorePageErrors: false);
 
-            Assert.That(b0.Pages, Has.Count.EqualTo(1));
+            Assert.That(b0pages, Has.Count.EqualTo(1));
 
-            var p0 = b0.Pages[0];
+            var p0 = b0pages[0];
 
             Assert.That(p0.Address, Is.EqualTo(512));
             Assert.That(p0.Size, Is.EqualTo(1123));

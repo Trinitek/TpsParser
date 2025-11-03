@@ -6,7 +6,7 @@ using TpsParser.Binary;
 namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
-internal sealed class TpsDateTest
+internal sealed class TestClaDate
 {
     [Test]
     public void ShouldReadFromRandomAccess()

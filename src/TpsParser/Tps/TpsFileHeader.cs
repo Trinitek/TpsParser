@@ -49,14 +49,14 @@ public sealed record TpsFileHeader
 
     /// <summary>
     /// <para>
-    /// Gets the array of locations and sizes of <see cref="TpsPage"/> objects that are stored in the file.
+    /// Gets the array of locations and sizes of <see cref="TpsBlock"/> objects that are stored in the file.
     /// </para>
     /// <para>
     /// The header has predefined space for 60 page descriptors.
     /// For smaller files, most of the pages will have a length of zero.
     /// </para>
     /// </summary>
-    public ImmutableArray<TpsPageDescriptor> PageDescriptors { get; init; }
+    public ImmutableArray<TpsBlockDescriptor> BlockDescriptors { get; init; }
 
     /// <summary>
     /// Returns true if the header represents a valid TopSpeed file.
@@ -95,14 +95,14 @@ public sealed record TpsFileHeader
         // 60 pages are hard-defined in the header but many of them will be zero-length and/or duplicates.
         const int maxNumberOfPages = 60;
 
-        var pageRanges = new TpsPageDescriptor[maxNumberOfPages];
+        var pageRanges = new TpsBlockDescriptor[maxNumberOfPages];
 
         var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(maxNumberOfPages));
         var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(maxNumberOfPages));
 
         for (int i = 0; i < maxNumberOfPages; i++)
         {
-            pageRanges[i] = new TpsPageDescriptor(
+            pageRanges[i] = new TpsBlockDescriptor(
                 StartOffset: pageStart[i],
                 EndOffset: pageEnd[i]);
         }
@@ -118,7 +118,7 @@ public sealed record TpsFileHeader
             LastIssuedRow = lastIssuedRow,
             Changes = changes,
             ManagementPageReferenceOffset = managementPageReferenceOffset,
-            PageDescriptors = [.. pageRanges]
+            BlockDescriptors = [.. pageRanges]
         };
     }
 
@@ -135,7 +135,7 @@ public sealed record TpsFileHeader
             && LastIssuedRow == other.LastIssuedRow
             && Changes == other.Changes
             && ManagementPageReferenceOffset == other.ManagementPageReferenceOffset
-            && PageDescriptors.SequenceEqual(other.PageDescriptors);
+            && BlockDescriptors.SequenceEqual(other.BlockDescriptors);
     }
 
     /// <inheritdoc/>

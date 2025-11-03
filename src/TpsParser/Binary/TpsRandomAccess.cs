@@ -122,7 +122,7 @@ public sealed class TpsRandomAccess
     /// Reads a little endian 2s-complement signed 4 byte integer.
     /// </summary>
     /// <returns></returns>
-    public int ReadLongLE()
+    public int PeekLongLE()
     {
         AssertSpace(4);
 
@@ -132,12 +132,23 @@ public sealed class TpsRandomAccess
             | (Data[AbsolutePosition + 2] & 0xFF) << 16
             | (Data[AbsolutePosition + 3] & 0xFF) << 24;
 
+        return result;
+    }
+
+    /// <summary>
+    /// Reads a little endian 2s-complement signed 4 byte integer and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public int ReadLongLE()
+    {
+        int result = PeekLongLE();
+
         Position += 4;
         return result;
     }
 
     /// <summary>
-    /// Writes a 4 byte little endian integer to the current position. This is typically used when decrypting.
+    /// Writes a 4 byte little endian integer and advances the current position. This is typically used when decrypting.
     /// </summary>
     /// <param name="value"></param>
     public void WriteLongLE(int value)
@@ -290,11 +301,11 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a byte from the given position without advancing the position.
+    /// Reads a byte from the given offset without advancing the position.
     /// </summary>
-    /// <param name="position"></param>
+    /// <param name="offset"></param>
     /// <returns></returns>
-    public byte Peek(int position) => Data[BaseOffset + position];
+    public byte PeekByte(int offset) => Data[BaseOffset + offset];
 
     /// <summary>
     /// Reads a little endian float and advances the current position.

@@ -7,7 +7,7 @@ using TpsParser.Binary;
 namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
-internal sealed class TpsDecimalTest
+internal sealed class TestClaDecimal
 {
     [TestCase("0", 2, 0, new byte[] { 0x00, 0x00 })]
     [TestCase("979", 2, 0, new byte[] { 0x09, 0x79 })]

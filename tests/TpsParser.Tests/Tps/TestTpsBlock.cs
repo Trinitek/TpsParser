@@ -6,7 +6,7 @@ using TpsParser.Tps;
 namespace TpsParser.Tests.Tps;
 
 [TestFixture]
-internal sealed class TpsBlockTest
+internal sealed class TestTpsBlock
 {
     [Test]
     public void ShouldReadTwoBlocks()
@@ -22,13 +22,15 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, new TpsPageDescriptor(0, 0x300), false);
+        var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
+
+        var pages = block.GetPages(ignorePageErrors: false);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(block.Pages, Has.Count.EqualTo(2));
-            Assert.That(block.Pages[0].Size, Is.EqualTo(0x200));
-            Assert.That(block.Pages[1].Size, Is.EqualTo(0x100));
+            Assert.That(pages, Has.Count.EqualTo(2));
+            Assert.That(pages[0].Size, Is.EqualTo(0x200));
+            Assert.That(pages[1].Size, Is.EqualTo(0x100));
         }
     }
 
@@ -46,13 +48,15 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, new TpsPageDescriptor(0, 0x300), false);
+        var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
+
+        var pages = block.GetPages(ignorePageErrors: false);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(block.Pages, Has.Count.EqualTo(2));
-            Assert.That(block.Pages[0].Size, Is.EqualTo(0x100));
-            Assert.That(block.Pages[1].Size, Is.EqualTo(0x100));
+            Assert.That(pages, Has.Count.EqualTo(2));
+            Assert.That(pages[0].Size, Is.EqualTo(0x100));
+            Assert.That(pages[1].Size, Is.EqualTo(0x100));
         }
     }
 
@@ -70,13 +74,15 @@ internal sealed class TpsBlockTest
 
         rx.JumpAbsolute(0);
 
-        var block = new TpsBlock(rx, new TpsPageDescriptor(0, 0x300), false);
+        var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
+
+        var pages = block.GetPages(ignorePageErrors: false);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(block.Pages, Has.Count.EqualTo(1));
-            Assert.That(block.Pages[0].Address, Is.EqualTo(0x100));
-            Assert.That(block.Pages[0].Size, Is.EqualTo(0x200));
+            Assert.That(pages, Has.Count.EqualTo(1));
+            Assert.That(pages[0].Address, Is.EqualTo(0x100));
+            Assert.That(pages[0].Size, Is.EqualTo(0x200));
         }
     }
 }

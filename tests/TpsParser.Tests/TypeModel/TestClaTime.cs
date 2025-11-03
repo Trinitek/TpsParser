@@ -9,7 +9,7 @@ using TpsParser.Tps;
 namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
-internal sealed class TpsTimeTest
+internal sealed class TestClaTime
 {
     [Test]
     public void ShouldReadFromFile()

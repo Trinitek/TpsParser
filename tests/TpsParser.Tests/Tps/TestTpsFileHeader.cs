@@ -5,7 +5,7 @@ using TpsParser.Tps;
 namespace TpsParser.Tests.Tps;
 
 [TestFixture]
-internal sealed class TpsHeaderTest
+internal sealed class TestTpsFileHeader
 {
     [Test]
     public void ShouldParseHeader()
@@ -20,7 +20,7 @@ internal sealed class TpsHeaderTest
             Assert.That(header.FileLength1, Is.EqualTo(383744));
             Assert.That(header.LastIssuedRow, Is.EqualTo(5048));
             Assert.That(header.Changes, Is.EqualTo(15651));
-            Assert.That(header.PageDescriptors, Has.Length.EqualTo(60));
+            Assert.That(header.BlockDescriptors, Has.Length.EqualTo(60));
         }
     }
 

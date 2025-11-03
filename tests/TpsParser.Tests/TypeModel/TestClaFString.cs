@@ -6,7 +6,7 @@ using TpsParser.Binary;
 namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
-internal sealed class TpsStringTest
+internal sealed class TestClaFString
 {
     [Test]
     public void ShouldReadFromRandomAccess()

@@ -5,112 +5,153 @@ using TpsParser.Binary;
 
 namespace TpsParser.Tps;
 
-public sealed class TpsBlock
+/// <summary>
+/// Represents a block within a TPS file. Blocks contain pages.
+/// </summary>
+public sealed record TpsBlock
 {
-    public IReadOnlyList<TpsPage> Pages => _pages;
-    private readonly List<TpsPage> _pages;
+    /// <summary>
+    /// Gets the position in the file where the block starts.
+    /// </summary>
+    public int StartOffset { get; init; }
 
-    private int Start { get; }
-    private int End { get; }
-    private TpsRandomAccess Data { get; }
+    /// <summary>
+    /// Gets the position in the file where the block ends.
+    /// </summary>
+    public int EndOffset { get; init; }
 
-    public TpsBlock(TpsRandomAccess rx, TpsPageDescriptor pageRange, bool ignorePageErrors)
+    /// <summary>
+    /// Gets the length of the block in bytes.
+    /// </summary>
+    public int Length { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="TpsRandomAccess"/> reader used to access the data for this block.
+    /// </summary>
+    public required TpsRandomAccess DataRx { private get; init; }
+
+    private IReadOnlyList<TpsPage>? _pages = null;
+
+    public static TpsBlock Parse(TpsBlockDescriptor blockDescriptor, TpsRandomAccess rx)
     {
-        Data = rx ?? throw new ArgumentNullException(nameof(rx));
-        
-        Start = pageRange.StartOffset;
-        End = pageRange.EndOffset;
+        ArgumentNullException.ThrowIfNull(blockDescriptor);
+        ArgumentNullException.ThrowIfNull(rx);
 
-        _pages = [];
+        // Create a new reader owned by this block; don't share.
+        // Block address calculations are relative to the beginning of the file.
 
-        Data.PushPosition();
-        Data.JumpAbsolute(Start);
+        var blockRx = new TpsRandomAccess(
+            rx,
+            additiveOffset: 0,
+            length: blockDescriptor.EndOffset);
 
-        try
+        return new TpsBlock
         {
-            // Some blocks are 0 in length and should be skipped
-            while (Data.Position < End)
-            {
-                if (IsCompletePage())
-                {
-                    try
-                    {
-                        var page = TpsPage.Parse(Data);
-                        _pages.Add(page);
-                    }
-                    catch (RunLengthEncodingException ex)
-                    {
-                        if (ignorePageErrors)
-                        {
-                            Debug.WriteLine($"Ignored RLE error: {ex}");
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-                else
-                {
-                    Data.JumpRelative(0x100);
-                }
-
-                NavigateToNextPage();
-            }
-        }
-        finally
-        {
-            Data.PopPosition();
-        }
+            StartOffset = blockDescriptor.StartOffset,
+            EndOffset = blockDescriptor.EndOffset,
+            Length = blockDescriptor.Length,
+            DataRx = blockRx
+        };
     }
 
-    private void NavigateToNextPage()
+    /// <summary>
+    /// Gets all pages in this block.
+    /// </summary>
+    /// <returns></returns>
+    public IReadOnlyList<TpsPage> GetPages(bool ignorePageErrors)
     {
-        if ((Data.Position & 0xFF) != 0x00)
+        if (_pages is not null)
         {
-            // Jump to next probable page if we aren't already at a new page.
-            Data.JumpAbsolute((int)(Data.Position & 0xFFFF_FF00) + 0x100);
+            return _pages;
         }
 
-        if (!Data.IsAtEnd)
+        var rx = DataRx;
+
+        List<TpsPage> pages = [];
+
+        rx.JumpAbsolute(StartOffset);
+
+        // Some blocks are 0 in length and should be skipped
+        while (rx.Position < EndOffset)
+        {
+            if (IsCompletePage(rx))
+            {
+                try
+                {
+                    var page = TpsPage.Parse(rx);
+
+                    pages.Add(page);
+                }
+                catch (RunLengthEncodingException ex)
+                {
+                    if (ignorePageErrors)
+                    {
+                        Debug.WriteLine($"Ignored RLE error: {ex}");
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            else
+            {
+                rx.JumpRelative(0x100);
+            }
+
+            NavigateToNextPage(rx);
+        }
+
+        _pages = pages.AsReadOnly();
+
+        return _pages;
+    }
+
+    private static void NavigateToNextPage(TpsRandomAccess rx)
+    {
+        if ((rx.Position & 0xFF) != 0x00)
+        {
+            // Jump to next probable page if we aren't already at a new page.
+            rx.JumpAbsolute((int)(rx.Position & 0xFFFF_FF00) + 0x100);
+        }
+
+        if (!rx.IsAtEnd)
         {
             int address;
 
             do
             {
-                Data.PushPosition();
-                address = Data.ReadLongLE();
-                Data.PopPosition();
+                address = rx.PeekLongLE();
 
                 // Check if there is really a new page here.
                 // If so, the offset in the file must match the new value.
                 // If not, we continue.
-                if (address != Data.Position)
+                if (address != rx.Position)
                 {
-                    Data.JumpRelative(0x100);
+                    rx.JumpRelative(0x100);
                 }
             }
-            while ((address != Data.Position) && !Data.IsAtEnd);
+            while ((address != rx.Position) && !rx.IsAtEnd);
         }
     }
 
-    private bool IsCompletePage()
+    private static bool IsCompletePage(TpsRandomAccess rx)
     {
         int pageSize;
 
-        Data.PushPosition();
+        rx.PushPosition();
 
         try
         {
-            Data.ReadLongLE();
-            pageSize = Data.ReadShortLE();
+            _ = rx.ReadLongLE();
+            pageSize = rx.ReadShortLE();
         }
         finally
         {
-            Data.PopPosition();
+            rx.PopPosition();
         }
 
-        Data.PushPosition();
+        rx.PushPosition();
 
         try
         {
@@ -119,24 +160,24 @@ public sealed class TpsBlock
             while (offset < pageSize)
             {
                 offset += 0x100;
-                Data.JumpRelative(0x100);
+                rx.JumpRelative(0x100);
 
                 if (offset < pageSize)
                 {
                     int address;
 
-                    Data.PushPosition();
+                    rx.PushPosition();
 
                     try
                     {
-                        address = Data.ReadLongLE();
+                        address = rx.ReadLongLE();
                     }
                     finally
                     {
-                        Data.PopPosition();
+                        rx.PopPosition();
                     }
 
-                    if (address == Data.Position)
+                    if (address == rx.Position)
                     {
                         Debug.WriteLine("Incomplete page");
                         return false;
@@ -146,13 +187,9 @@ public sealed class TpsBlock
         }
         finally
         {
-            Data.PopPosition();
+            rx.PopPosition();
         }
 
         return true;
     }
-
-    /// <inheritdoc/>
-    public override string ToString() =>
-        $"TpsBlock({StringUtils.ToHex8(Start)},{StringUtils.ToHex8(End)},{Pages.Count})";
 }

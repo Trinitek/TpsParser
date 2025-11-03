@@ -157,7 +157,4 @@ public sealed record TpsPage
 
         return _records;
     }
-
-    public override string ToString() =>
-        $"TpsPage({Address:X8},{Size:X4},{SizeUncompressed:X4},{SizeUncompressedWithoutHeader:X4},{RecordCount:X4},{Flags:X2})";
 }

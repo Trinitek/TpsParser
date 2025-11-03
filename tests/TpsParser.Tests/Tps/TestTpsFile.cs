@@ -7,7 +7,7 @@ using TpsParser.TypeModel;
 namespace TpsParser.Tests.Tps;
 
 [TestFixture]
-internal sealed class TpsFileTest
+internal sealed class TestTpsFile
 {
     private TpsFile GetTableFile()
     {

@@ -99,7 +99,7 @@ public sealed class TpsRecord
 
         if (rx.Length >= 5)
         {
-            if (rx.Peek(0) == (byte)RecordType.TableName)
+            if (rx.PeekByte(0) == (byte)RecordType.TableName)
             {
                 var preHeader = PreHeader.Parse(rx, readTableNumber: false);
 

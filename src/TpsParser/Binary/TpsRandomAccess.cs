@@ -365,9 +365,10 @@ public sealed class TpsRandomAccess
 
         encoding ??= Encoding;
 
-        string result = encoding.GetString(Data.ToArray(), AbsolutePosition, length);
+        var mem = ReadBytesAsMemory(length);
 
-        Position += length;
+        // TODO test coverage to ensure this doesn't eat the entire array.
+        string result = encoding.GetString(mem.Span);
 
         return result;
     }

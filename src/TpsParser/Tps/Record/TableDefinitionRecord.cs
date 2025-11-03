@@ -178,9 +178,9 @@ public sealed record TableDefinitionRecord
                 AssertEqual(8, length);
                 return rx.ReadClaDouble();
             case ClaTypeCode.Decimal:
-                return rx.ReadClaDecimal(length, fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
+                return rx.ReadClaDecimal(length: length, digitsAfterDecimalPoint: fieldDefinitionRecord.BcdDigitsAfterDecimalPoint);
             case ClaTypeCode.FString:
-                return rx.ReadClaFString();
+                return rx.ReadClaFString(length: fieldDefinitionRecord.StringLength);
             case ClaTypeCode.CString:
                 return rx.ReadClaCString();
             case ClaTypeCode.PString:

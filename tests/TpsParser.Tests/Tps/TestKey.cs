@@ -9,7 +9,7 @@ using TpsParser.Tps;
 namespace TpsParser.Tests.Tps;
 
 [TestFixture]
-internal sealed class KeyTest
+internal sealed class TestKey
 {
     private static readonly string EncryptedHeader =
         "BC DC 5C 92 90 BC DF B8 B0 5B AF BB A5 F8 30 C5 " +

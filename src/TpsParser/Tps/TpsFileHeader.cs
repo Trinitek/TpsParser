@@ -97,14 +97,23 @@ public sealed record TpsFileHeader
 
         var pageRanges = new TpsBlockDescriptor[NumberOfPages];
 
-        var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
-        var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
+        var pageStartRx = header.Read(length: NumberOfPages * 4 /* Four bytes per integer */);
+        var pageEndRx = header;
+
+        //var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
+        //var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
 
         for (int i = 0; i < NumberOfPages; i++)
         {
+            int startPageRef = pageStartRx.ReadLongLE();
+            int endPageRef = pageEndRx.ReadLongLE();
+
+            int startOffset = GetFileOffset(startPageRef);
+            int endOffset = GetFileOffset(endPageRef);
+
             pageRanges[i] = new TpsBlockDescriptor(
-                StartOffset: pageStart[i],
-                EndOffset: pageEnd[i]);
+                StartOffset: startOffset,
+                EndOffset: endOffset);
         }
 
         return new TpsFileHeader
@@ -121,6 +130,8 @@ public sealed record TpsFileHeader
             BlockDescriptors = [.. pageRanges]
         };
     }
+
+    private static int GetFileOffset(int pageReference) => (pageReference << 8) + 0x200;
 
     /// <inheritdoc/>
     public bool Equals(TpsFileHeader? other)

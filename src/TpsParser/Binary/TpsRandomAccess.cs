@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -141,11 +142,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(4);
 
-        int result =
-            Data[AbsolutePosition + 0] & 0xFF
-            | (Data[AbsolutePosition + 1] & 0xFF) << 8
-            | (Data[AbsolutePosition + 2] & 0xFF) << 16
-            | (Data[AbsolutePosition + 3] & 0xFF) << 24;
+        int result = BinaryPrimitives.ReadInt32LittleEndian(Data.AsSpan(AbsolutePosition));
 
         return result;
     }
@@ -170,10 +167,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(4);
 
-        Data[AbsolutePosition + 0] = (byte)(value & 0xFF);
-        Data[AbsolutePosition + 1] = (byte)(value >> 8 & 0xFF);
-        Data[AbsolutePosition + 2] = (byte)(value >> 16 & 0xFF);
-        Data[AbsolutePosition + 3] = (byte)(value >> 24 & 0xFF);
+        BinaryPrimitives.WriteInt32LittleEndian(Data.AsSpan(AbsolutePosition), value);
 
         Position += 4;
     }
@@ -186,11 +180,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(4);
 
-        uint result =
-            Data[AbsolutePosition + 0] & 0xFFU
-            | (Data[AbsolutePosition + 1] & 0xFFU) << 8
-            | (Data[AbsolutePosition + 2] & 0xFFU) << 16
-            | (Data[AbsolutePosition + 3] & 0xFFU) << 24;
+        uint result = BinaryPrimitives.ReadUInt32LittleEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 4;
         return result;
@@ -204,11 +194,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(4);
 
-        int result =
-            Data[AbsolutePosition + 3] & 0xFF
-            | (Data[AbsolutePosition + 2] & 0xFF) << 8
-            | (Data[AbsolutePosition + 1] & 0xFF) << 16
-            | (Data[AbsolutePosition + 0] & 0xFF) << 24;
+        int result = BinaryPrimitives.ReadInt32BigEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 4;
         return result;
@@ -222,11 +208,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(4);
 
-        uint result =
-            Data[AbsolutePosition + 3] & 0xFFU
-            | (Data[AbsolutePosition + 2] & 0xFFU) << 8
-            | (Data[AbsolutePosition + 1] & 0xFFU) << 16
-            | (Data[AbsolutePosition + 0] & 0xFFU) << 24;
+        uint result = BinaryPrimitives.ReadUInt32BigEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 4;
         return result;
@@ -240,9 +222,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(2);
 
-        short result =
-            (short)(Data[AbsolutePosition + 0] & 0xFF
-            | (Data[AbsolutePosition + 1] & 0xFF) << 8);
+        short result = BinaryPrimitives.ReadInt16LittleEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 2;
 
@@ -257,9 +237,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(2);
 
-        ushort result =
-            (ushort)(Data[AbsolutePosition + 0] & 0xFF
-            | (Data[AbsolutePosition + 1] & 0xFF) << 8);
+        ushort result = BinaryPrimitives.ReadUInt16LittleEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 2;
 
@@ -274,9 +252,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(2);
 
-        short result =
-            (short)(Data[AbsolutePosition + 1] & 0xFF
-            | (Data[AbsolutePosition + 0] & 0xFF) << 8);
+        short result = BinaryPrimitives.ReadInt16BigEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 2;
 
@@ -291,9 +267,7 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(2);
 
-        ushort result =
-            (ushort)(Data[AbsolutePosition + 1] & 0xFF
-            | (Data[AbsolutePosition + 0] & 0xFF) << 8);
+        ushort result = BinaryPrimitives.ReadUInt16BigEndian(Data.AsSpan(AbsolutePosition));
 
         Position += 2;
 
@@ -328,9 +302,12 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public float ReadFloatLE()
     {
-        int integer = ReadLongLE();
-        byte[] intBytes = BitConverter.GetBytes(integer);
-        float result = BitConverter.ToSingle(intBytes, 0);
+        AssertSpace(4);
+
+        float result = BinaryPrimitives.ReadSingleLittleEndian(Data.AsSpan(AbsolutePosition));
+
+        Position += 4;
+
         return result;
     }
 
@@ -342,12 +319,9 @@ public sealed class TpsRandomAccess
     {
         AssertSpace(8);
 
-        long lsb = ReadLongLE() & 0xFFFFFFFFL;
-        long msb = ReadLongLE() & 0xFFFFFFFFL;
+        double result = BinaryPrimitives.ReadDoubleLittleEndian(Data.AsSpan(AbsolutePosition));
 
-        long doubleAsLong = msb << 32 | lsb;
-
-        double result = BitConverter.Int64BitsToDouble(doubleAsLong);
+        Position += 8;
 
         return result;
     }
@@ -598,25 +572,6 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads an array of little endian 2s-complement signed 4 byte integers.
-    /// </summary>
-    /// <param name="length"></param>
-    /// <returns></returns>
-    public int[] LongArrayLE(int length)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-
-        int[] results = new int[length];
-
-        for (int i = 0; i < length; i++)
-        {
-            results[i] = ReadLongLE();
-        }
-
-        return results;
-    }
-
-    /// <summary>
     /// Gets an array of the remaining unread data array.
     /// </summary>
     /// <returns></returns>
@@ -644,25 +599,6 @@ public sealed class TpsRandomAccess
             additiveOffset: Position,
             length: Length - Position,
             encoding: Encoding);
-
-    /// <summary>
-    /// Gets the absolute position of the given page by its reference number.
-    /// </summary>
-    /// <param name="pageReference"></param>
-    /// <returns></returns>
-    public static int GetFileOffset(int pageReference) => (pageReference << 8) + 0x200;
-
-    /// <summary>
-    /// Gets the absolute positions of the given pages by their reference numbers.
-    /// </summary>
-    /// <param name="pageReferences"></param>
-    /// <returns></returns>
-    public static int[] GetFileOffset(int[] pageReferences)
-    {
-        return pageReferences
-            .Select(reference => GetFileOffset(reference))
-            .ToArray();
-    }
 
     /// <inheritdoc/>
     public override string ToString()
@@ -810,7 +746,7 @@ public sealed class TpsRandomAccess
     {
         if (length < 1 || length > 16)
         {
-            throw new ArgumentOutOfRangeException(nameof(length), "Expected a byte length between 1 and 16 inclusive.");
+            throw new ArgumentOutOfRangeException(nameof(length), actualValue: length, "Expected a byte length between 1 and 16 inclusive.");
         }
 
         ulong high = default;

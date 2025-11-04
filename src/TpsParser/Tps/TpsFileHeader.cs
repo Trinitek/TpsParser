@@ -90,7 +90,7 @@ public sealed record TpsFileHeader
         short zeroes = header.ReadShortLE();
         int lastIssuedRow = header.ReadLongBE();
         int changes = header.ReadLongLE();
-        int managementPageReferenceOffset = TpsRandomAccess.GetFileOffset(header.ReadLongLE());
+        int managementPageReferenceOffset = GetFileOffset(header.ReadLongLE());
 
         // 60 pages are hard-defined in the header but many of them will be zero-length and/or duplicates.
         const int NumberOfPages = 60;

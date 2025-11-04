@@ -126,7 +126,7 @@ public sealed record TpsRecord
         previous.DataRx.GetSpan()[..bytesToCopy].CopyTo(newData);
         
         // TODO test coverage for well-formed memory copy
-        rx.ReadBytesAsMemory(recordLength - bytesToCopy).CopyTo(newDataMemory[bytesToCopy..]);
+        rx.ReadBytes(recordLength - bytesToCopy).CopyTo(newDataMemory[bytesToCopy..]);
 
         var newRx = new TpsRandomAccess(newData, rx.Encoding);
 

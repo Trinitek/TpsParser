@@ -338,7 +338,7 @@ public sealed class TpsRandomAccess
 
         encoding ??= Encoding;
 
-        var mem = ReadBytesAsMemory(length);
+        var mem = ReadBytes(length);
 
         // TODO test coverage to ensure this doesn't eat the entire array.
         string result = encoding.GetString(mem.Span);
@@ -463,33 +463,13 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads an array of bytes and advances the position.
-    /// </summary>
-    /// <param name="length"></param>
-    /// <returns></returns>
-    public byte[] ReadBytesAsArray(int length)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-        AssertSpace(length);
-
-        var dest = PeekBytes(length);
-
-        Position += length;
-
-        return dest;
-    }
-
-    /// <summary>
     /// Reads a region of bytes and advances the position.
     /// </summary>
     /// <param name="length"></param>
     /// <returns></returns>
-    public ReadOnlyMemory<byte> ReadBytesAsMemory(int length)
+    public ReadOnlyMemory<byte> ReadBytes(int length)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-        AssertSpace(length);
-
-        var rom = new ReadOnlyMemory<byte>(Data, start: AbsolutePosition, length: length);
+        var rom = PeekBytes(length);
 
         Position += length;
 
@@ -497,20 +477,18 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads an array from the current position.
+    /// Returns a <see cref="ReadOnlyMemory{T}"/> from the current position.
     /// </summary>
     /// <param name="length"></param>
     /// <returns></returns>
-    public byte[] PeekBytes(int length)
+    public ReadOnlyMemory<byte> PeekBytes(int length)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
-        byte[] dest = new byte[length];
+        var rom = new ReadOnlyMemory<byte>(Data, start: AbsolutePosition, length: length);
 
-        Array.Copy(Data, AbsolutePosition, dest, 0, length);
-
-        return dest;
+        return rom;
     }
 
     /// <summary>
@@ -544,7 +522,7 @@ public sealed class TpsRandomAccess
                     skip = (msb << 7 & 0xFF00) + lsb + shift;
                 }
 
-                unpackedBytes.AddRange(ReadBytesAsMemory(skip).Span);
+                unpackedBytes.AddRange(ReadBytes(skip).Span);
 
                 if (!IsOneByteLeft)
                 {
@@ -764,7 +742,7 @@ public sealed class TpsRandomAccess
 
         ref ulong current = ref length > 16 ? ref high : ref low;
 
-        ReadOnlySpan<byte> data = ReadBytesAsMemory(length).Span;
+        ReadOnlySpan<byte> data = ReadBytes(length).Span;
 
         int shift = 0;
 
@@ -845,7 +823,7 @@ public sealed class TpsRandomAccess
     public TpsBlob ReadBlob()
     {
         int length = ReadLongLE();
-        var bytes = ReadBytesAsMemory(length);
+        var bytes = ReadBytes(length);
 
         return new TpsBlob(bytes);
     }

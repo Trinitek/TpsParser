@@ -17,7 +17,7 @@ internal sealed class UnpackRunLengthEncoding
         {
             Assert.That(ra.Length, Is.EqualTo(8));
             
-            var unpacked = ra.PeekBytes(ra.Length);
+            var unpacked = ra.PeekBytes(ra.Length).ToArray();
 
             Assert.That(unpacked, Is.EqualTo([
                 0x31,
@@ -37,7 +37,7 @@ internal sealed class UnpackRunLengthEncoding
         {
             Assert.That(ra.Length, Is.EqualTo(13));
             
-            var unpacked = ra.PeekBytes(ra.Length);
+            var unpacked = ra.PeekBytes(ra.Length).ToArray();
 
             Assert.That(unpacked, Is.EqualTo([
                 0x31,
@@ -58,7 +58,7 @@ internal sealed class UnpackRunLengthEncoding
         {
             Assert.That(ra.Length, Is.EqualTo(1));
             
-            var unpacked = ra.PeekBytes(ra.Length);
+            var unpacked = ra.PeekBytes(ra.Length).ToArray();
 
             Assert.That(unpacked, Is.EqualTo([
                 0x31
@@ -75,7 +75,7 @@ internal sealed class UnpackRunLengthEncoding
         {
             Assert.That(ra.Length, Is.EqualTo(8));
             
-            var unpacked = ra.PeekBytes(ra.Length);
+            var unpacked = ra.PeekBytes(ra.Length).ToArray();
 
             Assert.That(unpacked, Is.EqualTo([
                 0x31,

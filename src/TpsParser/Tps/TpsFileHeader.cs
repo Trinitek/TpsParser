@@ -100,9 +100,6 @@ public sealed record TpsFileHeader
         var pageStartRx = header.Read(length: NumberOfPages * 4 /* Four bytes per integer */);
         var pageEndRx = header;
 
-        //var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
-        //var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
-
         for (int i = 0; i < NumberOfPages; i++)
         {
             int startPageRef = pageStartRx.ReadLongLE();

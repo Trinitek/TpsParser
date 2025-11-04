@@ -520,55 +520,65 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public TpsRandomAccess UnpackRunLengthEncoding()
     {
-        var bytes = new List<byte>();
+        var unpackedBytes = new List<byte>();
 
-        do
+        var arrayPool = ArrayPool<byte>.Shared;
+
+        byte[] repeatBuffer = arrayPool.Rent(minimumLength: 0x7FFF /* 32767 */);
+
+        try
         {
-            int skip = ReadByte();
-
-            if (skip == 0)
+            do
             {
-                throw new RunLengthEncodingException("Bad RLE Skip (0x00)");
-            }
+                int skip = ReadByte();
 
-            if (skip > 0x7F)
-            {
-                int msb = ReadByte();
-                int lsb = skip & 0x7F;
-                int shift = 0x80 * (msb & 0x01);
-                skip = (msb << 7 & 0xFF00) + lsb + shift;
-            }
+                if (skip == 0)
+                {
+                    throw new RunLengthEncodingException("Bad RLE Skip (0x00)");
+                }
 
-            bytes.AddRange(ReadBytesAsArray(skip));
-
-            if (!IsOneByteLeft)
-            {
-                JumpRelative(-1);
-
-                byte toRepeat = ReadByte();
-                int repeatsMinusOne = ReadByte();
-
-                if (repeatsMinusOne > 0x7F)
+                if (skip > 0x7F)
                 {
                     int msb = ReadByte();
-                    int lsb = repeatsMinusOne & 0x7F;
+                    int lsb = skip & 0x7F;
                     int shift = 0x80 * (msb & 0x01);
-                    repeatsMinusOne = (msb << 7 & 0xFF00) + lsb + shift;
+                    skip = (msb << 7 & 0xFF00) + lsb + shift;
                 }
 
-                byte[] repeat = new byte[repeatsMinusOne];
+                unpackedBytes.AddRange(ReadBytesAsMemory(skip).Span);
 
-                for (int i = 0; i < repeatsMinusOne; i++)
+                if (!IsOneByteLeft)
                 {
-                    repeat[i] = toRepeat;
+                    JumpRelative(-1);
+
+                    byte toRepeat = ReadByte();
+                    int repeatsMinusOne = ReadByte();
+
+                    if (repeatsMinusOne > 0x7F)
+                    {
+                        int msb = ReadByte();
+                        int lsb = repeatsMinusOne & 0x7F;
+                        int shift = 0x80 * (msb & 0x01);
+                        repeatsMinusOne = (msb << 7 & 0xFF00) + lsb + shift;
+
+                        // Repeats can be up to 0x7FFF (32767) bytes
+                    }
+
+                    var repeatSpan = repeatBuffer.AsSpan(start: 0, length: repeatsMinusOne);
+                    
+                    repeatSpan.Fill(toRepeat);
+                    
+                    unpackedBytes.AddRange(repeatSpan);
                 }
-
-                bytes.AddRange(repeat);
             }
+            while (!IsAtEnd);
         }
-        while (!IsAtEnd);
+        finally
+        {
+            arrayPool.Return(repeatBuffer);
+        }
 
-        return new TpsRandomAccess(bytes.ToArray(), Encoding);
+        return new TpsRandomAccess([.. unpackedBytes], Encoding);
     }
 
     /// <summary>

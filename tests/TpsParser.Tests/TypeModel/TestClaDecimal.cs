@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.TypeModel.Tests;
 

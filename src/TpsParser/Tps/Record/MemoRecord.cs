@@ -1,5 +1,4 @@
 ﻿using System;
-using TpsParser.Binary;
 using TpsParser.TypeModel;
 
 namespace TpsParser.Tps.Record;

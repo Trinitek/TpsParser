@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps;
 

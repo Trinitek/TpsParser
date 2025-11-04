@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Text;
-using TpsParser.Binary;
 
 namespace TpsParser.RandomAccess.Tests;
 

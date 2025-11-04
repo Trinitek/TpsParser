@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using TpsParser.Binary;
 using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;

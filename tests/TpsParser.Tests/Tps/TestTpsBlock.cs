@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System.Text;
-using TpsParser.Binary;
 using TpsParser.Tps;
 
 namespace TpsParser.Tests.Tps;

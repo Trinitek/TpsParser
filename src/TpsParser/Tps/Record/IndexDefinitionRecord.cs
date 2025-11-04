@@ -1,57 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record;
-
-/// <summary></summary>
-public enum SortDirection
-{
-    /// <summary></summary>
-    Ascending   = 0,
-
-    /// <summary></summary>
-    Descending  = 1
-}
-
-/// <summary>
-/// Associates various index or key properties with a field.
-/// </summary>
-/// <param name="FieldIndex"></param>
-/// <param name="Flags"></param>
-public sealed record KeyField(ushort FieldIndex, ushort Flags)
-{
-    /// <summary></summary>
-    public SortDirection SortDirection =>
-        (Flags & 0x1) == 0
-        ? SortDirection.Ascending
-        : SortDirection.Descending;
-}
-
-/// <summary></summary>
-[Flags]
-public enum IndexDefinitionFlags : byte
-{
-    /// <summary>
-    /// Clarion keyword <c>DUP</c>. Allows multiple records with duplicate values.
-    /// </summary>
-    AllowDuplicates = 0b0000_0001,
-
-    /// <summary>
-    /// Clarion keyword <c>OPT</c>. Records with null values (zero or blank) are excluded from the index.
-    /// </summary>
-    AllowNull       = 0b0000_0010,
-
-    /// <summary>
-    /// Clarion keyword <c>NOCASE</c>. Sort order is case-insensitive.
-    /// </summary>
-    CaseInsensitive = 0b0000_0100,
-
-    /// <summary>
-    /// Clarion keyword <c>PRIMARY</c>. This key is the table's relational primary key.
-    /// </summary>
-    PrimaryKey      = 0b0001_0000,
-}
 
 /// <summary>
 /// Represents the schema for an index.
@@ -127,4 +77,53 @@ public sealed record IndexDefinitionRecord
             KeyFields = [.. keys]
         };
     }
+}
+
+/// <summary></summary>
+public enum SortDirection
+{
+    /// <summary></summary>
+    Ascending = 0,
+
+    /// <summary></summary>
+    Descending = 1
+}
+
+/// <summary>
+/// Associates various index or key properties with a field.
+/// </summary>
+/// <param name="FieldIndex"></param>
+/// <param name="Flags"></param>
+public sealed record KeyField(ushort FieldIndex, ushort Flags)
+{
+    /// <summary></summary>
+    public SortDirection SortDirection =>
+        (Flags & 0x1) == 0
+        ? SortDirection.Ascending
+        : SortDirection.Descending;
+}
+
+/// <summary></summary>
+[Flags]
+public enum IndexDefinitionFlags : byte
+{
+    /// <summary>
+    /// Clarion keyword <c>DUP</c>. Allows multiple records with duplicate values.
+    /// </summary>
+    AllowDuplicates = 0b0000_0001,
+
+    /// <summary>
+    /// Clarion keyword <c>OPT</c>. Records with null values (zero or blank) are excluded from the index.
+    /// </summary>
+    IgnoreNull = 0b0000_0010,
+
+    /// <summary>
+    /// Clarion keyword <c>NOCASE</c>. Sort order is case-insensitive.
+    /// </summary>
+    CaseInsensitive = 0b0000_0100,
+
+    /// <summary>
+    /// Clarion keyword <c>PRIMARY</c>. This key is the table's relational primary key.
+    /// </summary>
+    PrimaryKey = 0b0001_0000,
 }

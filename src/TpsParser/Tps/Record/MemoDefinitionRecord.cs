@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps.Record;
 

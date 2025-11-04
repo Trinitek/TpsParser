@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using TpsParser.Binary;
 
 namespace TpsParser.Tps;
 

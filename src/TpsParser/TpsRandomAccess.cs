@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using TpsParser.TypeModel;
 
-namespace TpsParser.Binary;
+namespace TpsParser;
 
 /// <summary>
 /// A binary reader for format-specific types and structures.
@@ -762,7 +762,7 @@ public sealed class TpsRandomAccess
         ulong low = default;
         byte places = digitsAfterDecimalPoint;
 
-        ref ulong current = ref (length > 16) ? ref high : ref low;
+        ref ulong current = ref length > 16 ? ref high : ref low;
 
         byte[] data = ReadBytesAsArray(length);
 
@@ -771,7 +771,7 @@ public sealed class TpsRandomAccess
         // Write the least significant 30 digits
         for (int i = length - 1; i > 0; i--)
         {
-            current |= (ulong)data[i] << (8 * shift);
+            current |= (ulong)data[i] << 8 * shift;
 
             if (i == 16)
             {
@@ -785,7 +785,7 @@ public sealed class TpsRandomAccess
         }
 
         // Most significant digit (may be zero)
-        current |= ((ulong)data[0] & 0x0F) << (8 * shift);
+        current |= ((ulong)data[0] & 0x0F) << 8 * shift;
 
         // Sign
         high |= ((ulong)data[0] & 0xF0) << 56;

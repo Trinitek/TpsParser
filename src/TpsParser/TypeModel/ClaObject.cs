@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
-using TpsParser.Binary;
 using TpsParser.Tps;
 
 namespace TpsParser.TypeModel;

@@ -764,7 +764,7 @@ public sealed class TpsRandomAccess
 
         ref ulong current = ref length > 16 ? ref high : ref low;
 
-        byte[] data = ReadBytesAsArray(length);
+        ReadOnlySpan<byte> data = ReadBytesAsMemory(length).Span;
 
         int shift = 0;
 

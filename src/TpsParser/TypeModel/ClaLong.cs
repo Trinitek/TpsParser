@@ -4,17 +4,26 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion LONG type, which is a signed 32-bit integer.
+/// Represents a Clarion <c>LONG</c> type, which is a signed 32-bit integer.
 /// </summary>
+/// <remarks>
+/// The <c>LONG</c> name would appear to suggest that this type is a 64-bit integer; however, the 32-bit Clarion runtime does not support 64-bit integer types.
+/// The Clarion programming language originated on the 16-bit MS-DOS environment where the native integer size was 16-bits wide with types
+/// <c>SHORT</c> (<see cref="ClaShort"/>) and <c>USHORT</c> (<see cref="ClaUnsignedShort"/>). The names of their wider 32-bit counterparts followed as
+/// <c>LONG</c> (<see cref="ClaLong"/>) and <c>ULONG</c> (<see cref="ClaUnsignedLong"/>).
+/// </remarks>
 public readonly struct ClaLong : IClaNumeric, IClaDate, IClaTime, IEquatable<ClaLong>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.Long;
 
-    private int Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public int Value { get; }
 
     /// <summary>
-    /// Instantiates a new LONG value from the given value.
+    /// Instantiates a new <c>LONG</c> value from the given value.
     /// </summary>
     /// <param name="value"></param>
     public ClaLong(int value)
@@ -23,7 +32,7 @@ public readonly struct ClaLong : IClaNumeric, IClaDate, IClaTime, IEquatable<Cla
     }
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => Value != 0;
 
@@ -79,33 +88,33 @@ public readonly struct ClaLong : IClaNumeric, IClaDate, IClaTime, IEquatable<Cla
     public Maybe<double> ToDouble() => Maybe.Some((double)Value);
 
     /// <summary>
-    /// Gets a <see cref="DateTime"/> by interpreting the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClaDate.ClarionEpoch"/> plus 4 days.
+    /// Gets a <see cref="DateOnly"/> by interpreting the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClaDate.ClarionEpoch"/> plus 4 days.
     /// For more information about the Clarion Standard Date and the valid ranges, see the remarks section of <see cref="ClaDate"/>. Values outside of the valid range
     /// will return <see cref="Maybe.None{T}"/>.
     /// </summary>
-    public Maybe<DateTime?> ToDateTime() =>
+    public Maybe<DateOnly?> ToDateOnly() =>
         ClaDate.ClarionStandardDateMinValue < Value || ClaDate.ClarionStandardDateMaxValue > Value
-        ? Maybe.None<DateTime?>()
-        : Maybe.Some<DateTime?>(ClaDate.ClarionEpoch.AddDays(Value));
+        ? Maybe.None<DateOnly?>()
+        : Maybe.Some<DateOnly?>(ClaDate.ClarionEpoch.AddDays(Value));
 
     /// <summary>
-    /// Gets a <see cref="TimeSpan"/> by interpreting the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight plus 1 centisecond.
-    /// For more information about the Clarion Standard Time and the valid ranges, see the remarks section of <see cref="ClaTime"/>. Values that are zero will return null per
+    /// Gets a <see cref="TimeOnly"/> by interpreting the value as a Clarion Standard Time, where the value is the number of centiseconds (1/100 seconds) since midnight plus 1 centisecond.
+    /// For more information about the Clarion Standard Time and the valid ranges, see the remarks section of <see cref="ClaTime"/>. Values that are zero will return <see langword="null"/> per
     /// the Standard Time rules, and every other value outside of the valid range will return <see cref="Maybe.None{T}"/>.
     /// </summary>
-    public Maybe<TimeSpan?> ToTimeSpan()
+    public Maybe<TimeOnly?> ToTimeOnly()
     {
         if (Value == 0)
         {
-            return Maybe.Some<TimeSpan?>(null);
+            return Maybe.Some<TimeOnly?>(null);
         }
         else if (ClaTime.ClarionStandardTimeMinValue < Value || ClaTime.ClarionStandardTimeMaxValue > Value)
         {
-            return Maybe.None<TimeSpan?>();
+            return Maybe.None<TimeOnly?>();
         }
         else
         {
-            return Maybe.Some<TimeSpan?>(new TimeSpan(0, 0, 0, 0, Value * 10 - 1));
+            return Maybe.Some<TimeOnly?>(new TimeOnly(0, 0, 0, millisecond: Value * 10 - 1));
         }
     }
 

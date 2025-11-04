@@ -4,23 +4,26 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion SHORT type, which is a signed 16-bit integer.
+/// Represents a Clarion <c>SHORT</c> type, which is a signed 16-bit integer.
 /// </summary>
 public readonly struct ClaShort : IClaNumeric, IEquatable<ClaShort>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.Short;
 
-    private short Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public short Value { get; }
 
     /// <summary>
-    /// Instantiates a new SHORT.
+    /// Instantiates a new <c>SHORT</c>.
     /// </summary>
     /// <param name="value"></param>
     public ClaShort(short value) => Value = value;
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => Value != 0;
 

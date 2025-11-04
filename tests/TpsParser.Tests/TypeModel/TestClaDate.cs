@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Text;
 
 namespace TpsParser.TypeModel.Tests;
 
@@ -8,28 +7,114 @@ namespace TpsParser.TypeModel.Tests;
 internal sealed class TestClaDate
 {
     [Test]
-    public void ShouldReadFromRandomAccess()
+    public void ToDateOnly_ShouldReturn_DateOnly()
     {
-        var rx = new TpsRandomAccess([0x10, 0x07, 0xE3, 0x07], Encoding.ASCII);
+        var dateOnly = new DateOnly(2019, 7, 16);
 
-        var date = rx.ReadClaDate();
+        var date = new ClaDate(dateOnly);
+
+        Assert.That(date.ToDateOnly().Value, Is.EqualTo(dateOnly));
+    }
+
+    [Test]
+    public void Date1801Jan01_AsClarionStandardDate_ShouldReturn_ClarionStandardDateMinValue()
+    {
+        var d = new ClaDate(new(1801, 1, 1));
+
+        var result = d.AsClarionStandardDate();
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(date.Year, Is.EqualTo(2019));
-            Assert.That(date.Month, Is.EqualTo(7));
-            Assert.That(date.Day, Is.EqualTo(16));
-            Assert.That(date.ToDateTime().Value, Is.EqualTo(new DateTime(2019, 7, 16)));
+            Assert.That(result.HasValue);
+
+            if (!result.HasValue)
+            {
+                return;
+            }
+
+            Assert.That(result.Value.Value, Is.EqualTo(4));
+            Assert.That(ClaDate.ClarionStandardDateMinValue, Is.EqualTo(4));
         }
     }
 
     [Test]
-    public void ShouldReadFromDateTime()
+    public void Date1800Dec31_AsClarionStandardDate_ShouldReturn_None()
     {
-        var dateTime = new DateTime(2019, 7, 16);
+        var d = new ClaDate(new(1800, 12, 31));
 
-        var date = new ClaDate(dateTime);
+        var result = d.AsClarionStandardDate();
 
-        Assert.That(date.ToDateTime().Value, Is.EqualTo(dateTime));
+        Assert.That(result.HasValue, Is.False);
+    }
+
+    [Test]
+    public void Date1801Jan02_AsClarionStandardDate_ShouldReturnValue()
+    {
+        var d = new ClaDate(new(1801, 1, 2));
+
+        var result = d.AsClarionStandardDate();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.HasValue);
+
+            if (!result.HasValue)
+            {
+                return;
+            }
+
+            Assert.That(result.Value.Value, Is.EqualTo(5));
+        }
+    }
+
+    [Test]
+    public void Date9999Dec31_AsClarionStandardDate_ShouldReturn_ClarionStandardDateMaxValue()
+    {
+        var d = new ClaDate(new(9999, 12, 31));
+
+        var result = d.AsClarionStandardDate();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.HasValue);
+
+            if (!result.HasValue)
+            {
+                return;
+            }
+
+            Assert.That(result.Value.Value, Is.EqualTo(2994626));
+            Assert.That(ClaDate.ClarionStandardDateMaxValue, Is.EqualTo(2994626));
+        }
+    }
+
+    [Test]
+    public void Null_ToBoolean_ShouldReturn_False()
+    {
+        var d = new ClaDate(null);
+
+        var result = d.ToBoolean();
+
+        Assert.That(result, Is.False);
+    }
+
+    [Test]
+    public void DateOnlyMinValue_ToBoolean_ShouldReturn_True()
+    {
+        var d = new ClaDate(DateOnly.MinValue);
+
+        var result = d.ToBoolean();
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void DateOnlyMaxValue_ToBoolean_ShouldReturn_True()
+    {
+        var d = new ClaDate(DateOnly.MaxValue);
+
+        var result = d.ToBoolean();
+
+        Assert.That(result, Is.True);
     }
 }

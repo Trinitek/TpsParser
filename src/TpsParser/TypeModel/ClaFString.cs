@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion STRING type, which is a fixed-length string.
+/// Represents a Clarion <c>STRING</c> type, which is a fixed-length string.
 /// </summary>
 public readonly struct ClaFString : IClaString, IEquatable<ClaFString>
 {
@@ -17,7 +17,7 @@ public readonly struct ClaFString : IClaString, IEquatable<ClaFString>
     public string Value { get; }
 
     /// <summary>
-    /// Instantiates a new STRING.
+    /// Instantiates a new <c>STRING</c>.
     /// </summary>
     /// <param name="value">The string value. Must not be null.</param>
     public ClaFString(string value)
@@ -25,7 +25,10 @@ public readonly struct ClaFString : IClaString, IEquatable<ClaFString>
         Value = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns <see langword="true"/> if the string's length is greater than zero and is not entirely filled with padding whitespace.
+    /// </summary>
+    /// <returns></returns>
     public bool ToBoolean() => Value.Length > 0 && Value.Trim(' ').Length > 0;
 
     /// <inheritdoc/>

@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Text;
 
 namespace TpsParser.RandomAccess.Tests;
@@ -401,6 +402,45 @@ internal sealed class ReadExactData
             Assert.That(bcdString, Is.EqualTo(value));
             Assert.That(rx.Position, Is.EqualTo(data.Length));
             Assert.That(rx.IsAtEnd);
+        }
+    }
+
+    [Test]
+    public void ShouldReadClaDate()
+    {
+        var rx = new TpsRandomAccess([0x10, 0x07, 0xE3, 0x07], Encoding.ASCII);
+
+        var date = rx.ReadClaDate();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(date.Year, Is.EqualTo(2019));
+            Assert.That(date.Month, Is.EqualTo(7));
+            Assert.That(date.Day, Is.EqualTo(16));
+            Assert.That(date.ToDateOnly().Value, Is.EqualTo(new DateOnly(2019, 7, 16)));
+
+            Assert.That(rx.Position, Is.EqualTo(4));
+            Assert.That(rx.IsAtEnd);
+        }
+    }
+
+    [Test]
+    public void ShouldReadClaTime()
+    {
+        var rx = new TpsRandomAccess([99, 59, 59, 12], Encoding.ASCII);
+
+        var time = rx.ReadClaTime();
+
+        // 99/100 seconds = 990 milliseconds
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(time.Hours, Is.EqualTo(12));
+            Assert.That(time.Minutes, Is.EqualTo(59));
+            Assert.That(time.Seconds, Is.EqualTo(59));
+            Assert.That(time.Centiseconds, Is.EqualTo(99));
+
+            Assert.That(time.ToTimeOnly().Value, Is.EqualTo(new TimeOnly(12, 59, 59, 990)));
         }
     }
 }

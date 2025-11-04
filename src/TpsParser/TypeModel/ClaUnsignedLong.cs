@@ -3,17 +3,26 @@
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion ULONG type, which is an unsigned 32-bit integer.
+/// Represents a Clarion <c>ULONG</c> type, which is an unsigned 32-bit integer.
 /// </summary>
+/// <remarks>
+/// The <c>LONG</c> name would appear to suggest that this type is a 64-bit integer; however, the 32-bit Clarion runtime does not support 64-bit integer types.
+/// The Clarion programming language originated on the 16-bit MS-DOS environment where the native integer size was 16-bits wide with types
+/// <c>SHORT</c> (<see cref="ClaShort"/>) and <c>USHORT</c> (<see cref="ClaUnsignedShort"/>). The names of their wider 32-bit counterparts followed as
+/// <c>LONG</c> (<see cref="ClaLong"/>) and <c>ULONG</c> (<see cref="ClaUnsignedLong"/>).
+/// </remarks>
 public readonly struct ClaUnsignedLong : IClaNumeric, IEquatable<ClaUnsignedLong>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.ULong;
 
-    private uint Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public uint Value { get; }
 
     /// <summary>
-    /// Instantiates a new ULONG.
+    /// Instantiates a new <c>ULONG</c>.
     /// </summary>
     /// <param name="value"></param>
     public ClaUnsignedLong(uint value)
@@ -22,7 +31,7 @@ public readonly struct ClaUnsignedLong : IClaNumeric, IEquatable<ClaUnsignedLong
     }
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => Value != 0;
 

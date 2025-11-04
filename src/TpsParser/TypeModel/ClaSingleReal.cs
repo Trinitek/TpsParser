@@ -4,19 +4,22 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion SREAL type, which is a single-precision floating point number.
+/// Represents a Clarion <c>SREAL</c> type, which is a single-precision floating point number.
 /// </summary>
 public readonly struct ClaSingleReal : IClaNumeric, IEquatable<ClaSingleReal>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.SReal;
 
-    private float Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public float Value { get; }
 
     private bool IsNotNumeric => float.IsNaN(Value) || float.IsInfinity(Value);
 
     /// <summary>
-    /// Instantiates a new SREAL.
+    /// Instantiates a new <c>SREAL</c>.
     /// </summary>
     /// <param name="value"></param>
     public ClaSingleReal(float value)
@@ -25,7 +28,7 @@ public readonly struct ClaSingleReal : IClaNumeric, IEquatable<ClaSingleReal>
     }
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => Value != 0.0f;
 

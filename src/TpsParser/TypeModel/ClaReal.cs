@@ -4,19 +4,22 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion REAL type, which is a double-precision floating point number.
+/// Represents a Clarion <c>REAL</c> type, which is a double-precision floating point number.
 /// </summary>
 public readonly struct ClaReal : IClaNumeric, IEquatable<ClaReal>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.Real;
 
-    private double Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public double Value { get; }
 
     private bool IsNotNumeric => double.IsNaN(Value) || double.IsInfinity(Value);
 
     /// <summary>
-    /// Instantiates a new REAL.
+    /// Instantiates a new <c>REAL</c>.
     /// </summary>
     /// <param name="value"></param>
     public ClaReal(double value)
@@ -25,7 +28,7 @@ public readonly struct ClaReal : IClaNumeric, IEquatable<ClaReal>
     }
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => Value != 0.0;
 

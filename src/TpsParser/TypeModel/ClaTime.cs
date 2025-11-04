@@ -3,13 +3,13 @@
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion TIME type, which represents a moment in time.
+/// Represents a Clarion <c>TIME</c> type, which represents a moment in time.
 /// Some time keeping fields you expect to be of type <see cref="ClaTime"/> may actually be of type <see cref="ClaLong"/>.
 /// See the remarks section for details.
 /// </summary>
 /// <remarks>
 /// <para>
-/// A TIME is composed of 4 bytes. Each field corresponds to a byte as follows:
+/// A <c>TIME</c> is composed of 4 bytes. Each field corresponds to a byte as follows:
 /// <list type="table">
 /// <item>
 /// <term>Centiseconds</term>
@@ -36,7 +36,7 @@ namespace TpsParser.TypeModel;
 /// other external systems.
 /// </para>
 /// <para>
-/// The native time type used in the Clarion programming language when performing calculations is a LONG (<see cref="ClaLong"/>).
+/// The native time type used in the Clarion programming language when performing calculations is a <c>LONG</c> (<see cref="ClaLong"/>).
 /// This is called a Clarion Standard Time value and counts the number of centiseconds since midnight, plus 1 centisecond.
 /// The valid Clarion Standard Time range is 00:00:00.00 through 23:59:59.99, that is, an inclusive numerical range from 1
 /// to 8,640,000, with 0 used to represent a null value.
@@ -62,7 +62,7 @@ public readonly struct ClaTime : IClaTime, IEquatable<ClaTime>
 
     /// <summary>
     /// Gets the total number of centiseconds (hundredths of a second) since midnight.
-    /// This is not a Clarion Standard Time value.
+    /// This is <b>not</b> a Clarion Standard Time value.
     /// </summary>
     public int TotalCentiseconds { get; }
 
@@ -86,13 +86,18 @@ public readonly struct ClaTime : IClaTime, IEquatable<ClaTime>
     /// </summary>
     public byte Centiseconds => (byte)(TotalCentiseconds % 100);
 
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public TimeOnly Value => new(hour: Hours, minute: Minutes, second: Seconds, millisecond: Centiseconds * 10);
+
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.Time;
 
     /// <summary>
-    /// Instantiates a new TIME from the given total number of centiseconds (hundredths of a second) since midnight.
+    /// Instantiates a new <c>TIME</c> from the given total number of centiseconds (hundredths of a second) since midnight.
     /// </summary>
-    /// <param name="totalCentiseconds">The number of centiseconds since midnight. Note that this is not a Clarion Standard Time value.</param>
+    /// <param name="totalCentiseconds">The number of centiseconds since midnight. Note that this is <b>not</b> a Clarion Standard Time value.</param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public ClaTime(int totalCentiseconds)
     {
@@ -139,34 +144,31 @@ public readonly struct ClaTime : IClaTime, IEquatable<ClaTime>
     }
 
     /// <summary>
-    /// Instantiates a new TIME from the given TimeSpan.
+    /// Instantiates a new <c>TIME</c> from the given <see cref="TimeOnly"/>.
     /// </summary>
-    /// <param name="timeSpan"></param>
-    public ClaTime(TimeSpan timeSpan)
+    /// <param name="timeOnly"></param>
+    public ClaTime(TimeOnly timeOnly)
     {
-        if (timeSpan < TimeSpan.Zero || timeSpan > new TimeSpan(0, 23, 59, 59, 990))
+        if (timeOnly > new TimeOnly(hour: 23, minute: 59, second: 59, millisecond: 990))
         {
-            throw new ArgumentOutOfRangeException(nameof(timeSpan), "The TimeSpan must be between 00:00:00.00 and 23:59:59.99 inclusive.");
+            throw new ArgumentOutOfRangeException(nameof(timeOnly), "The TimeSpan must be between 00:00:00.00 and 23:59:59.99 inclusive.");
         }
 
         TotalCentiseconds =
-            timeSpan.Hours * 60 * 60 * 100
-            + timeSpan.Minutes * 60 * 100
-            + timeSpan.Seconds * 100
-            + timeSpan.Milliseconds / 10;
+            timeOnly.Hour * 60 * 60 * 100
+            + timeOnly.Minute * 60 * 100
+            + timeOnly.Second * 100
+            + timeOnly.Millisecond / 10;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns <see langword="true"/> if the total number of centiseconds is not zero.
+    /// </summary>
+    /// <returns></returns>
     public bool ToBoolean() => TotalCentiseconds != 0;
 
     /// <inheritdoc/>
-    public Maybe<TimeSpan?> ToTimeSpan() => Maybe.Some<TimeSpan?>(
-        new TimeSpan(
-            days: 0,
-            hours: Hours,
-            minutes: Minutes,
-            seconds: Seconds,
-            milliseconds: Centiseconds * 10));
+    public Maybe<TimeOnly?> ToTimeOnly() => Maybe.Some<TimeOnly?>(Value);
 
     /// <summary>
     /// Gets a <see cref="ClaLong"/> instance representing the Clarion Standard Time, or number of centiseconds since midnight plus 1.

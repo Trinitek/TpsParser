@@ -4,23 +4,26 @@ using System.Globalization;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion BYTE type.
+/// Represents a Clarion <c>BYTE</c> type.
 /// </summary>
 public readonly struct ClaByte : IClaNumeric, IEquatable<ClaByte>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.Byte;
 
-    private byte Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public byte Value { get; }
 
     /// <summary>
-    /// Instantiates a new BYTE.
+    /// Instantiates a new <c>BYTE</c>.
     /// </summary>
     /// <param name="value"></param>
     public ClaByte(byte value) => Value = value;
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => Value != 0;
 

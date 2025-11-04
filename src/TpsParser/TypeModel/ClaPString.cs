@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion PSTRING type, which is a Pascal string where the length is specified at the beginning of the string.
+/// Represents a Clarion <c>PSTRING</c> type, which is a Pascal string where the length is specified at the beginning of the string.
 /// </summary>
 public readonly struct ClaPString : IClaString, IEquatable<ClaPString>
 {
@@ -17,7 +17,7 @@ public readonly struct ClaPString : IClaString, IEquatable<ClaPString>
     public string Value { get; }
 
     /// <summary>
-    /// Instantiate a new PSTRING.
+    /// Instantiates a new <c>PSTRING</c>.
     /// </summary>
     /// <param name="value">The string value. Must not be null.</param>
     public ClaPString(string value)
@@ -26,7 +26,7 @@ public readonly struct ClaPString : IClaString, IEquatable<ClaPString>
     }
 
     /// <summary>
-    /// Returns true if the string length is not zero.
+    /// Returns <see langword="true"/> if the string length is greater than zero and is not filled entirely by padding whitespace.
     /// </summary>
     public bool ToBoolean() => Value.Length > 0 && Value.Trim(' ').Length > 0;
 

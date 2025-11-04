@@ -1,31 +1,12 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace TpsParser.TypeModel.Tests;
 
 [TestFixture]
 internal sealed class TestClaDecimal
 {
-    [TestCase("0", 2, 0, new byte[] { 0x00, 0x00 })]
-    [TestCase("979", 2, 0, new byte[] { 0x09, 0x79 })]
-    [TestCase("0.00", 2, 2, new byte[] { 0x00, 0x00 })]
-    [TestCase("10.0", 2, 1, new byte[] { 0x01, 0x00 })]
-    [TestCase("0.0", 2, 1, new byte[] { 0x00, 0x00 })]
-    [TestCase("0.00", 3, 2, new byte[] { 0x00, 0x00, 0x00 })]
-    [TestCase("1.23", 2, 2, new byte[] { 0x01, 0x23 })]
-    [TestCase("-1.23", 2, 2, new byte[] { 0xF1, 0x23 })]
-    [TestCase("0.00000000", 7, 8, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })]
-    [TestCase("0.50000", 3, 5, new byte[] { 0x05, 0x00, 0x00 })]
-    public void ShouldReadFromRandomAccess(string value, int bcdLength, byte bcdDigitsAfterDecimal, byte[] data)
-    {
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-        var dec = rx.ReadClaDecimal(bcdLength, bcdDigitsAfterDecimal);
-
-        Assert.That(dec.ToString(), Is.EqualTo(value));
-    }
-
     [TestCase("0")]
     [TestCase("979")]
     [TestCase("0.00")]
@@ -82,7 +63,7 @@ internal sealed class TestClaDecimal
         }
     }
 
-    private class ShouldConvertToDecimalData
+    private sealed class ShouldConvertToDecimalData
     {
         public static IEnumerable<TestCaseData> TestCases
         {

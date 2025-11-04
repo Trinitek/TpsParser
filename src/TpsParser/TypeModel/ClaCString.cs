@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion CSTRING type, which is a null-terminated string.
+/// Represents a Clarion <c>CSTRING</c> type, which is a null-terminated string.
 /// </summary>
 public readonly struct ClaCString : IClaString, IEquatable<ClaCString>
 {
@@ -17,7 +17,7 @@ public readonly struct ClaCString : IClaString, IEquatable<ClaCString>
     public string Value { get; }
 
     /// <summary>
-    /// Instantiates a new CSTRING.
+    /// Instantiates a new <c>CSTRING</c>.
     /// </summary>
     /// <param name="value">The string value. Must not be null.</param>
     public ClaCString(string value)
@@ -26,8 +26,9 @@ public readonly struct ClaCString : IClaString, IEquatable<ClaCString>
     }
 
     /// <summary>
-    /// Returns true if the string's length is greater than zero.
+    /// Returns <see langword="true"/> if the string's length is greater than zero and is not entirely filled with padding whitespace.
     /// </summary>
+    // TODO test coverage
     public bool ToBoolean() => Value.Length > 0 && Value.Trim(' ').Length > 0;
 
 

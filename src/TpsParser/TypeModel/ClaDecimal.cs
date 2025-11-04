@@ -4,12 +4,12 @@ using System.Text;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion DECIMAL type, which is a 128-bit binary coded decimal that can hold up to 31 digits.
+/// Represents a Clarion <c>DECIMAL</c> type, which is a 128-bit binary coded decimal that can hold up to 31 digits.
 /// </summary>
 /// <remarks>
 /// <para>
 /// The native value of this type consists of two <see cref="ulong"/> values
-/// that represent the digits--one digit being 4 bits wide--and a <see cref="byte"/> for the number of digits in the fractional portion.
+/// that represent the digits—each digit being 4 bits wide—and a <see cref="byte"/> for the number of digits in the fractional portion.
 /// </para>
 /// <para>
 /// The 31 digits are contained in the lower 124 bits, where <see cref="ValueHigh"/> and <see cref="ValueLow"/> are treated
@@ -18,7 +18,7 @@ namespace TpsParser.TypeModel;
 /// </para>
 /// <para>
 /// This type can contain numbers that are too large to convert to a <see cref="decimal"/> using <see cref="ToDecimal"/>.
-/// If you need to handle values with more than 27 digits, consider using <see cref="ToString()"/> instead.
+/// If you need to handle values with more than 27 digits, consider using <see cref="ToString"/> instead.
 /// </para>
 /// </remarks>
 public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal>
@@ -47,22 +47,22 @@ public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal
     public byte Scale { get; }
 
     /// <summary>
-    /// Returns true if positive.
+    /// Returns <see langword="true"/> if positive.
     /// </summary>
     public bool IsPositive => (ValueHigh & 0xF000_0000_0000_0000) == 0;
 
     /// <summary>
-    /// Returns true if negative.
+    /// Returns <see langword="true"/> if negative.
     /// </summary>
     public bool IsNegative => !IsPositive;
 
     /// <summary>
-    /// Returns true if zero.
+    /// Returns <see langword="true"/> if zero.
     /// </summary>
     public bool IsZero => ValueLow == 0 && (ValueHigh & 0x0FFF_FFFF_FFFF_FFFF) == 0;
 
     /// <summary>
-    /// Instantiates a new DECIMAL.
+    /// Instantiates a new <c>DECIMAL</c>.
     /// </summary>
     /// <param name="high"></param>
     /// <param name="low"></param>
@@ -244,7 +244,7 @@ public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal
     }
 
     /// <summary>
-    /// Returns true if the value is not zero.
+    /// Returns <see langword="true"/> if the value is not zero.
     /// </summary>
     public bool ToBoolean() => !IsZero;
 
@@ -341,12 +341,12 @@ public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal
     /// Gets a <see cref="DateTime"/> by treating the value as a Clarion Standard Date, where the value is the number of days since <see cref="ClaDate.ClarionEpoch"/>.
     /// For more information about the Clarion Standard Date, see the remarks section of <see cref="ClaDate"/>.
     /// </summary>
-    public Maybe<DateTime?> ToDateTime()
+    public Maybe<DateOnly?> ToDateOnly()
     {
         var i = ToInt32();
         return i.HasValue
-            ? Maybe.Some<DateTime?>(ClaDate.ClarionEpoch.Add(new TimeSpan(i.Value, 0, 0, 0)))
-            : Maybe.None<DateTime?>();
+            ? Maybe.Some<DateOnly?>(ClaDate.ClarionEpoch.AddDays(i.Value))
+            : Maybe.None<DateOnly?>();
     }
 
     /// <inheritdoc/>
@@ -361,11 +361,7 @@ public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        int hashCode = -1054985165;
-        hashCode = hashCode * -1521134295 + ValueHigh.GetHashCode();
-        hashCode = hashCode * -1521134295 + ValueLow.GetHashCode();
-        hashCode = hashCode * -1521134295 + Scale.GetHashCode();
-        return hashCode;
+        return HashCode.Combine(ValueHigh, ValueLow, Scale);
     }
 
     /// <inheritdoc/>

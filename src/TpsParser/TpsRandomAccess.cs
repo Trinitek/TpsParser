@@ -690,7 +690,7 @@ public sealed class TpsRandomAccess
             long years = (date & 0xFFFF0000) >> 16;
             long months = (date & 0x0000FF00) >> 8;
             long days = date & 0x000000FF;
-            return new ClaDate(new DateTime((int)years, (int)months, (int)days));
+            return new ClaDate(new DateOnly((int)years, (int)months, (int)days));
         }
         else
         {

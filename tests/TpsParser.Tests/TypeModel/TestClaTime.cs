@@ -37,29 +37,9 @@ internal sealed class TestClaTime
                 Assert.That(clockOut.Seconds, Is.EqualTo(59));
                 Assert.That(clockOut.Centiseconds, Is.EqualTo(0));
 
-                Assert.That(clockIn.ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 6, 23, 15, 0)));
-                Assert.That(clockOut.ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 0)));
+                Assert.That(clockIn.ToTimeOnly().Value, Is.EqualTo(new TimeOnly(6, 23, 15, 0)));
+                Assert.That(clockOut.ToTimeOnly().Value, Is.EqualTo(new TimeOnly(12, 59, 59, 0)));
             }
-        }
-    }
-
-    [Test]
-    public void ShouldReadFromRandomAccess()
-    {
-        var rx = new TpsRandomAccess([99, 59, 59, 12], Encoding.ASCII);
-
-        var time = rx.ReadClaTime();
-
-        // 99/100 seconds = 990 milliseconds
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(time.Hours, Is.EqualTo(12));
-            Assert.That(time.Minutes, Is.EqualTo(59));
-            Assert.That(time.Seconds, Is.EqualTo(59));
-            Assert.That(time.Centiseconds, Is.EqualTo(99));
-
-            Assert.That(time.ToTimeSpan().Value, Is.EqualTo(new TimeSpan(0, 12, 59, 59, 990)));
         }
     }
 }

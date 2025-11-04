@@ -24,8 +24,8 @@ public interface IClaBoolean : IClaObject
 {
     /// <summary>
     /// Gets a <see cref="bool"/> representation of the value as governed by Clarion logic evaluation rules for the type.
-    /// For all numeric types, this will be true for all non-zero values.
-    /// For all string types, this will be true for strings that have a length greater than zero and do not consist entirely of "blank" padding characters (ASCII 0x20, i.e. space).
+    /// For all numeric types, this will be <see langword="true"/> for all non-zero values.
+    /// For all string types, this will be <see langword="true"/> for strings that have a length greater than zero and do not consist entirely of "blank" padding characters (ASCII 0x20, i.e. space).
     /// </summary>
     /// <returns></returns>
     bool ToBoolean();
@@ -205,10 +205,10 @@ public interface IClaString : IClaBoolean
 public interface IClaTime : IClaObject
 {
     /// <summary>
-    /// Gets a <see cref="TimeSpan"/> representation of the value, if it can be converted.
+    /// Gets a <see cref="TimeOnly"/> representation of the value, if it can be converted.
     /// </summary>
     /// <returns></returns>
-    Maybe<TimeSpan?> ToTimeSpan();
+    Maybe<TimeOnly?> ToTimeOnly();
 }
 
 /// <summary>
@@ -217,8 +217,8 @@ public interface IClaTime : IClaObject
 public interface IClaDate : IClaObject
 {
     /// <summary>
-    /// Gets a <see cref="DateTime"/> representation of the value, if it can be converted.
+    /// Gets a <see cref="DateOnly"/> representation of the value, if it can be converted.
     /// </summary>
     /// <returns></returns>
-    Maybe<DateTime?> ToDateTime();
+    Maybe<DateOnly?> ToDateOnly();
 }

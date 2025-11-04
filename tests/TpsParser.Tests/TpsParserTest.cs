@@ -25,25 +25,25 @@ internal sealed partial class TpsParserTest
 
                 Assert.That(rows[0].Values, Has.Count.EqualTo(4));
                 Assert.That(((ClaFString)rows[0].Values["Name"]).Value, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
-                Assert.That(((ClaDate)rows[0].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2016, 2, 9)));
+                Assert.That(((ClaDate)rows[0].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2016, 2, 9)));
                 Assert.That(((TpsMemo)rows[0].Values["Notes"]).Value, Is.EqualTo("Joe is a great guy to work with."));
                 Assert.That(((TpsMemo)rows[0].Values["AdditionalNotes"]).Value, Is.EqualTo("He also likes sushi."));
 
                 Assert.That(rows[1].Values, Has.Count.EqualTo(4));
                 Assert.That(((ClaFString)rows[1].Values["Name"]).Value, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
-                Assert.That(((ClaDate)rows[1].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2019, 8, 22)));
+                Assert.That(((ClaDate)rows[1].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2019, 8, 22)));
                 Assert.That(((TpsMemo)rows[1].Values["Notes"]).Value, Is.EqualTo("Jane knows how to make a great pot of coffee."));
                 Assert.That(((TpsMemo)rows[1].Values["AdditionalNotes"]).Value, Is.EqualTo("She doesn't like sushi as much as Joe."));
 
                 Assert.That(rows[2].Values, Has.Count.EqualTo(2));
                 Assert.That(((ClaFString)rows[2].Values["Name"]).Value, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
-                Assert.That(((ClaDate)rows[2].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2019, 10, 7)));
+                Assert.That(((ClaDate)rows[2].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2019, 10, 7)));
                 Assert.That(rows[2].Values.TryGetValue("Notes", out var _), Is.False);
                 Assert.That(rows[2].Values.TryGetValue("AdditionalNotes", out var _), Is.False);
 
                 Assert.That(rows[3].Values, Has.Count.EqualTo(3));
                 Assert.That(((ClaFString)rows[3].Values["Name"]).Value, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
-                Assert.That(((ClaDate)rows[3].Values["Date"]).ToDateTime().Value, Is.EqualTo(new DateTime(2013, 3, 14)));
+                Assert.That(((ClaDate)rows[3].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2013, 3, 14)));
                 Assert.That(rows[3].Values.TryGetValue("Notes", out var _), Is.False);
                 Assert.That(((TpsMemo)rows[3].Values["AdditionalNotes"]).Value, Is.EqualTo("Has a strange last name."));
             }

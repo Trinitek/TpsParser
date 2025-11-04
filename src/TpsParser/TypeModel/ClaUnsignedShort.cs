@@ -3,22 +3,28 @@
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a Clarion USHORT type, which is an unsigned 16-bit integer.
+/// Represents a Clarion <c>USHORT</c> type, which is an unsigned 16-bit integer.
 /// </summary>
 public readonly struct ClaUnsignedShort : IClaNumeric, IEquatable<ClaUnsignedShort>
 {
     /// <inheritdoc/>
     public ClaTypeCode TypeCode => ClaTypeCode.UShort;
 
-    private ushort Value { get; }
+    /// <summary>
+    /// Gets the .NET CLR value.
+    /// </summary>
+    public ushort Value { get; }
 
     /// <summary>
-    /// Instantiates a new USHORT.
+    /// Instantiates a new <c>USHORT</c>.
     /// </summary>
     /// <param name="value"></param>
     public ClaUnsignedShort(ushort value) => Value = value;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns <see langword="true"/> if the value is not zero.
+    /// </summary>
+    /// <returns></returns>
     public bool ToBoolean() => Value != 0;
 
     /// <inheritdoc/>

@@ -123,7 +123,7 @@ public sealed record TpsRecord
             throw new TpsParserException($"Number of bytes to copy ({bytesToCopy}) exceeds the record length ({recordLength}).");
         }
 
-        previous.DataRx.GetSpan()[..bytesToCopy].CopyTo(newData);
+        previous.DataRx.PeekBaseSpan()[..bytesToCopy].CopyTo(newData);
         
         // TODO test coverage for well-formed memory copy
         rx.ReadBytes(recordLength - bytesToCopy).CopyTo(newDataMemory[bytesToCopy..]);

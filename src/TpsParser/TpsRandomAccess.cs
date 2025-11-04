@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using TpsParser.TypeModel;
 
@@ -441,9 +442,18 @@ public sealed class TpsRandomAccess
     /// Gets a span that reflects the data starting from the base offset.
     /// </summary>
     /// <returns></returns>
-    public ReadOnlySpan<byte> GetSpan()
+    public ReadOnlySpan<byte> PeekBaseSpan()
     {
         return new ReadOnlySpan<byte>(array: Data, start: BaseOffset, length: Length);
+    }
+
+    /// <summary>
+    /// Gets a span that reflects the data starting from the current position.
+    /// </summary>
+    /// <returns></returns>
+    public ReadOnlySpan<byte> PeekRemainingSpan()
+    {
+        return new ReadOnlySpan<byte>(array: Data, start: AbsolutePosition, length: Length - AbsolutePosition);
     }
 
     /// <summary>
@@ -780,7 +790,7 @@ public sealed class TpsRandomAccess
     {
         encoding ??= Encoding;
 
-        return new ClaFString(encoding.GetString(GetSpan()));
+        return new ClaFString(encoding.GetString(PeekBaseSpan()));
     }
 
     /// <summary>

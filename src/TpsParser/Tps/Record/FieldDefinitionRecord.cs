@@ -12,7 +12,7 @@ public sealed record FieldDefinitionRecord
     /// <summary>
     /// Gets the type code of the value contained within the field.
     /// </summary>
-    public ClaTypeCode Type { get; init; }
+    public ClaTypeCode TypeCode { get; init; }
 
     /// <summary>
     /// Gets the offset, in bytes, of the field within the record.
@@ -88,7 +88,7 @@ public sealed record FieldDefinitionRecord
     {
         ArgumentNullException.ThrowIfNull(rx);
 
-        var type = (ClaTypeCode)rx.ReadByte();
+        var typeCode = (ClaTypeCode)rx.ReadByte();
         var offset = rx.ReadShortLE();
         var fullName = rx.ReadZeroTerminatedString();
         var elementCount = rx.ReadShortLE();
@@ -102,14 +102,14 @@ public sealed record FieldDefinitionRecord
         int stringLength = 0;
         string stringMask = string.Empty;
 
-        if (type == ClaTypeCode.Decimal)
+        if (typeCode == ClaTypeCode.Decimal)
         {
             bcdDigitsAfterDecimalPoint = rx.ReadByte();
             bcdElementLength = rx.ReadByte();
         }
-        else if (type == ClaTypeCode.FString
-            || type == ClaTypeCode.CString
-            || type == ClaTypeCode.PString)
+        else if (typeCode == ClaTypeCode.FString
+            || typeCode == ClaTypeCode.CString
+            || typeCode == ClaTypeCode.PString)
         {
             stringLength = rx.ReadShortLE();
             stringMask = rx.ReadZeroTerminatedString();
@@ -122,7 +122,7 @@ public sealed record FieldDefinitionRecord
 
         return new FieldDefinitionRecord
         {
-            Type = type,
+            TypeCode = typeCode,
             Offset = offset,
             FullName = fullName,
             ElementCount = elementCount,

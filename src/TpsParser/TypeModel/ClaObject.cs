@@ -146,7 +146,7 @@ internal static class ClaObject
 
         var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
 
-        switch (current.Type)
+        switch (current.TypeCode)
         {
             case ClaTypeCode.Byte:
                 return rx.ReadClaByte();
@@ -177,7 +177,7 @@ internal static class ClaObject
             case ClaTypeCode.Group:
                 return TpsGroup.BuildFromFieldDefinitions(rx, encoding, enumerator);
             default:
-                throw new ArgumentException($"Unsupported type {current.Type} ({length})", nameof(enumerator));
+                throw new ArgumentException($"Unsupported type {current.TypeCode} ({length})", nameof(enumerator));
         }
     }
 }

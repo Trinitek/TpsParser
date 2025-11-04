@@ -145,7 +145,7 @@ internal static class TpsArrayExtensions
         }
 
         int fieldSize = current.Length / current.ElementCount;
-        var arrayValues = CreateArray(current.Type, current.ElementCount);
+        var arrayValues = CreateArray(current.TypeCode, current.ElementCount);
 
         // Very important for GROUP arrays! Clusters of fields are repeated, so we need to reset our field definition position for each group item.
         int nextEnumeratorPosition = enumerator.Position;
@@ -156,6 +156,6 @@ internal static class TpsArrayExtensions
             arrayValues[i] = ClaObject.ParseScalarField(rx, encoding, fieldSize, enumerator);
         }
 
-        return Create(current.Type, arrayValues.AsReadOnly());
+        return Create(current.TypeCode, arrayValues.AsReadOnly());
     }
 }

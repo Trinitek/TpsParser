@@ -125,12 +125,12 @@ public sealed record TableDefinitionRecord
 
                 for (int i = 0; i < field.ElementCount; i++)
                 {
-                    values.Add(ParseField(field.Type, fieldSize, field, rx));
+                    values.Add(ParseField(field.TypeCode, fieldSize, field, rx));
                 }
             }
             else
             {
-                values.Add(ParseField(field.Type, field.Length, field, rx));
+                values.Add(ParseField(field.TypeCode, field.Length, field, rx));
             }
         }
 

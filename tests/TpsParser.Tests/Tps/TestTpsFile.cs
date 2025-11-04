@@ -64,11 +64,11 @@ internal sealed class TestTpsFile
         {
             Assert.That(fields[0].FullName, Is.EqualTo("CON1:OUDNR"));
             Assert.That(fields[0].Name, Is.EqualTo("OUDNR"));
-            Assert.That(fields[0].Type, Is.EqualTo(ClaTypeCode.Short));
+            Assert.That(fields[0].TypeCode, Is.EqualTo(ClaTypeCode.Short));
 
             Assert.That(fields[1].FullName, Is.EqualTo("CON1:NEWNR"));
             Assert.That(fields[1].Name, Is.EqualTo("NEWNR"));
-            Assert.That(fields[1].Type, Is.EqualTo(ClaTypeCode.Short));
+            Assert.That(fields[1].TypeCode, Is.EqualTo(ClaTypeCode.Short));
         }
     }
 

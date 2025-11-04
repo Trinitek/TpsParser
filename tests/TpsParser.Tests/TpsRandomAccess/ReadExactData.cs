@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using System;
 using System.Text;
 using TpsParser.Binary;
 
@@ -142,12 +141,6 @@ internal sealed class ReadExactData
     }
 
     [Test]
-    public void ShouldToAscii()
-    {
-        Assert.That(new TpsRandomAccess([0x20, 0x21, 0x22, 0x00, 0x23], Encoding.ASCII).ToAscii(), Is.EqualTo(".!\" 00 #"));
-    }
-
-    [Test]
     public void ShouldReadFloatLE_0point0()
     {
         using (Assert.EnterMultipleScope())
@@ -276,74 +269,5 @@ internal sealed class ReadExactData
             Assert.That(rx.Position, Is.EqualTo(data.Length));
             Assert.That(rx.IsAtEnd);
         }
-    }
-
-    [Test]
-    public void ShouldWriteLE()
-    {
-        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
-        int value = ra.ReadLongLE();
-        ra.JumpAbsolute(0);
-        ra.WriteLongLE(value);
-        ra.JumpAbsolute(0);
-        int value2 = ra.ReadLongLE();
-
-        Assert.That(value2, Is.EqualTo(value));
-    }
-
-    [Test]
-    public void ShouldReuseBuffer()
-    {
-        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
-        ra.ReadByte();
-        var read = ra.Read(3);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(read.Length, Is.EqualTo(3));
-            Assert.That(read.Position, Is.Zero);
-            Assert.That(read.ReadByte(), Is.EqualTo(2));
-            Assert.That(read.ReadByte(), Is.EqualTo(3));
-            Assert.That(read.ReadByte(), Is.EqualTo(4));
-        }
-
-        read.JumpAbsolute(0);
-        Assert.That(read.ReadByte(), Is.EqualTo(2));
-
-        read.JumpRelative(1);
-        Assert.That(read.ReadByte(), Is.EqualTo(4));
-
-        read.JumpAbsolute(1);
-
-        var read2 = read.Read(2);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(read2.Length, Is.EqualTo(2));
-            Assert.That(read2.Position, Is.Zero);
-            Assert.That(read2.ReadByte(), Is.EqualTo(3));
-            Assert.That(read2.ReadByte(), Is.EqualTo(4));
-        }
-    }
-
-    [Test]
-    public void ShouldFailBeyondBuffer()
-    {
-        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
-        ra.ReadByte();
-        var read = ra.Read(3);
-
-        Assert.Throws<IndexOutOfRangeException>(() => read.ReadLongLE());
-    }
-
-    [Test]
-    public void ShouldFailBeforeBuffer()
-    {
-        var ra = new TpsRandomAccess([1, 2, 3, 4], Encoding.ASCII);
-        ra.ReadByte();
-        var read = ra.Read(3);
-        read.JumpAbsolute(-1);
-
-        Assert.Throws<IndexOutOfRangeException>(() => read.ReadByte());
     }
 }

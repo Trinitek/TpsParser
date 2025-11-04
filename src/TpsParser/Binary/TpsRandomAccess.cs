@@ -516,7 +516,6 @@ public sealed class TpsRandomAccess
         ArgumentOutOfRangeException.ThrowIfNegative(length);
         AssertSpace(length);
 
-        // TODO test coverage for Position versus AbsolutePosition
         var rom = new ReadOnlyMemory<byte>(Data, start: AbsolutePosition, length: length);
 
         Position += length;
@@ -665,50 +664,13 @@ public sealed class TpsRandomAccess
             .ToArray();
     }
 
-    public string ToAscii()
-    {
-        var stringBuilder = new StringBuilder();
-
-        bool wasHex = false;
-
-        for (int i = 0; i < Length; i++)
-        {
-            int value = Data[BaseOffset + i];
-
-            if (value < 32 | value > 127)
-            {
-                stringBuilder.Append(' ');
-                stringBuilder.Append(value.ToString("x2"));
-                wasHex = true;
-            }
-            else
-            {
-                if (wasHex)
-                {
-                    stringBuilder.Append(' ');
-                    wasHex = false;
-                }
-                if (value == 32)
-                {
-                    stringBuilder.Append('.');
-                }
-                else
-                {
-                    stringBuilder.Append((char)value);
-                }
-            }
-        }
-
-        return stringBuilder.ToString();
-    }
-
     /// <inheritdoc/>
     public override string ToString()
     {
-        return $"{Position:X}/{Length:X}";
+        return $"0x{Position:X}/0x{Length:X}";
     }
 
-    public string ToHexString(int step, bool ascii)
+    internal string ToHexString(int step, bool ascii)
     {
         var sb = new StringBuilder();
 

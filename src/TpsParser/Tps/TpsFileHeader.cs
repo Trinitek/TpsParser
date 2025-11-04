@@ -93,14 +93,14 @@ public sealed record TpsFileHeader
         int managementPageReferenceOffset = TpsRandomAccess.GetFileOffset(header.ReadLongLE());
 
         // 60 pages are hard-defined in the header but many of them will be zero-length and/or duplicates.
-        const int maxNumberOfPages = 60;
+        const int NumberOfPages = 60;
 
-        var pageRanges = new TpsBlockDescriptor[maxNumberOfPages];
+        var pageRanges = new TpsBlockDescriptor[NumberOfPages];
 
-        var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(maxNumberOfPages));
-        var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(maxNumberOfPages));
+        var pageStart = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
+        var pageEnd = TpsRandomAccess.GetFileOffset(header.LongArrayLE(NumberOfPages));
 
-        for (int i = 0; i < maxNumberOfPages; i++)
+        for (int i = 0; i < NumberOfPages; i++)
         {
             pageRanges[i] = new TpsBlockDescriptor(
                 StartOffset: pageStart[i],

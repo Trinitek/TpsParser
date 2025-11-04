@@ -223,10 +223,10 @@ public sealed class TpsRandomAccess
         AssertSpace(4);
 
         uint result =
-            Data[AbsolutePosition + 4] & 0xFFU
-            | (Data[AbsolutePosition + 3] & 0xFFU) << 8
-            | (Data[AbsolutePosition + 2] & 0xFFU) << 16
-            | (Data[AbsolutePosition + 1] & 0xFFU) << 24;
+            Data[AbsolutePosition + 3] & 0xFFU
+            | (Data[AbsolutePosition + 2] & 0xFFU) << 8
+            | (Data[AbsolutePosition + 1] & 0xFFU) << 16
+            | (Data[AbsolutePosition + 0] & 0xFFU) << 24;
 
         Position += 4;
         return result;

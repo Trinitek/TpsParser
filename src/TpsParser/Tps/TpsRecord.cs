@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
+using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;
 
@@ -11,12 +14,14 @@ public sealed record TpsRecord
     public byte Flags { get; init; }
 
     /// <summary>
-    /// True if <see cref="Flags"/> indicates that the record data has <see cref="RecordLength"/>; false if it was inherited from the previous record.
+    /// Returns <see langword="true"/> if <see cref="Flags"/> indicates that the record data has <see cref="RecordLength"/>;
+    /// <see langword="false"/> if it was inherited from the previous record.
     /// </summary>
     public bool OwnsRecordLength => (Flags & 0x80) != 0;
 
     /// <summary>
-    /// True if <see cref="Flags"/> indicates that the record data has <see cref="HeaderLength"/>; false if it was inherited from the previous record.
+    /// Returns <see langword="true"/> if <see cref="Flags"/> indicates that the record data has <see cref="HeaderLength"/>;
+    /// <see langword="false"/> if it was inherited from the previous record.
     /// </summary>
     public bool OwnsHeaderLength => (Flags & 0x40) != 0;
 
@@ -156,7 +161,7 @@ public sealed record TpsRecord
             return null;
         }
 
-        if (rx.PeekByte(0) == (byte)RecordType.TableName)
+        if (rx.PeekByte(0) == (byte)RecordPayloadType.TableName)
         {
             var preHeader = PreHeader.Parse(rx, readTableNumber: false);
 
@@ -170,16 +175,358 @@ public sealed record TpsRecord
 
             IHeader header = preHeader.Type switch
             {
-                RecordType.TableName => TableNameHeader.Parse(preHeader, rx),
-                RecordType.Data => DataHeader.Parse(preHeader, rx),
-                RecordType.Metadata => MetadataHeader.Parse(preHeader, rx),
-                RecordType.TableDef => TableDefinitionHeader.Parse(preHeader, rx),
-                RecordType.Memo => MemoHeader.Parse(preHeader, rx),
-                RecordType.Index => IndexHeader.Parse(preHeader, rx),
+                RecordPayloadType.TableName => TableNameHeader.Parse(preHeader, rx),
+                RecordPayloadType.Data => DataHeader.Parse(preHeader, rx),
+                RecordPayloadType.Metadata => MetadataHeader.Parse(preHeader, rx),
+                RecordPayloadType.TableDef => TableDefinitionHeader.Parse(preHeader, rx),
+                RecordPayloadType.Memo => MemoHeader.Parse(preHeader, rx),
+                RecordPayloadType.Index => IndexHeader.Parse(preHeader, rx),
                 _ => IndexHeader.Parse(preHeader, rx)
             };
 
             return header;
         }
+    }
+}
+
+public interface IRecordPayload;
+
+public interface IPayloadTableNumber
+{
+    /// <summary>
+    /// Gets the table number to which this record belongs.
+    /// </summary>
+    int TableNumber { get; }
+}
+
+public interface IPayloadRecordNumber
+{
+    /// <summary>
+    /// Gets the record number to which this record belongs.
+    /// </summary>
+    int RecordNumber { get; }
+}
+
+public sealed record IndexRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
+{
+    /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
+    public int TableNumber { get; init; }
+
+    /// <summary>
+    /// Gets the index number of the corresponding definition in <see cref="TableDefinition.Indexes"/>.
+    /// </summary>
+    public byte DefinitionIndex { get; init; }
+
+    /// <summary>
+    /// Gets the number of the <see cref="TpsRecord"/> with payload type <see cref="DataRecordPayload"/> to which this index belongs.
+    /// </summary>
+    public int RecordNumber { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="IndexRecordPayload"/> from the given data reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public static IndexRecordPayload Parse(TpsRandomAccess rx)
+    {
+        var span = rx.PeekRemainingSpan();
+
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
+        byte indexNumber = span[4];
+
+        var recordNumber = BinaryPrimitives.ReadInt32BigEndian(span[^4..]);
+
+        return new IndexRecordPayload
+        {
+            TableNumber = tableNumber,
+            DefinitionIndex = indexNumber,
+            RecordNumber = recordNumber
+        };
+    }
+}
+
+public sealed record MemoRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
+{
+    /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
+    public int TableNumber { get; init; }
+
+    /// <summary>
+    /// Gets the number of the <see cref="IDataRecord"/> that owns this <c>MEMO</c>.
+    /// </summary>
+    public int RecordNumber { get; init; }
+
+    /// <summary>
+    /// Gets the sequence number of the <c>MEMO</c> when the <c>MEMO</c> is segmented into multiple records. The first segment is 0.
+    /// </summary>
+    public ushort SequenceNumber { get; init; }
+
+    /// <summary>
+    /// Gets the index number of the corresponding definition in <see cref="TableDefinition.Memos"/>.
+    /// </summary>
+    public byte DefinitionIndex { get; init; }
+
+    /// <summary>
+    /// Gets the memory region of the content in this entry.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering note: for text <c>MEMO</c>s, this seems to be at most 256 bytes.
+    /// </remarks>
+    public required ReadOnlyMemory<byte> Content { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="MemoRecordPayload"/> from the given data reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public static MemoRecordPayload Parse(TpsRandomAccess rx)
+    {
+        var mem = rx.PeekRemainingMemory();
+        var span = mem.Span;
+
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
+        // byte payloadType = span[4];
+
+        int recordNumber = BinaryPrimitives.ReadInt32BigEndian(span[5..]);
+        byte memoIndex = span[9];
+        ushort sequenceNumber = BinaryPrimitives.ReadUInt16BigEndian(span[10..]);
+        var content = mem[12..];
+
+        return new MemoRecordPayload
+        {
+            TableNumber = tableNumber,
+            RecordNumber = recordNumber,
+            DefinitionIndex = memoIndex,
+            SequenceNumber = sequenceNumber,
+            Content = content
+        };
+    }
+}
+
+public sealed record MetadataRecordPayload : IRecordPayload, IPayloadTableNumber
+{
+    /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
+    public int TableNumber { get; init; }
+
+    /// <summary>
+    /// Gets the type of record that this metadata describes.
+    /// </summary>
+    public RecordPayloadType AboutType { get; init; }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <see cref="Content"/> contains metadata about data records.
+    /// </summary>
+    public bool IsAboutData => AboutType == RecordPayloadType.Data;
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <see cref="Content"/> contains metadata about an index.
+    /// </summary>
+    public bool IsAboutIndex => AboutType < RecordPayloadType.Data;
+
+    /// <summary>
+    /// Gets the memory region of the content in this entry.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering notes: Data and Index metadata both include an extra 4 zero-bytes at the end of the content for all inspected files.
+    /// Not sure what this is.
+    /// </remarks>
+    public required ReadOnlyMemory<byte> Content { get; init; }
+
+    /// <summary>
+    /// Attempts to parse the content as metadata about data records.
+    /// </summary>
+    /// <param name="metadata"></param>
+    /// <returns></returns>
+    public bool TryParseContentAsDataMetadata([NotNullWhen(true)] out DataMetadata? metadata)
+    {
+        if (!IsAboutData)
+        {
+            metadata = null;
+            return false;
+        }
+
+        var span = Content.Span;
+
+        int recordCount = BinaryPrimitives.ReadInt32LittleEndian(span);
+
+        metadata = new DataMetadata(
+            DataRecordCount: recordCount);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to parse the content as metadata about an index.
+    /// </summary>
+    /// <param name="metadata"></param>
+    /// <returns></returns>
+    public bool TryParseContentAsIndexMetadata([NotNullWhen(true)] out IndexMetadata? metadata)
+    {
+        if (!IsAboutIndex)
+        {
+            metadata = null;
+            return false;
+        }
+
+        var span = Content.Span;
+
+        int recordCount = BinaryPrimitives.ReadInt32LittleEndian(span);
+
+        metadata = new IndexMetadata(
+            DataRecordCount: recordCount);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="MetadataRecordPayload"/> from the given data reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public static MetadataRecordPayload Parse(TpsRandomAccess rx)
+    {
+        var mem = rx.PeekRemainingMemory();
+        var span = mem.Span;
+
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
+        // byte payloadType = span[4];
+
+        RecordPayloadType aboutType = (RecordPayloadType)span[5];
+        var content = mem[6..];
+
+        return new MetadataRecordPayload
+        {
+            TableNumber = tableNumber,
+            AboutType = aboutType,
+            Content = content,
+        };
+    }
+}
+
+/// <summary>
+/// Encapsulates metadata about data records in a table.
+/// </summary>
+/// <param name="DataRecordCount">The number of data records in the table.</param>
+public sealed record DataMetadata(int DataRecordCount);
+
+/// <summary>
+/// Encapsulates metadata about an index.
+/// </summary>
+/// <param name="DataRecordCount">The number of data records in this index.</param>
+public sealed record IndexMetadata(int DataRecordCount);
+
+public sealed record TableDefinitionRecordPayload : IRecordPayload, IPayloadTableNumber
+{
+    /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
+    public int TableNumber { get; init; }
+
+    /// <summary>
+    /// Gets the sequence number of the <see cref="TableDefinition"/> when the definition is segmented into multiple records. The first segment is 0.
+    /// </summary>
+    public ushort SequenceNumber { get; init; }
+
+    /// <summary>
+    /// Gets the memory region of the content in this entry.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering note: this seems to be at most 512 bytes.
+    /// </remarks>
+    public required ReadOnlyMemory<byte> Content { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="TableDefinitionRecordPayload"/> from the given data reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public static TableDefinitionRecordPayload Parse(TpsRandomAccess rx)
+    {
+        var mem = rx.PeekRemainingMemory();
+        var span = mem.Span;
+
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
+        // byte payloadType = span[4];
+
+        ushort sequenceNumber = BinaryPrimitives.ReadUInt16LittleEndian(span[5..]);
+        var content = mem[7..];
+
+        return new TableDefinitionRecordPayload
+        {
+            TableNumber = tableNumber,
+            SequenceNumber = sequenceNumber,
+            Content = content,
+        };
+    }
+}
+
+public sealed record TableNameRecordPayload : IRecordPayload, IPayloadTableNumber
+{
+    /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
+    public int TableNumber { get; init; }
+
+    /// <summary>
+    /// Gets the name of the table.
+    /// </summary>
+    public required string Name { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="TableNameRecordPayload"/> from the given data reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <param name="tpsRecordHeaderLength"></param>
+    /// <returns></returns>
+    public static TableNameRecordPayload Parse(TpsRandomAccess rx, ushort tpsRecordHeaderLength)
+    {
+        var mem = rx.PeekRemainingMemory();
+        var span = mem.Span;
+
+        string name = rx.Encoding.GetString(span[1..tpsRecordHeaderLength]);
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[tpsRecordHeaderLength..]);
+
+        return new TableNameRecordPayload
+        {
+            Name = name,
+            TableNumber = tableNumber,
+        };
+    }
+}
+
+public sealed record DataRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
+{
+    /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
+    public int TableNumber { get; init; }
+
+    /// <inheritdoc cref="IPayloadRecordNumber.RecordNumber"/>
+    public int RecordNumber { get; init; }
+
+    /// <summary>
+    /// Gets the memory region of the content in this entry.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering note: these can be somewhat large compared to the other record types.
+    /// You should expect the length of this to be equal to <see cref="TableDefinition.RecordLength"/>.
+    /// </remarks>
+    public required ReadOnlyMemory<byte> Content { get; init; }
+
+    /// <summary>
+    /// Creates a new <see cref="DataRecordPayload"/> from the given data reader.
+    /// </summary>
+    /// <param name="rx"></param>
+    /// <returns></returns>
+    public static DataRecordPayload Parse(TpsRandomAccess rx)
+    {
+        var mem = rx.PeekRemainingMemory();
+        var span = mem.Span;
+
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
+        // byte payloadType = span[4];
+
+        int recordNumber = BinaryPrimitives.ReadInt32BigEndian(span[5..]);
+        var content = mem[9..];
+
+        return new DataRecordPayload
+        {
+            TableNumber = tableNumber,
+            RecordNumber = recordNumber,
+            Content = content,
+        };
     }
 }

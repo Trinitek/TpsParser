@@ -5,9 +5,9 @@ using TpsParser.TypeModel;
 namespace TpsParser.Tps.Record;
 
 /// <summary>
-/// Represents the schema for a particular field. For MEMOs and BLOBs, see <see cref="MemoDefinitionRecord"/>.
+/// Represents the schema for a particular field. For <c>MEMO</c>s and <c>BLOB</c>s, see <see cref="MemoDefinition"/>.
 /// </summary>
-public sealed record FieldDefinitionRecord
+public sealed record FieldDefinition
 {
     /// <summary>
     /// Gets the type code of the value contained within the field.
@@ -82,9 +82,9 @@ public sealed record FieldDefinitionRecord
     public int BcdElementLength { get; init; }
 
     /// <summary>
-    /// Creates a new <see cref="FieldDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="FieldDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
     /// </summary>
-    public static FieldDefinitionRecord Parse(TpsRandomAccess rx)
+    public static FieldDefinition Parse(TpsRandomAccess rx)
     {
         ArgumentNullException.ThrowIfNull(rx);
 
@@ -120,7 +120,7 @@ public sealed record FieldDefinitionRecord
             }
         }
 
-        return new FieldDefinitionRecord
+        return new FieldDefinition
         {
             TypeCode = typeCode,
             Offset = offset,
@@ -141,7 +141,7 @@ public sealed record FieldDefinitionRecord
     /// </summary>
     /// <param name="group">The group field to check.</param>
     /// <returns></returns>
-    public bool IsInGroup(FieldDefinitionRecord group) =>
+    public bool IsInGroup(FieldDefinition group) =>
         (group.Offset <= Offset)
         && ((group.Offset + group.Length) >= (Offset + Length));
 }

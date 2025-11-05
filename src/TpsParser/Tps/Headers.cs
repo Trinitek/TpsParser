@@ -12,7 +12,7 @@ public interface IHeader
     /// <summary>
     /// Gets the reported record type.
     /// </summary>
-    RecordType RecordType { get; }
+    RecordPayloadType PayloadType { get; }
 
     /// <summary>
     /// Gets the table number to which the header belongs.
@@ -23,7 +23,7 @@ public interface IHeader
 /// <summary>
 /// Represents the type of record and what information it describes.
 /// </summary>
-public enum RecordType : byte
+public enum RecordPayloadType : byte
 {
     /// <summary>
     /// A section that contains a database record.
@@ -36,7 +36,8 @@ public enum RecordType : byte
     Metadata    = 0xF6,
 
     /// <summary>
-    /// A section that contains schema information about a table.
+    /// A section that contains a <see cref="TableDefinition"/>.
+    /// Sufficiently large table definitions will have two or more <see cref="TableDef"/> records.
     /// </summary>
     TableDef    = 0xFA,
 
@@ -46,7 +47,8 @@ public enum RecordType : byte
     Index       = 0xFB,
 
     /// <summary>
-    /// A section that contains a MEMO or BLOB.
+    /// A section that contains a <c>MEMO</c> or <c>BLOB</c>.
+    /// Sufficiently large objects will have two or more <see cref="Memo"/> records.
     /// </summary>
     Memo        = 0xFC,
 
@@ -61,7 +63,7 @@ public enum RecordType : byte
 /// </summary>
 /// <param name="Type">The type of record described by the <see cref="TpsRecord"/> object.</param>
 /// <param name="TableNumber">The table identifier to which the <see cref="TpsRecord"/> applies.</param>
-public sealed record PreHeader(RecordType Type, int TableNumber)
+public sealed record PreHeader(RecordPayloadType Type, int TableNumber)
 {
     /// <summary>
     /// Creates a new PreHeader using the data reader.
@@ -83,7 +85,7 @@ public sealed record PreHeader(RecordType Type, int TableNumber)
             tableNumber = rx.ReadLongBE();
         }
 
-        RecordType type = (RecordType)rx.ReadByte();
+        RecordPayloadType type = (RecordPayloadType)rx.ReadByte();
 
         return new(
             Type: type,
@@ -92,12 +94,12 @@ public sealed record PreHeader(RecordType Type, int TableNumber)
 }
 
 /// <summary>
-/// Encapsulates information about a particular <see cref="IndexDefinitionRecord"/> or <see cref="IndexRecord"/>.
+/// Encapsulates information about a particular <see cref="IndexDefinition"/> or <see cref="IndexRecord"/>.
 /// </summary>
 public sealed record IndexHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType"/>
-    public RecordType RecordType { get; init; }
+    /// <inheritdoc cref="IHeader.PayloadType"/>
+    public RecordPayloadType PayloadType { get; init; }
 
     /// <inheritdoc cref="IHeader.TableNumber"/>
     public int TableNumber { get; init; }
@@ -105,7 +107,7 @@ public sealed record IndexHeader : IHeader
     /// <summary>
     /// Gets the index identifier.
     /// </summary>
-    public byte IndexNumber => (byte)RecordType;
+    public byte IndexNumber => (byte)PayloadType;
 
     /// <summary>
     /// Creates a new <see cref="IndexHeader"/> from the given preheader and data reader.
@@ -119,7 +121,7 @@ public sealed record IndexHeader : IHeader
 
         return new IndexHeader
         {
-            RecordType = preHeader.Type,
+            PayloadType = preHeader.Type,
             TableNumber = preHeader.TableNumber,
         };
     }
@@ -130,8 +132,8 @@ public sealed record IndexHeader : IHeader
 /// </summary>
 public sealed class MemoHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType"/>
-    public RecordType RecordType { get; init; }
+    /// <inheritdoc cref="IHeader.PayloadType"/>
+    public RecordPayloadType PayloadType { get; init; }
 
     /// <inheritdoc cref="IHeader.TableNumber"/>
     public int TableNumber { get; init; }
@@ -147,7 +149,7 @@ public sealed class MemoHeader : IHeader
     public ushort SequenceNumber { get; init; }
 
     /// <summary>
-    /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="TableDefinitionRecord.Memos"/>.
+    /// Gets the index at which the memo appears in the record. Corresponds to the index number of <see cref="TableDefinition.Memos"/>.
     /// </summary>
     public byte MemoIndex { get; init; }
 
@@ -168,7 +170,7 @@ public sealed class MemoHeader : IHeader
 
         return new MemoHeader
         {
-            RecordType = preHeader.Type,
+            PayloadType = preHeader.Type,
             TableNumber = preHeader.TableNumber,
             OwningRecord = owningRecord,
             SequenceNumber = sequenceNumber,
@@ -182,8 +184,8 @@ public sealed class MemoHeader : IHeader
 /// </summary>
 public sealed class MetadataHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType"/>
-    public RecordType RecordType { get; init; }
+    /// <inheritdoc cref="IHeader.PayloadType"/>
+    public RecordPayloadType PayloadType { get; init; }
 
     /// <inheritdoc cref="IHeader.TableNumber"/>
     public int TableNumber { get; init; }
@@ -191,11 +193,11 @@ public sealed class MetadataHeader : IHeader
     /// <summary>
     /// Gets the record type that this metadata describes.
     /// </summary>
-    public RecordType AboutType { get; init; }
+    public RecordPayloadType AboutType { get; init; }
 
-    public bool IsAboutData => AboutType == RecordType.Data;
+    public bool IsAboutData => AboutType == RecordPayloadType.Data;
 
-    public bool IsAboutKeyOrIndex => AboutType < RecordType.Data;
+    public bool IsAboutKeyOrIndex => AboutType < RecordPayloadType.Data;
 
     /// <summary>
     /// Creates a new <see cref="MetadataHeader"/> from the given preheader and data reader.
@@ -208,11 +210,11 @@ public sealed class MetadataHeader : IHeader
         ArgumentNullException.ThrowIfNull(preHeader);
         ArgumentNullException.ThrowIfNull(rx);
 
-        RecordType aboutType = (RecordType)rx.ReadByte();
+        RecordPayloadType aboutType = (RecordPayloadType)rx.ReadByte();
 
         return new MetadataHeader
         {
-            RecordType = preHeader.Type,
+            PayloadType = preHeader.Type,
             TableNumber = preHeader.TableNumber,
             AboutType = aboutType
         };
@@ -220,12 +222,12 @@ public sealed class MetadataHeader : IHeader
 }
 
 /// <summary>
-/// Encapsulates information about a particular <see cref="TableDefinitionRecord"/>.
+/// Encapsulates information about a particular <see cref="TableDefinition"/>.
 /// </summary>
 public sealed class TableDefinitionHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType"/>
-    public RecordType RecordType { get; init; }
+    /// <inheritdoc cref="IHeader.PayloadType"/>
+    public RecordPayloadType PayloadType { get; init; }
 
     /// <inheritdoc cref="IHeader.TableNumber"/>
     public int TableNumber { get; init; }
@@ -250,7 +252,7 @@ public sealed class TableDefinitionHeader : IHeader
 
         return new TableDefinitionHeader
         {
-            RecordType = preHeader.Type,
+            PayloadType = preHeader.Type,
             TableNumber = preHeader.TableNumber,
             Block = block
         };
@@ -262,8 +264,8 @@ public sealed class TableDefinitionHeader : IHeader
 /// </summary>
 public sealed class TableNameHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType"/>
-    public RecordType RecordType { get; init; }
+    /// <inheritdoc cref="IHeader.PayloadType"/>
+    public RecordPayloadType PayloadType { get; init; }
 
     /// <summary>
     /// Not supported on table name headers; see the associated <see cref="TableNameRecord.TableNumber"/> instead.
@@ -291,7 +293,7 @@ public sealed class TableNameHeader : IHeader
 
         return new TableNameHeader
         {
-            RecordType = preHeader.Type,
+            PayloadType = preHeader.Type,
             Name = name
         };
     }
@@ -302,8 +304,8 @@ public sealed class TableNameHeader : IHeader
 /// </summary>
 public sealed class DataHeader : IHeader
 {
-    /// <inheritdoc cref="IHeader.RecordType"/>
-    public RecordType RecordType { get; init; }
+    /// <inheritdoc cref="IHeader.PayloadType"/>
+    public RecordPayloadType PayloadType { get; init; }
 
     /// <inheritdoc cref="IHeader.TableNumber"/>
     public int TableNumber { get; init; }
@@ -328,7 +330,7 @@ public sealed class DataHeader : IHeader
 
         return new DataHeader
         {
-            RecordType = preHeader.Type,
+            PayloadType = preHeader.Type,
             TableNumber = preHeader.TableNumber,
             RecordNumber = recordNumber
         };

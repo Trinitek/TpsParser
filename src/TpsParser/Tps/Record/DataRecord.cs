@@ -14,10 +14,10 @@ public interface IDataRecord
     /// <summary>
     /// Gets the table definition for the table that owns the record.
     /// </summary>
-    TableDefinitionRecord TableDefinition { get; }
+    TableDefinition TableDefinition { get; }
 
     /// <summary>
-    /// Gets the values for the record. The order of the values matches the order of <see cref="TableDefinitionRecord.Fields"/>.
+    /// Gets the values for the record. The order of the values matches the order of <see cref="TableDefinition.Fields"/>.
     /// </summary>
     IReadOnlyList<IClaObject> Values { get; }
 
@@ -44,7 +44,7 @@ internal sealed class DataRecord : IDataRecord
     private DataHeader Header { get; }
 
     /// <inheritdoc/>
-    public TableDefinitionRecord TableDefinition { get; }
+    public TableDefinition TableDefinition { get; }
 
     /// <inheritdoc/>
     public IReadOnlyList<IClaObject> Values { get; }
@@ -60,7 +60,7 @@ internal sealed class DataRecord : IDataRecord
     /// </summary>
     /// <param name="tpsRecord">The underlying record that contains the low-level file information.</param>
     /// <param name="tableDefinition">The table definition for the table to which the record belongs.</param>
-    public DataRecord(TpsRecord tpsRecord, TableDefinitionRecord tableDefinition)
+    public DataRecord(TpsRecord tpsRecord, TableDefinition tableDefinition)
     {
         Record = tpsRecord ?? throw new ArgumentNullException(nameof(tpsRecord));
         TableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));

@@ -16,6 +16,12 @@ public sealed class IndexRecord
 
         Header = (IndexHeader)tpsRecord.Header;
 
+        // Payload data contains, in order, each field value in the index, followed by the record number.
+        //
+        // Descending key fields are encoded such that
+        // Int32 79293 is encoded as (int.MaxValue - 79293) which is 0x7FFECA42
+        // To get 79293 again, unchecked(-(IndexValue - int.MaxValue))
+
         var data = tpsRecord.DataRx;
         data.JumpAbsolute(data.Length - 4);
 

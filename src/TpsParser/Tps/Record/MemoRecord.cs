@@ -32,7 +32,7 @@ public sealed class MemoRecord
     /// </summary>
     /// <param name="memoDefinitionRecord"></param>
     /// <returns></returns>
-    public IClaObject GetValue(MemoDefinitionRecord memoDefinitionRecord)
+    public IClaObject GetValue(MemoDefinition memoDefinitionRecord)
     {
         ArgumentNullException.ThrowIfNull(memoDefinitionRecord);
 

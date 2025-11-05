@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using TpsParser.Tps;
 
 namespace TpsParser.TypeModel.Tests;

@@ -39,7 +39,7 @@ public abstract class TpsFile
     /// <param name="tableDefinitionRecord">The table definition that describes the table schema.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinitionRecord tableDefinitionRecord, bool ignoreErrors);
+    public abstract IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors);
 
     /// <summary>
     /// Gets a list of table name records that describe the name of the tables included in the file.
@@ -84,7 +84,7 @@ public abstract class TpsFile
     /// </summary>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors);
+    public abstract IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(bool ignoreErrors);
 }
 
 /// <inheritdoc/>
@@ -196,7 +196,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
         }
     }
 
-    public override IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinitionRecord tableDefinition, bool ignoreErrors)
+    public override IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinition tableDefinition, bool ignoreErrors)
     {
         return VisitRecords(ignoreErrors)
             .Where(record => record.Header is DataHeader && record.Header.TableNumber == table)
@@ -279,7 +279,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
         return OrderAndGroupMemos(memoRecords);
     }
 
-    public override IReadOnlyDictionary<int, TableDefinitionRecord> GetTableDefinitions(bool ignoreErrors)
+    public override IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(bool ignoreErrors)
     {
         return VisitRecords(ignoreErrors)
             .Where(record => record.Header is TableDefinitionHeader)
@@ -295,7 +295,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
             .ToDictionary(
             keySelector: group => group.Key,
-            elementSelector: group => TableDefinitionRecord.Parse(Merge(group)));
+            elementSelector: group => TableDefinition.Parse(Merge(group)));
     }
 
     private TpsRandomAccess Merge(IEnumerable<TpsRecord> records) =>

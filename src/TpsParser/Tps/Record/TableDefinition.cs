@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TpsParser.TypeModel;
 
 namespace TpsParser.Tps.Record;
@@ -9,7 +8,7 @@ namespace TpsParser.Tps.Record;
 /// <summary>
 /// Represents a file structure that encapsulates a table's schema.
 /// </summary>
-public sealed record TableDefinitionRecord
+public sealed record TableDefinition
 {
     /// <summary>
     /// Gets the Clarion database driver version that created the table.
@@ -24,22 +23,22 @@ public sealed record TableDefinitionRecord
     /// <summary>
     /// Gets the field definitions for this table. For MEMOs and BLOBs, see <see cref="Memos"/>.
     /// </summary>
-    public required IReadOnlyList<FieldDefinitionRecord> Fields { get; init; }
+    public required IReadOnlyList<FieldDefinition> Fields { get; init; }
 
     /// <summary>
     /// Gets the MEMO and BLOB definitions for this table. The index of each definition corresponds to <see cref="MemoHeader.MemoIndex"/>.
     /// </summary>
-    public required IReadOnlyList<MemoDefinitionRecord> Memos { get; init; }
+    public required IReadOnlyList<MemoDefinition> Memos { get; init; }
 
     /// <summary>
     /// Gets the index definitions for this table.
     /// </summary>
-    public required IReadOnlyList<IndexDefinitionRecord> Indexes { get; init; }
+    public required IReadOnlyList<IndexDefinition> Indexes { get; init; }
 
     /// <summary>
-    /// Creates a new <see cref="TableDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="TableDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
     /// </summary>
-    public static TableDefinitionRecord Parse(TpsRandomAccess rx)
+    public static TableDefinition Parse(TpsRandomAccess rx)
     {
         ArgumentNullException.ThrowIfNull(rx);
 
@@ -50,30 +49,30 @@ public sealed record TableDefinitionRecord
         int memoCount = rx.ReadShortLE();
         int indexCount = rx.ReadShortLE();
 
-        List<FieldDefinitionRecord> fields = [];
-        List<MemoDefinitionRecord> memos = [];
-        List<IndexDefinitionRecord> indexes = [];
+        List<FieldDefinition> fields = new(fieldCount);
+        List<MemoDefinition> memos = new(memoCount);
+        List<IndexDefinition> indexes = new(indexCount);
 
         for (int i = 0; i < fieldCount; i++)
         {
-            var fdr = FieldDefinitionRecord.Parse(rx);
+            var fdr = FieldDefinition.Parse(rx);
 
             fields.Add(fdr);
         }
         for (int i = 0; i < memoCount; i++)
         {
-            var mdr = MemoDefinitionRecord.Parse(rx);
+            var mdr = MemoDefinition.Parse(rx);
 
             memos.Add(mdr);
         }
         for (int i = 0; i < indexCount; i++)
         {
-            var idr = IndexDefinitionRecord.Parse(rx);
+            var idr = IndexDefinition.Parse(rx);
 
             indexes.Add(idr);
         }
 
-        return new TableDefinitionRecord
+        return new TableDefinition
         {
             DriverVersion = DriverVersion,
             RecordLength = RecordLength,
@@ -81,31 +80,6 @@ public sealed record TableDefinitionRecord
             Memos = memos.AsReadOnly(),
             Indexes = indexes.AsReadOnly()
         };
-    }
-
-    /// <inheritdoc/>
-    public override string ToString()
-    {
-        var sb = new StringBuilder();
-
-        sb.AppendLine($"TableDefinition({DriverVersion},{RecordLength},{Fields.Count},{Memos.Count},{Indexes.Count}");
-
-        foreach (var field in Fields)
-        {
-            sb.AppendLine($"  {field.ToString()}");
-        }
-        foreach (var memo in Memos)
-        {
-            sb.AppendLine($"  {memo.ToString()}");
-        }
-        foreach (var index in Indexes)
-        {
-            sb.AppendLine($"  {index.ToString()}");
-        }
-
-        sb.Append(")");
-
-        return sb.ToString();
     }
 
     /// <summary>
@@ -137,7 +111,7 @@ public sealed record TableDefinitionRecord
         return values.AsReadOnly();
     }
 
-    private IClaObject ParseField(ClaTypeCode type, int length, FieldDefinitionRecord fieldDefinitionRecord, TpsRandomAccess rx)
+    private IClaObject ParseField(ClaTypeCode type, int length, FieldDefinition fieldDefinitionRecord, TpsRandomAccess rx)
     {
         if (fieldDefinitionRecord == null)
         {

@@ -187,14 +187,25 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a big endian signed integer and advances the current position.
+    /// Reads a big endian signed 4 byte integer.
     /// </summary>
     /// <returns></returns>
-    public int ReadLongBE()
+    public int PeekLongBE()
     {
         AssertSpace(4);
 
         int result = BinaryPrimitives.ReadInt32BigEndian(Data.AsSpan(AbsolutePosition));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Reads a big endian signed 4 byte integer and advances the current position.
+    /// </summary>
+    /// <returns></returns>
+    public int ReadLongBE()
+    {
+        int result = PeekLongBE();
 
         Position += 4;
         return result;
@@ -453,7 +464,16 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ReadOnlySpan<byte> PeekRemainingSpan()
     {
-        return new ReadOnlySpan<byte>(array: Data, start: AbsolutePosition, length: Length - AbsolutePosition);
+        return PeekRemainingMemory().Span;
+    }
+
+    /// <summary>
+    /// Gets a memory region that reflects the data starting from the current position.
+    /// </summary>
+    /// <returns></returns>
+    public ReadOnlyMemory<byte> PeekRemainingMemory()
+    {
+        return new ReadOnlyMemory<byte>(array: Data, start: AbsolutePosition, length: Length - AbsolutePosition);
     }
 
     /// <summary>

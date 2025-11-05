@@ -5,19 +5,19 @@ using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;
 
-internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinitionRecord>
+internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinition>
 {
-    private IReadOnlyList<FieldDefinitionRecord> Records { get; }
+    private IReadOnlyList<FieldDefinition> Records { get; }
 
-    public FieldDefinitionEnumerator(IReadOnlyList<FieldDefinitionRecord> records)
+    public FieldDefinitionEnumerator(IReadOnlyList<FieldDefinition> records)
     {
         Records = records ?? throw new ArgumentNullException(nameof(records));
 
         _position = -1;
     }
 
-    public FieldDefinitionRecord Current => _current ?? throw new InvalidOperationException("Enumeration has either not started or has already completed.");
-    private FieldDefinitionRecord? _current;
+    public FieldDefinition Current => _current ?? throw new InvalidOperationException("Enumeration has either not started or has already completed.");
+    private FieldDefinition? _current;
 
     object? IEnumerator.Current => Current;
 

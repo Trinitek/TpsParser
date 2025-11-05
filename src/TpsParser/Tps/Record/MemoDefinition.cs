@@ -6,7 +6,7 @@ namespace TpsParser.Tps.Record;
 /// <summary>
 /// Represents the schema for a MEMO or BLOB.
 /// </summary>
-public sealed record MemoDefinitionRecord
+public sealed record MemoDefinition
 {
     /// <summary>
     /// If the BLOB or MEMO is stored in an external file, gets the name of that file.
@@ -51,12 +51,12 @@ public sealed record MemoDefinitionRecord
     public bool IsBlob => !IsMemo;
 
     /// <summary>
-    /// Creates a new <see cref="MemoDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="MemoDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
     /// </summary>
     /// <param name="rx"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static MemoDefinitionRecord Parse(TpsRandomAccess rx)
+    public static MemoDefinition Parse(TpsRandomAccess rx)
     {
         ArgumentNullException.ThrowIfNull(rx);
 
@@ -76,7 +76,7 @@ public sealed record MemoDefinitionRecord
         ushort length = rx.ReadUnsignedShortLE();
         short flags = rx.ReadShortLE();
 
-        return new MemoDefinitionRecord
+        return new MemoDefinition
         {
             ExternalFileName = externalFileName,
             FullName = fullName,

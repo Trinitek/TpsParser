@@ -6,7 +6,7 @@ namespace TpsParser.Tps.Record;
 /// <summary>
 /// Represents the schema for an index.
 /// </summary>
-public sealed record IndexDefinitionRecord
+public sealed record IndexDefinition
 {
     /// <summary>
     /// If the key or index is stored in an external file, gets the name of that file.
@@ -34,12 +34,12 @@ public sealed record IndexDefinitionRecord
     public ushort FieldCount { get; init; }
 
     /// <summary>
-    /// Creates a new <see cref="IndexDefinitionRecord"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="IndexDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
     /// </summary>
     /// <param name="rx"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static IndexDefinitionRecord Parse(TpsRandomAccess rx)
+    public static IndexDefinition Parse(TpsRandomAccess rx)
     {
         ArgumentNullException.ThrowIfNull(rx);
 
@@ -68,7 +68,7 @@ public sealed record IndexDefinitionRecord
                 Flags: rx.ReadUnsignedShortLE());
         }
 
-        return new IndexDefinitionRecord
+        return new IndexDefinition
         {
             ExternalFile = externalFile,
             Name = name,

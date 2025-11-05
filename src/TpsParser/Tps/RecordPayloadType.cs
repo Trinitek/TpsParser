@@ -33,7 +33,7 @@ public enum RecordPayloadType : byte
     Memo        = 0xFC,
 
     /// <summary>
-    /// A section that contains the name of the table.
+    /// A section that contains the name of a table.
     /// </summary>
     TableName   = 0xFE,
 }

@@ -2,81 +2,82 @@
 
 /// <summary>
 /// Represents a code point in a TopSpeed file that represents a particular data type.
+/// Member names are labeled after the corresponding Clarion language keyword.
 /// </summary>
 public enum ClaTypeCode : byte
 {
     /// <summary>
     /// Represents a code point that is not defined in the file format.
     /// </summary>
-    None    = 0x00,
+    None = 0x00,
 
     /// <summary>
-    /// Clarion <c>BYTE</c>. 1-byte unsigned integer.
+    /// Clarion <c>BYTE</c>. 1-byte unsigned integer. Modeled by <see cref="ClaByte"/>.
     /// </summary>
-    Byte    = 0x01,
+    Byte = 0x01,
 
     /// <summary>
-    /// Clarion <c>SHORT</c>. 2-byte signed integer.
+    /// Clarion <c>SHORT</c>. 2-byte signed integer. Modeled by <see cref="ClaShort"/>.
     /// </summary>
-    Short   = 0x02,
+    Short = 0x02,
 
     /// <summary>
-    /// Clarion <c>USHORT</c>. 2-byte unsigned integer.
+    /// Clarion <c>USHORT</c>. 2-byte unsigned integer. Modeled by <see cref="ClaUnsignedShort"/>.
     /// </summary>
-    UShort  = 0x03,
+    UShort = 0x03,
 
     /// <summary>
-    /// Clarion <c>DATE</c>. 4-byte date.
+    /// Clarion <c>DATE</c>. 4-byte date. Modeled by <see cref="ClaDate"/>.
     /// </summary>
-    Date    = 0x04,
+    Date = 0x04,
 
     /// <summary>
-    /// Clarion <c>TIME</c>. 4-byte time.
+    /// Clarion <c>TIME</c>. 4-byte time. Modeled by <see cref="ClaTime"/>.
     /// </summary>
-    Time    = 0x05,
+    Time = 0x05,
 
     /// <summary>
-    /// Clarion <c>LONG</c>. 4-byte signed integer.
+    /// Clarion <c>LONG</c>. 4-byte signed integer. Modeled by <see cref="ClaLong"/>.
     /// </summary>
-    Long    = 0x06,
+    Long = 0x06,
 
     /// <summary>
-    /// Clarion <c>ULONG</c>. 4-byte unsigned integer.
+    /// Clarion <c>ULONG</c>. 4-byte unsigned integer. Modeled by <see cref="ClaUnsignedLong"/>.
     /// </summary>
-    ULong   = 0x07,
+    ULong = 0x07,
 
     /// <summary>
-    /// Clarion <c>SREAL</c>. 4-byte signed floating point.
+    /// Clarion <c>SREAL</c>. 4-byte signed floating point. Modeled by <see cref="ClaSingleReal"/>.
     /// </summary>
-    SReal   = 0x08,
+    SReal = 0x08,
 
     /// <summary>
-    /// Clarion <c>REAL</c>. 8-byte signed floating point.
+    /// Clarion <c>REAL</c>. 8-byte signed floating point. Modeled by <see cref="ClaReal"/>.
     /// </summary>
-    Real    = 0x09,
+    Real = 0x09,
 
     /// <summary>
-    /// Clarion <c>DECIMAL</c>. Signed packed decimal.
+    /// Clarion <c>DECIMAL</c>. Signed packed decimal. Modeled by <see cref="ClaDecimal"/>.
     /// </summary>
     Decimal = 0x0A,
 
     /// <summary>
-    /// Clarion <c>STRING</c>. Fixed length string, padded with spaces.
+    /// Clarion <c>STRING</c>. Fixed length string, padded with spaces. Modeled by <see cref="ClaFString"/>.
     /// </summary>
-    FString  = 0x12,
+    FString = 0x12,
 
     /// <summary>
-    /// Clarion <c>CSTRING</c>. Null terminated string.
+    /// Clarion <c>CSTRING</c>. Null terminated string. Modeled by <see cref="ClaCString"/>.
     /// </summary>
     CString = 0x13,
 
     /// <summary>
-    /// Clarion <c>PSTRING</c>. Embedded length-byte "Pascal" string.
+    /// Clarion <c>PSTRING</c>. Embedded length-byte "Pascal" string. Modeled by <see cref="ClaPString"/>.
     /// </summary>
     PString = 0x14,
 
     /// <summary>
     /// Clarion <c>GROUP</c>. Compound data structure.
     /// </summary>
-    Group   = 0x16
+    Group = 0x16
 }

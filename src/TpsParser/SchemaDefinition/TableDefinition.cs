@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using TpsParser.Tps;
 using TpsParser.TypeModel;
@@ -24,20 +25,20 @@ public sealed record TableDefinition
     /// <summary>
     /// Gets the field definitions for this table. For <c>MEMO</c>s s and <c>BLOB</c>s, see <see cref="Memos"/>.
     /// </summary>
-    public required IReadOnlyList<FieldDefinition> Fields { get; init; }
+    public required ImmutableArray<FieldDefinition> Fields { get; init; }
 
     /// <summary>
     /// Gets the <c>MEMO</c> and <c>BLOB</c> definitions for this table. The index of each definition corresponds to <see cref="MemoRecordPayload.DefinitionIndex"/>.
     /// </summary>
-    public required IReadOnlyList<MemoDefinition> Memos { get; init; }
+    public required ImmutableArray<MemoDefinition> Memos { get; init; }
 
     /// <summary>
     /// Gets the index definitions for this table. The index of each definition corresponds to <see cref="IndexRecordPayload.DefinitionIndex"/>.
     /// </summary>
-    public required IReadOnlyList<IndexDefinition> Indexes { get; init; }
+    public required ImmutableArray<IndexDefinition> Indexes { get; init; }
 
     /// <summary>
-    /// Creates a new <see cref="TableDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="TableDefinition"/> using the given data reader.
     /// </summary>
     public static TableDefinition Parse(TpsRandomAccess rx)
     {
@@ -77,9 +78,9 @@ public sealed record TableDefinition
         {
             DriverVersion = DriverVersion,
             RecordLength = RecordLength,
-            Fields = fields.AsReadOnly(),
-            Memos = memos.AsReadOnly(),
-            Indexes = indexes.AsReadOnly()
+            Fields = [..fields],
+            Memos = [..memos],
+            Indexes = [..indexes]
         };
     }
 
@@ -114,15 +115,8 @@ public sealed record TableDefinition
 
     private IClaObject ParseField(ClaTypeCode type, int length, FieldDefinition fieldDefinitionRecord, TpsRandomAccess rx)
     {
-        if (fieldDefinitionRecord == null)
-        {
-            throw new ArgumentNullException(nameof(fieldDefinitionRecord));
-        }
-
-        if (rx == null)
-        {
-            throw new ArgumentNullException(nameof(rx));
-        }
+        ArgumentNullException.ThrowIfNull(fieldDefinitionRecord);
+        ArgumentNullException.ThrowIfNull(rx);
 
         switch (type)
         {
@@ -166,7 +160,7 @@ public sealed record TableDefinition
         }
     }
 
-    private void AssertEqual(int reference, int value)
+    private static void AssertEqual(int reference, int value)
     {
         if (reference != value)
         {

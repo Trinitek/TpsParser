@@ -91,7 +91,7 @@ internal sealed class TestKey
 
             foreach (var (dec, enc) in zip)
             {
-                Assert.That(enc.Values, Is.EqualTo(dec.Values).AsCollection);
+                Assert.That(enc.Content.ToArray(), Is.EqualTo(dec.Content.ToArray()));
             }
         }
     }

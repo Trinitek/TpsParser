@@ -18,7 +18,7 @@ public sealed record FieldDefinition
     /// <summary>
     /// Gets the offset, in bytes, of the field within the record.
     /// </summary>
-    public int Offset { get; init; }
+    public ushort Offset { get; init; }
 
     /// <summary>
     /// <para>
@@ -43,19 +43,20 @@ public sealed record FieldDefinition
     /// <summary>
     /// If the field is an array of continuous values, gets the number of elements in the array. Otherwise, 1.
     /// </summary>
-    public int ElementCount { get; init; }
+    public ushort ElementCount { get; init; }
 
     /// <summary>
-    /// True if the field contains an array of values.
+    /// Returns <see langword="true"/> if the field contains an array of values.
     /// </summary>
     public bool IsArray => ElementCount > 1;
 
     /// <summary>
-    /// Gets the number of number of bytes in each element.
+    /// Gets the number of bytes in each element.
     /// </summary>
-    public int Length { get; init; }
+    public ushort Length { get; init; }
 
-    public short Flags { get; init; }
+    /// <summary></summary>
+    public ushort Flags { get; init; }
 
     /// <summary>
     /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
@@ -80,7 +81,7 @@ public sealed record FieldDefinition
     /// <summary>
     /// If the field contains a <see cref="ClaDecimal"/>, gets the number of decimal places.
     /// </summary>
-    public int BcdElementLength { get; init; }
+    public byte BcdElementLength { get; init; }
 
     /// <summary>
     /// Creates a new <see cref="FieldDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
@@ -89,18 +90,18 @@ public sealed record FieldDefinition
     {
         ArgumentNullException.ThrowIfNull(rx);
 
-        var typeCode = (ClaTypeCode)rx.ReadByte();
-        var offset = rx.ReadShortLE();
-        var fullName = rx.ReadZeroTerminatedString();
-        var elementCount = rx.ReadShortLE();
-        var length = rx.ReadShortLE();
-        var flags = rx.ReadShortLE();
-        var index = rx.ReadShortLE();
+        ClaTypeCode typeCode = (ClaTypeCode)rx.ReadByte();
+        ushort offset = rx.ReadUnsignedShortLE();
+        string fullName = rx.ReadZeroTerminatedString();
+        ushort elementCount = rx.ReadUnsignedShortLE();
+        ushort length = rx.ReadUnsignedShortLE();
+        ushort flags = rx.ReadUnsignedShortLE();
+        ushort index = rx.ReadUnsignedShortLE();
 
         byte bcdDigitsAfterDecimalPoint = 0;
-        int bcdElementLength = 0;
+        byte bcdElementLength = 0;
 
-        int stringLength = 0;
+        ushort stringLength = 0;
         string stringMask = string.Empty;
 
         if (typeCode == ClaTypeCode.Decimal)
@@ -112,7 +113,7 @@ public sealed record FieldDefinition
             || typeCode == ClaTypeCode.CString
             || typeCode == ClaTypeCode.PString)
         {
-            stringLength = rx.ReadShortLE();
+            stringLength = rx.ReadUnsignedShortLE();
             stringMask = rx.ReadZeroTerminatedString();
 
             if (stringMask.Length == 0)

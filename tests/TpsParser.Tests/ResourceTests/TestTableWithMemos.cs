@@ -103,9 +103,9 @@ internal sealed class TestTableWithMemos
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(def.Fields, Has.Count.EqualTo(2));
-            Assert.That(def.Memos, Has.Count.EqualTo(2));
-            Assert.That(def.Indexes, Has.Count.EqualTo(0));
+            Assert.That(def.Fields, Has.Length.EqualTo(2));
+            Assert.That(def.Memos, Has.Length.EqualTo(2));
+            Assert.That(def.Indexes, Has.Length.EqualTo(0));
 
             var f0 = def.Fields[0];
 

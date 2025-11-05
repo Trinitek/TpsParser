@@ -17,7 +17,7 @@ internal sealed class TestClaTime
             var file = new RandomAccessTpsFile(stream);
 
             var tableDef = file.GetTableDefinitions(false).First().Value;
-            var record = file.GetDataRecords(1, tableDef, false).First();
+            var record = file.GetDataRows(1, tableDef, false).First();
 
             var valuePairs = record.GetFieldValuePairs();
 

@@ -18,9 +18,7 @@ public sealed record IndexDefinition
     /// </summary>
     public required ImmutableArray<KeyField> KeyFields { get; init; }
 
-    /// <summary>
-    /// Gets the flags for this key or index.
-    /// </summary>
+    /// <summary></summary>
     public IndexDefinitionFlags Flags { get; init; }
 
     /// <summary>
@@ -34,7 +32,7 @@ public sealed record IndexDefinition
     public ushort FieldCount { get; init; }
 
     /// <summary>
-    /// Creates a new <see cref="IndexDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="IndexDefinition"/> using the given data reader.
     /// </summary>
     /// <param name="rx"></param>
     /// <returns></returns>
@@ -51,7 +49,7 @@ public sealed record IndexDefinition
 
             if (read != 0x01)
             {
-                throw new ArgumentException($"Bad index definition: missing 0x01 after zero string ({read:X2})");
+                throw new TpsParserException($"Bad index definition: missing 0x01 after zero string ({read:X2})");
             }
         }
 
@@ -108,22 +106,22 @@ public sealed record KeyField(ushort FieldIndex, ushort Flags)
 public enum IndexDefinitionFlags : byte
 {
     /// <summary>
-    /// Clarion keyword <c>DUP</c>. Allows multiple records with duplicate values.
+    /// Clarion attribute <c>DUP</c>. Allows multiple records with duplicate values.
     /// </summary>
     AllowDuplicates = 0b0000_0001,
 
     /// <summary>
-    /// Clarion keyword <c>OPT</c>. Records with null values (zero or blank) are excluded from the index.
+    /// Clarion attribute <c>OPT</c>. Records with null values (zero or blank) are excluded from the index.
     /// </summary>
     IgnoreNull = 0b0000_0010,
 
     /// <summary>
-    /// Clarion keyword <c>NOCASE</c>. Sort order is case-insensitive.
+    /// Clarion attribute <c>NOCASE</c>. Sort order is case-insensitive.
     /// </summary>
     CaseInsensitive = 0b0000_0100,
 
     /// <summary>
-    /// Clarion keyword <c>PRIMARY</c>. This key is the table's relational primary key.
+    /// Clarion attribute <c>PRIMARY</c>. This key is the table's relational primary key.
     /// </summary>
     PrimaryKey = 0b0001_0000,
 }

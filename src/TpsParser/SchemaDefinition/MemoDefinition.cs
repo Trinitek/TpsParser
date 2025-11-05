@@ -4,12 +4,12 @@ using System.Linq;
 namespace TpsParser;
 
 /// <summary>
-/// Represents the schema for a MEMO or BLOB.
+/// Represents the schema for a <c>MEMO</c> or <c>BLOB</c>.
 /// </summary>
 public sealed record MemoDefinition
 {
     /// <summary>
-    /// If the BLOB or MEMO is stored in an external file, gets the name of that file.
+    /// If the <c>MEMO</c> or <c>BLOB</c> is stored in an external file, gets the name of that file.
     /// </summary>
     public required string ExternalFileName { get; init; }
 
@@ -34,24 +34,25 @@ public sealed record MemoDefinition
     public string Name => FullName.Split(':').Last();
 
     /// <summary>
-    /// Gets the maximum number of bytes in the MEMO or BLOB.
+    /// Gets the maximum number of bytes in the <c>MEMO</c> or <c>BLOB</c> content.
     /// </summary>
     public ushort Length { get; init; }
 
-    public short Flags { get; init; }
+    /// <summary></summary>
+    public ushort Flags { get; init; }
 
     /// <summary>
-    /// Returns true if the record contains MEMO data; false if it contains BLOB data.
+    /// Returns <see langword="true"/> if the record contains <c>MEMO</c> data; <see langword="false"/> if it contains <c>BLOB</c> data.
     /// </summary>
     public bool IsMemo => (Flags & 0x04) == 0;
 
     /// <summary>
-    /// Returns true if the record contains BLOB data; false if it contains MEMO data.
+    /// Returns <see langword="true"/> if the record contains <c>BLOB</c> data; <see langword="false"/> if it contains <c>MEMO</c> data.
     /// </summary>
     public bool IsBlob => !IsMemo;
 
     /// <summary>
-    /// Creates a new <see cref="MemoDefinition"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
+    /// Creates a new <see cref="MemoDefinition"/> using the given data reader.
     /// </summary>
     /// <param name="rx"></param>
     /// <returns></returns>
@@ -68,13 +69,13 @@ public sealed record MemoDefinition
 
             if (memoMarker != 1)
             {
-                throw new ArgumentException($"Bad memo definition: missing 0x01 after zero string. Was 0x{memoMarker:x2}.");
+                throw new TpsParserException($"Bad memo definition: missing 0x01 after zero string. Was 0x{memoMarker:x2}.");
             }
         }
 
         string fullName = rx.ReadZeroTerminatedString();
         ushort length = rx.ReadUnsignedShortLE();
-        short flags = rx.ReadShortLE();
+        ushort flags = rx.ReadUnsignedShortLE();
 
         return new MemoDefinition
         {

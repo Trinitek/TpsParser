@@ -30,7 +30,7 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var records = file.GetAllRecords();
+        var records = file.GetTpsRecords();
 
         Assert.That(records.Count(), Is.EqualTo(10));
     }
@@ -47,8 +47,8 @@ internal sealed class TestTpsFile
         var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
 
         Assert.That(tableDefinitions, Has.Count.EqualTo(1));
-        Assert.That(tableDefinitions[1].Fields, Has.Count.EqualTo(2));
-        Assert.That(tableDefinitions[1].Indexes, Has.Count.EqualTo(2));
+        Assert.That(tableDefinitions[1].Fields, Has.Length.EqualTo(2));
+        Assert.That(tableDefinitions[1].Indexes, Has.Length.EqualTo(2));
         Assert.That(tableDefinitions[1].Memos.Count, Is.Zero);
     }
 
@@ -78,7 +78,7 @@ internal sealed class TestTpsFile
         var file = GetTableFile();
 
         var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-        var dataRecords = file.GetDataRecords(table: 1, tableDefinitions[1], ignoreErrors: false)
+        var dataRecords = file.GetDataRows(table: 1, tableDefinitions[1], ignoreErrors: false)
             .ToList();
 
         using (Assert.EnterMultipleScope())

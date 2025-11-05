@@ -6,7 +6,7 @@ namespace TpsParser.TypeModel;
 /// Represents a Clarion <c>ULONG</c> type, which is an unsigned 32-bit integer.
 /// </summary>
 /// <remarks>
-/// The <c>LONG</c> name would appear to suggest that this type is a 64-bit integer; however, the 32-bit Clarion runtime does not support 64-bit integer types.
+/// Neither the TopSpeed file format nor the 32-bit Clarion runtime support 64-bit integer types.
 /// The Clarion programming language originated on the 16-bit MS-DOS environment where the native integer size was 16-bits wide with types
 /// <c>SHORT</c> (<see cref="ClaShort"/>) and <c>USHORT</c> (<see cref="ClaUnsignedShort"/>). The names of their wider 32-bit counterparts followed as
 /// <c>LONG</c> (<see cref="ClaLong"/>) and <c>ULONG</c> (<see cref="ClaUnsignedLong"/>).
@@ -78,16 +78,10 @@ public readonly struct ClaUnsignedLong : IClaNumeric, IEquatable<ClaUnsignedLong
     public Maybe<decimal> ToDecimal() => Maybe.Some<decimal>(Value);
 
     /// <inheritdoc/>
-    public Maybe<float> ToFloat()
-    {
-        throw new NotImplementedException();
-    }
+    public Maybe<float> ToFloat() => Maybe.Some<float>(Value);
 
     /// <inheritdoc/>
-    public Maybe<double> ToDouble()
-    {
-        throw new NotImplementedException();
-    }
+    public Maybe<double> ToDouble() => Maybe.Some<double>(Value);
 
     /// <inheritdoc/>
     public bool Equals(ClaUnsignedLong other) =>

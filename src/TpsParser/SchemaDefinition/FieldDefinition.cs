@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
+using TpsParser.Tps.Record;
 using TpsParser.TypeModel;
 
-namespace TpsParser.Tps.Record;
+namespace TpsParser;
 
 /// <summary>
 /// Represents the schema for a particular field. For <c>MEMO</c>s and <c>BLOB</c>s, see <see cref="MemoDefinition"/>.
@@ -142,6 +143,6 @@ public sealed record FieldDefinition
     /// <param name="group">The group field to check.</param>
     /// <returns></returns>
     public bool IsInGroup(FieldDefinition group) =>
-        (group.Offset <= Offset)
-        && ((group.Offset + group.Length) >= (Offset + Length));
+        group.Offset <= Offset
+        && group.Offset + group.Length >= Offset + Length;
 }

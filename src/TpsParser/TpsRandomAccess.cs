@@ -473,7 +473,7 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ReadOnlyMemory<byte> PeekRemainingMemory()
     {
-        return new ReadOnlyMemory<byte>(array: Data, start: AbsolutePosition, length: Length - AbsolutePosition);
+        return new ReadOnlyMemory<byte>(array: Data, start: AbsolutePosition, length: Length - Position);
     }
 
     /// <summary>

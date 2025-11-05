@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 
-namespace TpsParser.Tps.Record;
+namespace TpsParser;
 
 /// <summary>
 /// Represents the schema for an index.

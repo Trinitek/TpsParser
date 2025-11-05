@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using TpsParser.Tps.Record;
 
@@ -41,22 +42,24 @@ public sealed record TpsRecord
     public ushort HeaderLength { get; init; }
 
     /// <summary>
-    /// Gets the header defined in this record, if any.
+    /// Gets a memory region that reflects all the data for the payload, including payload header.
     /// </summary>
-    public IHeader? Header { get; init; }
+    public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="TpsRandomAccess"/> reader used to access the data for this record.
+    /// Gets the payload defined in this record, if any.
     /// </summary>
-    public required TpsRandomAccess DataRx { internal get; init; }
+    public required IRecordPayload? Payload { get; init; }
 
     /// <summary>
     /// Creates a new <see cref="TpsRecord"/>. This is typically done on the first of a list.
     /// </summary>
-    /// <param name="rx">The data to read from.</param>
+    /// <param name="rx"></param>
     public static TpsRecord Parse(TpsRandomAccess rx)
     {
         ArgumentNullException.ThrowIfNull(rx);
+
+        //var data = rx.PeekRemainingMemory();
 
         byte flags = rx.ReadByte();
 
@@ -68,19 +71,21 @@ public sealed record TpsRecord
         ushort recordLength = rx.ReadUnsignedShortLE();
         ushort headerLength = rx.ReadUnsignedShortLE();
 
-        var newRx = rx.Read(recordLength);
+        //var newRx = rx.Read(recordLength);
+        var payloadRx = rx.Read(recordLength);
 
-        var headerRx = newRx.Read(headerLength);
+        //var payloadContentData = payloadRx.PeekRemainingMemory()[headerLength..];
+        var payloadData = payloadRx.PeekRemainingMemory();
 
-        var header = BuildHeader(headerRx);
+        var payload = BuildPayload(payloadRx, tpsRecordHeaderLength: headerLength);
 
         return new TpsRecord
         {
             Flags = flags,
             RecordLength = recordLength,
             HeaderLength = headerLength,
-            Header = header,
-            DataRx = newRx
+            Payload = payload,
+            PayloadData = payloadData
         };
     }
 
@@ -128,7 +133,8 @@ public sealed record TpsRecord
             throw new TpsParserException($"Number of bytes to copy ({bytesToCopy}) exceeds the record length ({recordLength}).");
         }
 
-        previous.DataRx.PeekBaseSpan()[..bytesToCopy].CopyTo(newData);
+        //previous.DataRx.PeekBaseSpan()[..bytesToCopy].CopyTo(newData);
+        previous.PayloadData[..bytesToCopy].CopyTo(newData);
         
         // TODO test coverage for well-formed memory copy
         rx.ReadBytes(recordLength - bytesToCopy).CopyTo(newDataMemory[bytesToCopy..]);
@@ -140,21 +146,27 @@ public sealed record TpsRecord
             throw new TpsParserException($"Data and record length mismatch: expected {recordLength} but was {newRx.Length}.");
         }
 
-        var headerRx = newRx.Read(headerLength);
+        //var headerRx = newRx.Read(headerLength);
+        //
+        //var header = BuildHeader(headerRx);
 
-        var header = BuildHeader(headerRx);
+        var payloadRx = newRx.Read(recordLength);
+
+        var payloadData = payloadRx.PeekRemainingMemory();
+
+        var payload = BuildPayload(payloadRx, tpsRecordHeaderLength: headerLength);
 
         return new TpsRecord
         {
             Flags = flags,
             RecordLength = recordLength,
             HeaderLength = headerLength,
-            Header = header,
-            DataRx = newRx
+            Payload = payload,
+            PayloadData = payloadData,
         };
     }
 
-    private static IHeader? BuildHeader(TpsRandomAccess rx)
+    private static IRecordPayload? BuildPayload(TpsRandomAccess rx, ushort tpsRecordHeaderLength)
     {
         if (rx.Length < 5)
         {
@@ -163,29 +175,20 @@ public sealed record TpsRecord
 
         if (rx.PeekByte(0) == (byte)RecordPayloadType.TableName)
         {
-            var preHeader = PreHeader.Parse(rx, readTableNumber: false);
-
-            IHeader header = TableNameHeader.Parse(preHeader, rx);
-
-            return header;
+            return TableNameRecordPayload.Parse(rx, tpsRecordHeaderLength);
         }
-        else
+
+        var payloadType = (RecordPayloadType)rx.PeekByte(4);
+
+        return payloadType switch
         {
-            var preHeader = PreHeader.Parse(rx, readTableNumber: true);
-
-            IHeader header = preHeader.Type switch
-            {
-                RecordPayloadType.TableName => TableNameHeader.Parse(preHeader, rx),
-                RecordPayloadType.Data => DataHeader.Parse(preHeader, rx),
-                RecordPayloadType.Metadata => MetadataHeader.Parse(preHeader, rx),
-                RecordPayloadType.TableDef => TableDefinitionHeader.Parse(preHeader, rx),
-                RecordPayloadType.Memo => MemoHeader.Parse(preHeader, rx),
-                RecordPayloadType.Index => IndexHeader.Parse(preHeader, rx),
-                _ => IndexHeader.Parse(preHeader, rx)
-            };
-
-            return header;
-        }
+            RecordPayloadType.Data => DataRecordPayload.Parse(rx),
+            RecordPayloadType.Metadata => MetadataRecordPayload.Parse(rx),
+            RecordPayloadType.TableDef => TableDefinitionRecordPayload.Parse(rx),
+            RecordPayloadType.Memo => MemoRecordPayload.Parse(rx),
+            RecordPayloadType.Index => IndexRecordPayload.Parse(rx),
+            _ => IndexRecordPayload.Parse(rx)
+        };
     }
 }
 

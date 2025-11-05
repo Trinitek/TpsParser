@@ -39,28 +39,37 @@ public abstract class TpsFile
     /// <param name="tableDefinitionRecord">The table definition that describes the table schema.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors);
+    public abstract IEnumerable<IDataRecord> GetDataRows(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors);
+
+    /// <summary>
+    /// Gets a list of data records for the associated table and its table definition.
+    /// </summary>
+    /// <param name="table">The table from which to get the records.</param>
+    /// <param name="tableDefinitionRecord">The table definition that describes the table schema.</param>
+    /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+    /// <returns></returns>
+    public abstract IEnumerable<DataRecordPayload> GetDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors);
 
     /// <summary>
     /// Gets a list of table name records that describe the name of the tables included in the file.
     /// </summary>
     /// <returns></returns>
-    public abstract IEnumerable<TableNameRecord> GetTableNameRecords();
+    public abstract IEnumerable<TableNameRecordPayload> GetTableNameRecords();
 
-    public abstract IEnumerable<IndexRecord> GetIndexes(int table, int index);
+    public abstract IEnumerable<IndexRecordPayload> GetIndexes(int table, int index);
 
     /// <summary>
     /// Gets a list of metadata that is included for the associated table.
     /// </summary>
     /// <param name="table">The table for which to get the metadata.</param>
     /// <returns></returns>
-    public abstract IEnumerable<TpsRecord> GetMetadata(int table);
+    public abstract IEnumerable<MetadataRecordPayload> GetMetadata(int table);
 
     /// <summary>
     /// Gets all of the records in the file.
     /// </summary>
     /// <returns></returns>
-    public abstract IEnumerable<TpsRecord> GetAllRecords();
+    public abstract IEnumerable<TpsRecord> GetTpsRecords();
 
     /// <summary>
     /// Gets a dictionary of memo and blob records for the associated table.
@@ -68,7 +77,7 @@ public abstract class TpsFile
     /// <param name="table">The table number that owns the memos.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors);
+    public abstract IEnumerable<MemoRecordPayload> GetMemoRecords(int table, bool ignoreErrors);
 
     /// <summary>
     /// Gets a dictionary of memo and blob records for the associated table.
@@ -77,7 +86,7 @@ public abstract class TpsFile
     /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public abstract IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
+    public abstract IEnumerable<MemoRecordPayload> GetMemoRecords(int table, int memoIndex, bool ignoreErrors);
 
     /// <summary>
     /// Gets a dictionary of table definitions and their associated table numbers.
@@ -196,85 +205,100 @@ internal sealed class RandomAccessTpsFile : TpsFile
         }
     }
 
-    public override IEnumerable<IDataRecord> GetDataRecords(int table, TableDefinition tableDefinition, bool ignoreErrors)
+    public override IEnumerable<IDataRecord> GetDataRows(int table, TableDefinition tableDefinition, bool ignoreErrors)
     {
         return VisitRecords(ignoreErrors)
-            .Where(record => record.Header is DataHeader && record.Header.TableNumber == table)
-            .Select(record => new DataRecord(record, tableDefinition));
+            .Where(record => record.Payload is DataRecordPayload pl && pl.TableNumber == table)
+            .Select(record => new DataRecord(record, tableDefinition, Encoding));
     }
 
-    public override IEnumerable<TableNameRecord> GetTableNameRecords()
+    public override IEnumerable<DataRecordPayload> GetDataRecords(int table, TableDefinition tableDefinition, bool ignoreErrors)
+    {
+        return VisitRecords(ignoreErrors)
+            .Where(record => record.Payload is DataRecordPayload pl && pl.TableNumber == table)
+            .Select(record => (DataRecordPayload)record.Payload!);
+    }
+
+    public override IEnumerable<TableNameRecordPayload> GetTableNameRecords()
     {
         return VisitRecords()
-            .Where(record => record.Header is TableNameHeader)
-            .Select(record => new TableNameRecord(record));
+            .Where(record => record.Payload is TableNameRecordPayload)
+            .Select(record => (TableNameRecordPayload)record.Payload!);
     }
 
-    public override IEnumerable<IndexRecord> GetIndexes(int table, int index)
+    public override IEnumerable<IndexRecordPayload> GetIndexes(int table, int index)
     {
         return VisitRecords()
             .Where(record =>
-                (record.Header is IndexHeader header)
-                && header.TableNumber == table
-                && (header.IndexNumber == index || index == -1))
-            .Select(record => new IndexRecord(record));
+                (record.Payload is IndexRecordPayload payload)
+                && payload.TableNumber == table
+                && (payload.DefinitionIndex == index || index == -1))
+            .Select(record => (IndexRecordPayload)record.Payload!);
     }
 
-    public override IEnumerable<TpsRecord> GetMetadata(int table)
+    public override IEnumerable<MetadataRecordPayload> GetMetadata(int table)
     {
         return VisitRecords()
-            .Where(record => record.Header is MetadataHeader header && header.TableNumber == table);
+            .Where(record => record.Payload is MetadataRecordPayload header && header.TableNumber == table)
+            .Select(r => (MetadataRecordPayload)r.Payload!);
     }
 
-    public override IEnumerable<TpsRecord> GetAllRecords()
+    public override IEnumerable<TpsRecord> GetTpsRecords()
     {
         return VisitRecords();
     }
 
-    private IEnumerable<MemoRecord> OrderAndGroupMemos(IEnumerable<TpsRecord> memoRecords)
+    private IEnumerable<MemoRecordPayload> OrderAndGroupMemos(IEnumerable<MemoRecordPayload> memoRecords)
     {
         // Records must be merged in order according to the memo's sequence number, so we order them.
         // Large memos are spread across multiple structures and must be joined later.
         var orderedBySequenceNumber = memoRecords
-            .OrderBy(record => ((MemoHeader)record.Header).SequenceNumber);
+            .OrderBy(record => record.SequenceNumber);
 
         // Group the records by their owner and index.
         var groupedByOwnerAndIndex = orderedBySequenceNumber
             .GroupBy(record =>
             {
-                var header = (MemoHeader)record.Header;
-                return (owner: header.OwningRecord, index: header.MemoIndex);
+                //var header = (MemoHeader)record.Header;
+                //return (owner: header.OwningRecord, index: header.MemoIndex);
+                return (owner: record.RecordNumber, index: record.DefinitionIndex);
             });
 
         // Drop memos that have skipped sequence numbers, as this means the memo is missing a chunk of data.
         // Sequence numbers are zero-based.
         var filteredByCompleteSequences = groupedByOwnerAndIndex
-            .Where(group => group.Count() - 1 == ((MemoHeader)group.First().Header).SequenceNumber);
+            .Where(group => group.Count() - 1 == group.First().SequenceNumber);
 
         // Merge memo sequences into a single memo record.
         var resultingMemoRecords = filteredByCompleteSequences
-            .Select(group => new MemoRecord((MemoHeader)group.First().Header, Merge(group)));
+            .Select(group => //new MemoRecord((MemoHeader)group.First().Header, Merge(group))
+                group.First() with
+                {
+                    Content = MergeMemory(group.Select(r => r.Content)).ToArray()
+                });
 
         return resultingMemoRecords;
     }
 
-    public override IEnumerable<MemoRecord> GetMemoRecords(int table, bool ignoreErrors)
+    public override IEnumerable<MemoRecordPayload> GetMemoRecords(int table, bool ignoreErrors)
     {
         var memoRecords = VisitRecords(ignoreErrors)
             .Where(record =>
-                record.Header is MemoHeader header
-                && header.TableNumber == table);
+                record.Payload is MemoRecordPayload payload
+                && payload.TableNumber == table)
+            .Select(r => (MemoRecordPayload)r.Payload!);
 
         return OrderAndGroupMemos(memoRecords);
     }
 
-    public override IEnumerable<MemoRecord> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
+    public override IEnumerable<MemoRecordPayload> GetMemoRecords(int table, int memoIndex, bool ignoreErrors)
     {
         var memoRecords = VisitRecords(ignoreErrors)
             .Where(record =>
-                record.Header is MemoHeader header
-                && header.TableNumber == table
-                && header.MemoIndex == memoIndex);
+                record.Payload is MemoRecordPayload payload
+                && payload.TableNumber == table
+                && payload.DefinitionIndex == memoIndex)
+            .Select(r => (MemoRecordPayload)r.Payload!);
 
         return OrderAndGroupMemos(memoRecords);
     }
@@ -282,22 +306,46 @@ internal sealed class RandomAccessTpsFile : TpsFile
     public override IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(bool ignoreErrors)
     {
         return VisitRecords(ignoreErrors)
-            .Where(record => record.Header is TableDefinitionHeader)
+            .Where(record => record.Payload is TableDefinitionRecordPayload)
+            .Select(record => (TableDefinitionRecordPayload)record.Payload!)
 
-            // Records must be merged in order according to the header's block index.
-            .OrderBy(record => ((TableDefinitionHeader)record.Header).Block)
+            // Records must be merged in order according to the header's sequence number.
+            .OrderBy(record => record.SequenceNumber)
 
             // Group records by table number.
-            .GroupBy(record => record.Header.TableNumber)
+            .GroupBy(record => record.TableNumber)
 
             // Do not process groups that have skipped block indexes. (i.e. 0, 1, 3, 4)
-            .Where(group => group.Count() == ((TableDefinitionHeader)group.Last().Header).Block + 1)
+            .Where(group => group.Count() == group.Last().SequenceNumber + 1)
 
             .ToDictionary(
             keySelector: group => group.Key,
-            elementSelector: group => TableDefinition.Parse(Merge(group)));
+            elementSelector: group =>
+                //TableDefinition.Parse(Merge(group))
+                TableDefinition.Parse(
+                    new TpsRandomAccess(
+                        MergeMemory(
+                            group.Select(r => r.Content)).ToArray(),
+                        Encoding))
+            );
     }
 
-    private TpsRandomAccess Merge(IEnumerable<TpsRecord> records) =>
-        new TpsRandomAccess(records.SelectMany(r => r.DataRx.GetRemainderAsByteArray()).ToArray(), Encoding);
+    private ReadOnlyMemory<byte> MergeMemory(IEnumerable<ReadOnlyMemory<byte>> memories)
+    {
+        var mm = memories.ToList();
+
+        byte[] buffer = new byte[mm.Sum(m => m.Length)];
+        var bufferMem = buffer.AsMemory();
+        
+        int bufferOfs = 0;
+
+        foreach (var m in mm)
+        {
+            m.CopyTo(bufferMem[bufferOfs..]);
+
+            bufferOfs += m.Length;
+        }
+
+        return buffer;
+    }
 }

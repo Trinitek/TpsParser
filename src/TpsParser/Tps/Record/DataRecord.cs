@@ -41,8 +41,6 @@ public interface IDataRecord
 /// <inheritdoc/>
 internal sealed class DataRecord : IDataRecord
 {
-    private DataHeader Header { get; }
-
     /// <inheritdoc/>
     public TableDefinition TableDefinition { get; }
 
@@ -52,20 +50,25 @@ internal sealed class DataRecord : IDataRecord
     /// <inheritdoc/>
     public TpsRecord Record { get; }
 
+    public DataRecordPayload DataRecordPayload => (DataRecordPayload)Record.Payload!;
+
     /// <inheritdoc/>
-    public int RecordNumber => Header.RecordNumber;
+    public int RecordNumber => DataRecordPayload.RecordNumber;
 
     /// <summary>
     /// Instantiates a new data record.
     /// </summary>
     /// <param name="tpsRecord">The underlying record that contains the low-level file information.</param>
     /// <param name="tableDefinition">The table definition for the table to which the record belongs.</param>
-    public DataRecord(TpsRecord tpsRecord, TableDefinition tableDefinition)
+    /// <param name="encoding"></param>
+    public DataRecord(TpsRecord tpsRecord, TableDefinition tableDefinition, Encoding encoding)
     {
         Record = tpsRecord ?? throw new ArgumentNullException(nameof(tpsRecord));
         TableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));
-        Header = (DataHeader)Record.Header;
-        Values = TableDefinition.ParseFields(tpsRecord.DataRx.GetReaderForRemainder());
+
+        var rx = new TpsRandomAccess(DataRecordPayload.Content.ToArray(), encoding);
+
+        Values = TableDefinition.ParseFields(rx);
     }
 
     /// <inheritdoc/>
@@ -73,20 +76,4 @@ internal sealed class DataRecord : IDataRecord
         TableDefinition.Fields
             .Zip(Values, (field, value) => (field, value))
             .ToDictionary(pair => pair.field.Name, pair => pair.value);
-
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-    public override string ToString()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-    {
-        var sb = new StringBuilder();
-
-        sb.Append($"{RecordNumber} :");
-
-        foreach (var value in Values)
-        {
-            sb.Append($" {value}");
-        }
-
-        return sb.ToString();
-    }
 }

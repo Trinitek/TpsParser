@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace TpsParser.Tps.Record;
+namespace TpsParser;
 
 /// <summary>
 /// Represents the schema for a MEMO or BLOB.

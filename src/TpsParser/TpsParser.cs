@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TpsParser.Tps;
-using TpsParser.Tps.Record;
 using TpsParser.TypeModel;
 
 namespace TpsParser;
@@ -69,7 +68,7 @@ public sealed class TpsParser : IDisposable
 
     private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
     {
-        var dataRecords = TpsFile.GetDataRecords(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
+        var dataRecords = TpsFile.GetDataRows(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
 
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
@@ -82,7 +81,9 @@ public sealed class TpsParser : IDisposable
                 var definition = tableDefinitionRecord.Memos[index];
                 var memoRecordsForIndex = TpsFile.GetMemoRecords(table, index, ignoreErrors);
 
-                return memoRecordsForIndex.Select(record => (owner: record.Header.OwningRecord, name: definition.Name, value: record.GetValue(definition)));
+                return memoRecordsForIndex.Select(record =>
+                    (owner: record.RecordNumber, name: definition.Name, value: (IClaObject)(definition.IsMemo ? new TpsMemo(TpsFile.Encoding.GetString(record.Content.Span)) : new TpsBlob(record.Content))
+                ));
             })
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
             .ToDictionary(
@@ -129,7 +130,7 @@ public sealed class TpsParser : IDisposable
         var rows = unifiedRecords.Select(r => new Row(r.Key, r.Value));
 
         string tableName = tableNameDefinitions
-            .First(n => n.TableNumber == firstTableDefinition.Key).Header.Name;
+            .First(n => n.TableNumber == firstTableDefinition.Key).Name;
 
         var table = new Table(tableName, rows);
 

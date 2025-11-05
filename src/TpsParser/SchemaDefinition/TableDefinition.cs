@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TpsParser.Tps;
 using TpsParser.TypeModel;
 
-namespace TpsParser.Tps.Record;
+namespace TpsParser;
 
 /// <summary>
 /// Represents a file structure that encapsulates a table's schema.
@@ -21,17 +22,17 @@ public sealed record TableDefinition
     public int RecordLength { get; init; }
 
     /// <summary>
-    /// Gets the field definitions for this table. For MEMOs and BLOBs, see <see cref="Memos"/>.
+    /// Gets the field definitions for this table. For <c>MEMO</c>s s and <c>BLOB</c>s, see <see cref="Memos"/>.
     /// </summary>
     public required IReadOnlyList<FieldDefinition> Fields { get; init; }
 
     /// <summary>
-    /// Gets the MEMO and BLOB definitions for this table. The index of each definition corresponds to <see cref="MemoHeader.MemoIndex"/>.
+    /// Gets the <c>MEMO</c> and <c>BLOB</c> definitions for this table. The index of each definition corresponds to <see cref="MemoRecordPayload.DefinitionIndex"/>.
     /// </summary>
     public required IReadOnlyList<MemoDefinition> Memos { get; init; }
 
     /// <summary>
-    /// Gets the index definitions for this table.
+    /// Gets the index definitions for this table. The index of each definition corresponds to <see cref="IndexRecordPayload.DefinitionIndex"/>.
     /// </summary>
     public required IReadOnlyList<IndexDefinition> Indexes { get; init; }
 

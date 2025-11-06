@@ -15,34 +15,47 @@ public sealed record TpsRecord
     public byte Flags { get; init; }
 
     /// <summary>
-    /// Returns <see langword="true"/> if <see cref="Flags"/> indicates that the record data has <see cref="RecordLength"/>;
+    /// Returns <see langword="true"/> if <see cref="Flags"/> indicates that the record data has <see cref="PayloadTotalLength"/>;
     /// <see langword="false"/> if it was inherited from the previous record.
     /// </summary>
-    public bool OwnsRecordLength => (Flags & 0x80) != 0;
+    public bool OwnsPayloadTotalLength => (Flags & 0x80) != 0;
 
     /// <summary>
-    /// Returns <see langword="true"/> if <see cref="Flags"/> indicates that the record data has <see cref="HeaderLength"/>;
+    /// Returns <see langword="true"/> if <see cref="Flags"/> indicates that the record data has <see cref="PayloadHeaderLength"/>;
     /// <see langword="false"/> if it was inherited from the previous record.
     /// </summary>
-    public bool OwnsHeaderLength => (Flags & 0x40) != 0;
+    public bool OwnsPayloadHeaderLength => (Flags & 0x40) != 0;
 
     /// <summary>
-    /// From <see cref="Flags"/>, gets the number of bytes (no more than 63) that describe the next <see cref="TpsRecord"/>.
+    /// From <see cref="Flags"/>, gets the number of bytes (no more than 63) that are copied from the previous <see cref="TpsRecord"/> payload.
     /// </summary>
-    public byte NextRecordBytes => (byte)(Flags & 0x3F);
+    public byte InheritedBytes => (byte)(Flags & 0x3F);
 
     /// <summary>
-    /// Gets the length of the record in bytes.
+    /// Gets the length of the payload in bytes, including payload header.
     /// </summary>
-    public ushort RecordLength { get; init; }
+    public ushort PayloadTotalLength { get; init; }
 
     /// <summary>
-    /// Gets the length of the header in bytes.
+    /// Gets the length of the payload header in bytes.
     /// </summary>
-    public ushort HeaderLength { get; init; }
+    public ushort PayloadHeaderLength { get; init; }
 
     /// <summary>
-    /// Gets a memory region that reflects all the data for the payload, including payload header.
+    /// <para>
+    /// Gets a memory region that reflects the data for this <see cref="TpsRecord"/> before parsing.
+    /// The data includes the header, payload header, and payload content.
+    /// </para>
+    /// <para>
+    /// If the record has partial data (either <see cref="OwnsPayloadTotalLength"/> or <see cref="OwnsPayloadHeaderLength"/> are <see langword="false"/>)
+    /// then the payload header and content needs to be copied from the previous record in the <see cref="TpsPage"/>.
+    /// For partial records, this memory region reflects the record data before copying.
+    /// </para>
+    /// </summary>
+    public required ReadOnlyMemory<byte> RecordData { get; init; }
+
+    /// <summary>
+    /// Gets a memory region that reflects all of the payload header and content data.
     /// </summary>
     public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
@@ -59,31 +72,43 @@ public sealed record TpsRecord
     {
         ArgumentNullException.ThrowIfNull(rx);
 
-        //var data = rx.PeekRemainingMemory();
+        var incomingRecordData = rx.PeekRemainingMemory();
 
         byte flags = rx.ReadByte();
 
         if ((flags & 0xC0) != 0xC0)
         {
-            throw new TpsParserException($"Cannot construct a TpsRecord without record and header lengths (0x{flags:x2})");
+            throw new TpsParserException($"Cannot construct a TpsRecord without record and header lengths (Flags = 0x{flags:x2}).");
         }
 
-        ushort recordLength = rx.ReadUnsignedShortLE();
-        ushort headerLength = rx.ReadUnsignedShortLE();
+        ushort payloadTotalLength = rx.ReadUnsignedShortLE();
+        ushort payloadHeaderLength = rx.ReadUnsignedShortLE();
 
-        //var newRx = rx.Read(recordLength);
-        var payloadRx = rx.Read(recordLength);
+        if (payloadHeaderLength > payloadTotalLength)
+        {
+            throw new TpsParserException($"Payload header length ({payloadHeaderLength}) exceeds the total payload length ({payloadTotalLength}).");
+        }
 
-        //var payloadContentData = payloadRx.PeekRemainingMemory()[headerLength..];
+        // Memory region from the flags to the end of the payload.
+        // Ensure we're not including extra data at the end.
+        var actualRecordData = incomingRecordData[..(
+            sizeof(byte)
+            + sizeof(ushort)
+            + sizeof(ushort)
+            + payloadTotalLength)];
+
+        var payloadRx = rx.Read(payloadTotalLength);
+
         var payloadData = payloadRx.PeekRemainingMemory();
 
-        var payload = BuildPayload(payloadRx, tpsRecordHeaderLength: headerLength);
+        var payload = BuildPayload(payloadRx, payloadHeaderLength: payloadHeaderLength);
 
         return new TpsRecord
         {
             Flags = flags,
-            RecordLength = recordLength,
-            HeaderLength = headerLength,
+            PayloadTotalLength = payloadTotalLength,
+            PayloadHeaderLength = payloadHeaderLength,
+            RecordData = actualRecordData,
             Payload = payload,
             PayloadData = payloadData
         };
@@ -99,74 +124,88 @@ public sealed record TpsRecord
         ArgumentNullException.ThrowIfNull(previous);
         ArgumentNullException.ThrowIfNull(rx);
 
+        var incomingRecordData = rx.PeekRemainingMemory();
+
         byte flags = rx.ReadByte();
 
-        ushort recordLength;
+        ushort payloadTotalLength;
 
-        if ((flags & 0x80) != 0)
+        bool hasPayloadTotalLength = (flags & 0x80) != 0;
+        bool hasPayloadHeaderLength = (flags & 0x40) != 0;
+
+        if (hasPayloadTotalLength)
         {
-            recordLength = rx.ReadUnsignedShortLE();
+            payloadTotalLength = rx.ReadUnsignedShortLE();
         }
         else
         {
-            recordLength = previous.RecordLength;
+            payloadTotalLength = previous.PayloadTotalLength;
         }
 
-        ushort headerLength;
+        ushort payloadHeaderLength;
 
-        if ((flags & 0x40) != 0)
+        if (hasPayloadHeaderLength)
         {
-            headerLength = rx.ReadUnsignedShortLE();
+            payloadHeaderLength = rx.ReadUnsignedShortLE();
         }
         else
         {
-            headerLength = previous.HeaderLength;
+            payloadHeaderLength = previous.PayloadHeaderLength;
+        }
+
+        if (payloadHeaderLength > payloadTotalLength)
+        {
+            throw new TpsParserException($"Payload header length ({payloadHeaderLength}) exceeds the total payload length ({payloadTotalLength}).");
         }
 
         int bytesToCopy = flags & 0x3F; // no more than 63 bytes
 
-        byte[] newData = new byte[recordLength];
+        // Memory region from the flags to the end of the payload before copying.
+        // Ensure we're not including extra data at the end.
+        var actualRecordData = incomingRecordData[..(
+            sizeof(byte)
+            + (hasPayloadTotalLength ? sizeof(ushort) : 0)
+            + (hasPayloadHeaderLength ? sizeof(ushort) : 0)
+            + payloadTotalLength
+            - bytesToCopy)];
+
+        byte[] newData = new byte[payloadTotalLength];
         var newDataMemory = newData.AsMemory();
 
-        if (bytesToCopy > recordLength)
+        if (bytesToCopy > payloadTotalLength)
         {
-            throw new TpsParserException($"Number of bytes to copy ({bytesToCopy}) exceeds the record length ({recordLength}).");
+            throw new TpsParserException($"Number of bytes to copy ({bytesToCopy}) exceeds the record length ({payloadTotalLength}).");
         }
 
-        //previous.DataRx.PeekBaseSpan()[..bytesToCopy].CopyTo(newData);
         previous.PayloadData[..bytesToCopy].CopyTo(newData);
         
-        // TODO test coverage for well-formed memory copy
-        rx.ReadBytes(recordLength - bytesToCopy).CopyTo(newDataMemory[bytesToCopy..]);
+        rx.ReadBytes(payloadTotalLength - bytesToCopy).CopyTo(newDataMemory[bytesToCopy..]);
 
         var newRx = new TpsRandomAccess(newData, rx.Encoding);
 
-        if (newRx.Length != recordLength)
+        if (newRx.Length != payloadTotalLength)
         {
-            throw new TpsParserException($"Data and record length mismatch: expected {recordLength} but was {newRx.Length}.");
+            throw new TpsParserException($"Data and record length mismatch: expected {payloadTotalLength} but was {newRx.Length}.");
         }
-
-        //var headerRx = newRx.Read(headerLength);
-        //
-        //var header = BuildHeader(headerRx);
-
-        var payloadRx = newRx.Read(recordLength);
+        
+        var payloadRx = newRx.Read(payloadTotalLength);
 
         var payloadData = payloadRx.PeekRemainingMemory();
 
-        var payload = BuildPayload(payloadRx, tpsRecordHeaderLength: headerLength);
+        var payload = BuildPayload(payloadRx, payloadHeaderLength: payloadHeaderLength);
 
         return new TpsRecord
         {
             Flags = flags,
-            RecordLength = recordLength,
-            HeaderLength = headerLength,
+            PayloadTotalLength = payloadTotalLength,
+            PayloadHeaderLength = payloadHeaderLength,
+            RecordData = actualRecordData,
             Payload = payload,
             PayloadData = payloadData,
         };
     }
 
-    private static IRecordPayload? BuildPayload(TpsRandomAccess rx, ushort tpsRecordHeaderLength)
+    private static IRecordPayload? BuildPayload(TpsRandomAccess rx, ushort payloadHeaderLength)
     {
         if (rx.Length < 5)
         {
@@ -175,7 +214,7 @@ public sealed record TpsRecord
 
         if (rx.PeekByte(0) == (byte)RecordPayloadType.TableName)
         {
-            return TableNameRecordPayload.Parse(rx, tpsRecordHeaderLength);
+            return TableNameRecordPayload.Parse(rx, payloadHeaderLength);
         }
 
         var payloadType = (RecordPayloadType)rx.PeekByte(4);
@@ -474,15 +513,15 @@ public sealed record TableNameRecordPayload : IRecordPayload, IPayloadTableNumbe
     /// Creates a new <see cref="TableNameRecordPayload"/> from the given data reader.
     /// </summary>
     /// <param name="rx"></param>
-    /// <param name="tpsRecordHeaderLength"></param>
+    /// <param name="payloadHeaderLength"></param>
     /// <returns></returns>
-    public static TableNameRecordPayload Parse(TpsRandomAccess rx, ushort tpsRecordHeaderLength)
+    public static TableNameRecordPayload Parse(TpsRandomAccess rx, ushort payloadHeaderLength)
     {
         var mem = rx.PeekRemainingMemory();
         var span = mem.Span;
 
-        string name = rx.Encoding.GetString(span[1..tpsRecordHeaderLength]);
-        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[tpsRecordHeaderLength..]);
+        string name = rx.Encoding.GetString(span[1..payloadHeaderLength]);
+        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[payloadHeaderLength..]);
 
         return new TableNameRecordPayload
         {

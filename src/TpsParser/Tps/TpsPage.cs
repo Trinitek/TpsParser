@@ -33,6 +33,7 @@ public sealed record TpsPage
     /// </summary>
     public ushort RecordCount { get; init; }
 
+    /// <summary></summary>
     public byte Flags { get; init; }
 
     /// <summary>

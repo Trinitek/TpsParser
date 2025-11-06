@@ -17,7 +17,7 @@ internal sealed class TestTableNameRecordPayload
 
         var rx = new TpsRandomAccess(data, Encoding.ASCII);
 
-        var result = TableNameRecordPayload.Parse(rx, tpsRecordHeaderLength: 8);
+        var result = TableNameRecordPayload.Parse(rx, payloadHeaderLength: 8);
 
         using (Assert.EnterMultipleScope())
         {

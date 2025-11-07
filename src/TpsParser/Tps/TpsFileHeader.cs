@@ -42,9 +42,9 @@ public sealed record TpsFileHeader
     public int Changes { get; init; }
 
     /// <summary>
-    /// Gets the offset to the management page.
+    /// Gets the offset to the management block.
     /// </summary>
-    public int ManagementPageReferenceOffset { get; init; }
+    public uint ManagementBlockOffset { get; init; }
 
     /// <summary>
     /// <para>
@@ -89,23 +89,28 @@ public sealed record TpsFileHeader
         short zeroes = header.ReadShortLE();
         int lastIssuedRow = header.ReadLongBE();
         int changes = header.ReadLongLE();
-        int managementPageReferenceOffset = GetFileOffset(header.ReadLongLE());
+        uint managementBlockOffset = GetFileOffset(header.ReadLongLE());
 
-        // 60 pages are hard-defined in the header but many of them will be zero-length and/or duplicates.
-        const int NumberOfPages = 60;
+        // 60 blocks are hard-defined in the header but many of them will be zero-length and/or duplicates.
+        const int NumberOfBlocks = 60;
 
-        var pageRanges = new TpsBlockDescriptor[NumberOfPages];
+        var pageRanges = new TpsBlockDescriptor[NumberOfBlocks];
 
-        var pageStartRx = header.Read(length: NumberOfPages * 4 /* Four bytes per integer */);
+        var pageStartRx = header.Read(length: NumberOfBlocks * 4 /* Four bytes per integer */);
         var pageEndRx = header;
 
-        for (int i = 0; i < NumberOfPages; i++)
+        for (int i = 0; i < NumberOfBlocks; i++)
         {
             int startPageRef = pageStartRx.ReadLongLE();
             int endPageRef = pageEndRx.ReadLongLE();
 
-            int startOffset = GetFileOffset(startPageRef);
-            int endOffset = GetFileOffset(endPageRef);
+            uint startOffset = GetFileOffset(startPageRef);
+            uint endOffset = GetFileOffset(endPageRef);
+
+            if (endOffset < startOffset)
+            {
+                throw new TpsParserException($"Malformed block descriptor at index ({i}): EndOffset (0x{endOffset:8x}) is before StartOffset (0x{startOffset:8x}).");
+            }
 
             pageRanges[i] = new TpsBlockDescriptor(
                 StartOffset: startOffset,
@@ -122,12 +127,12 @@ public sealed record TpsFileHeader
             Zeroes = zeroes,
             LastIssuedRow = lastIssuedRow,
             Changes = changes,
-            ManagementPageReferenceOffset = managementPageReferenceOffset,
+            ManagementBlockOffset = managementBlockOffset,
             BlockDescriptors = [.. pageRanges]
         };
     }
 
-    private static int GetFileOffset(int pageReference) => (pageReference << 8) + 0x200;
+    private static uint GetFileOffset(int blockReference) => (uint)((blockReference << 8) + 0x200);
 
     /// <inheritdoc/>
     public bool Equals(TpsFileHeader? other)
@@ -141,7 +146,7 @@ public sealed record TpsFileHeader
             && Zeroes == other.Zeroes
             && LastIssuedRow == other.LastIssuedRow
             && Changes == other.Changes
-            && ManagementPageReferenceOffset == other.ManagementPageReferenceOffset
+            && ManagementBlockOffset == other.ManagementBlockOffset
             && BlockDescriptors.SequenceEqual(other.BlockDescriptors);
     }
 

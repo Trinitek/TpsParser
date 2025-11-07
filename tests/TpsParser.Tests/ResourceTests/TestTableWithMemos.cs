@@ -26,7 +26,7 @@ internal sealed class TestTableWithMemos
             Assert.That(header.Zeroes, Is.Zero);
             Assert.That(header.LastIssuedRow, Is.EqualTo(5));
             Assert.That(header.Changes, Is.EqualTo(11));
-            Assert.That(header.ManagementPageReferenceOffset, Is.EqualTo(512));
+            Assert.That(header.ManagementBlockOffset, Is.EqualTo(512));
             Assert.That(header.BlockDescriptors, Is.EqualTo(new TpsBlockDescriptor[] {
                 new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 1792),  new(1792, 1792), new(1792, 1792),
                 new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
@@ -48,7 +48,7 @@ internal sealed class TestTableWithMemos
                 Zeroes = 0,
                 LastIssuedRow = 5,
                 Changes = 11,
-                ManagementPageReferenceOffset = 512,
+                ManagementBlockOffset = 512,
                 BlockDescriptors = [
                     new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 512),   new(512, 1792),  new(1792, 1792), new(1792, 1792),
                     new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792), new(1792, 1792),
@@ -81,10 +81,10 @@ internal sealed class TestTableWithMemos
 
             var p0 = b0pages[0];
 
-            Assert.That(p0.Address, Is.EqualTo(512));
+            Assert.That(p0.AbsoluteAddress, Is.EqualTo(512));
             Assert.That(p0.Size, Is.EqualTo(1123));
             Assert.That(p0.SizeUncompressed, Is.EqualTo(1804));
-            Assert.That(p0.SizeUncompressedWithoutHeader, Is.EqualTo(1898));
+            Assert.That(p0.SizeUncompressedExpanded, Is.EqualTo(1898));
             Assert.That(p0.RecordCount, Is.EqualTo(14));
             Assert.That(p0.Flags, Is.Zero);
         }

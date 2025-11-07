@@ -12,22 +12,27 @@ public sealed record TpsBlock
     /// <summary>
     /// Gets the position in the file where the block starts.
     /// </summary>
-    public int StartOffset { get; init; }
+    public uint StartOffset { get; init; }
 
     /// <summary>
     /// Gets the position in the file where the block ends.
     /// </summary>
-    public int EndOffset { get; init; }
+    public uint EndOffset { get; init; }
 
     /// <summary>
     /// Gets the length of the block in bytes.
     /// </summary>
-    public int Length { get; init; }
+    public uint Length { get; init; }
 
     /// <summary>
     /// Gets the <see cref="TpsRandomAccess"/> reader used to access the data for this block.
     /// </summary>
     public required TpsRandomAccess DataRx { private get; init; }
+    
+    ///// <summary>
+    ///// Gets a memory region that reflects the data for this <see cref="TpsBlock"/>.
+    ///// </summary>
+    //public required ReadOnlyMemory<byte> BlockData { get; init; }
 
     private IReadOnlyList<TpsPage>? _pages = null;
 
@@ -48,7 +53,9 @@ public sealed record TpsBlock
         var blockRx = new TpsRandomAccess(
             rx,
             additiveOffset: 0,
-            length: blockDescriptor.EndOffset);
+            length: (int)blockDescriptor.EndOffset);
+
+        //var blockData = rx.
 
         return new TpsBlock
         {
@@ -56,6 +63,7 @@ public sealed record TpsBlock
             EndOffset = blockDescriptor.EndOffset,
             Length = blockDescriptor.Length,
             DataRx = blockRx
+            //BlockData = 
         };
     }
 
@@ -70,13 +78,18 @@ public sealed record TpsBlock
             return _pages;
         }
 
+        // Some blocks are 0 in length and should be skipped
+        if (Length == 0)
+        {
+            return [];
+        }
+
         var rx = DataRx;
 
         List<TpsPage> pages = [];
 
-        rx.JumpAbsolute(StartOffset);
+        rx.JumpAbsolute((int)StartOffset);
 
-        // Some blocks are 0 in length and should be skipped
         while (rx.Position < EndOffset)
         {
             if (IsCompletePage(rx))

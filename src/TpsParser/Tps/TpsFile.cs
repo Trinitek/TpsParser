@@ -103,10 +103,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
     public RandomAccessTpsFile(Stream stream)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(stream);
 
         byte[] fileData;
 
@@ -122,10 +119,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
     public RandomAccessTpsFile(Stream stream, Key key)
         : this(stream)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         Decrypt(key);
     }
@@ -138,10 +132,7 @@ internal sealed class RandomAccessTpsFile : TpsFile
     public RandomAccessTpsFile(TpsRandomAccess rx, Key key)
         : this(rx)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         Decrypt(key);
     }
@@ -154,12 +145,12 @@ internal sealed class RandomAccessTpsFile : TpsFile
 
         foreach (var pageRange in header.BlockDescriptors)
         {
-            int offset = pageRange.StartOffset;
-            int end = pageRange.EndOffset;
+            uint offset = pageRange.StartOffset;
+            uint end = pageRange.EndOffset;
 
             if ((offset != 0x200 || end != 0x200) && offset < Data.Length)
             {
-                key.Decrypt(new TpsRandomAccess(Data, offset, end - offset));
+                key.Decrypt(new TpsRandomAccess(Data, (int)offset, (int)(end - offset)));
             }
         }
     }

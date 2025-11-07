@@ -26,7 +26,7 @@ internal sealed class TestTpsRecord
         {
             Assert.That(result.OwnsPayloadHeaderLength, Is.True);
             Assert.That(result.OwnsPayloadTotalLength, Is.True);
-            Assert.That(result.InheritedBytes, Is.Zero);
+            Assert.That(result.PayloadInheritedBytes, Is.Zero);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x13));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x0f));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(data));
@@ -70,7 +70,7 @@ internal sealed class TestTpsRecord
         {
             Assert.That(result.OwnsPayloadHeaderLength, Is.True);
             Assert.That(result.OwnsPayloadTotalLength, Is.True);
-            Assert.That(result.InheritedBytes, Is.Zero);
+            Assert.That(result.PayloadInheritedBytes, Is.Zero);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x15));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x0d));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
@@ -114,7 +114,7 @@ internal sealed class TestTpsRecord
         {
             Assert.That(result.OwnsPayloadHeaderLength, Is.False);
             Assert.That(result.OwnsPayloadTotalLength, Is.True);
-            Assert.That(result.InheritedBytes, Is.Zero);
+            Assert.That(result.PayloadInheritedBytes, Is.Zero);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x15));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x0f));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
@@ -158,7 +158,7 @@ internal sealed class TestTpsRecord
         {
             Assert.That(result.OwnsPayloadHeaderLength, Is.True);
             Assert.That(result.OwnsPayloadTotalLength, Is.False);
-            Assert.That(result.InheritedBytes, Is.Zero);
+            Assert.That(result.PayloadInheritedBytes, Is.Zero);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x13));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x11));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
@@ -204,7 +204,7 @@ internal sealed class TestTpsRecord
             Assert.That(result.OwnsPayloadTotalLength, Is.False);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x13));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x0f));
-            Assert.That(result.InheritedBytes, Is.Zero);
+            Assert.That(result.PayloadInheritedBytes, Is.Zero);
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
             Assert.That(result.PayloadData.ToArray(), Is.EqualTo([
                 0xde, 0xad, 0xbe, 0xef, 0x00, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x00,
@@ -247,7 +247,7 @@ internal sealed class TestTpsRecord
             Assert.That(result.OwnsPayloadTotalLength, Is.True);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x09));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x03));
-            Assert.That(result.InheritedBytes, Is.EqualTo(0x04));
+            Assert.That(result.PayloadInheritedBytes, Is.EqualTo(0x04));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
             Assert.That(result.PayloadData.ToArray(), Is.EqualTo([
                 0xde, 0xad, 0xbe, 0xef, 0x32, 0x00, 0x00, 0x00, 0x03
@@ -289,7 +289,7 @@ internal sealed class TestTpsRecord
             Assert.That(result.OwnsPayloadTotalLength, Is.True);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x13));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x0f));
-            Assert.That(result.InheritedBytes, Is.EqualTo(0x0e));
+            Assert.That(result.PayloadInheritedBytes, Is.EqualTo(0x0e));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
             Assert.That(result.PayloadData.ToArray(), Is.EqualTo([
                 0xde, 0xad, 0xbe, 0xef, 0x00, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
@@ -332,7 +332,7 @@ internal sealed class TestTpsRecord
             Assert.That(result.OwnsPayloadTotalLength, Is.False);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x13));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x09));
-            Assert.That(result.InheritedBytes, Is.EqualTo(0x0e));
+            Assert.That(result.PayloadInheritedBytes, Is.EqualTo(0x0e));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
             Assert.That(result.PayloadData.ToArray(), Is.EqualTo([
                 0xde, 0xad, 0xbe, 0xef, 0x00, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
@@ -375,7 +375,7 @@ internal sealed class TestTpsRecord
             Assert.That(result.OwnsPayloadTotalLength, Is.False);
             Assert.That(result.PayloadTotalLength, Is.EqualTo(0x13));
             Assert.That(result.PayloadHeaderLength, Is.EqualTo(0x0f));
-            Assert.That(result.InheritedBytes, Is.EqualTo(0x0e));
+            Assert.That(result.PayloadInheritedBytes, Is.EqualTo(0x0e));
             Assert.That(result.RecordData.ToArray(), Is.EqualTo(d2));
             Assert.That(result.PayloadData.ToArray(), Is.EqualTo([
                 0x00, 0x00, 0x00, 0x01, 0x00, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x32, 0x00,

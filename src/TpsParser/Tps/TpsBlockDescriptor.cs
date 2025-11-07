@@ -5,10 +5,10 @@
 /// </summary>
 /// <param name="StartOffset"></param>
 /// <param name="EndOffset"></param>
-public sealed record TpsBlockDescriptor(int StartOffset, int EndOffset)
+public sealed record TpsBlockDescriptor(uint StartOffset, uint EndOffset)
 {
     /// <summary>
     /// Gets the length of the page in bytes.
     /// </summary>
-    public int Length => EndOffset - StartOffset;
+    public uint Length => EndOffset - StartOffset;
 }

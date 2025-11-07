@@ -29,7 +29,7 @@ public sealed record TpsRecord
     /// <summary>
     /// From <see cref="Flags"/>, gets the number of bytes (no more than 63) that are copied from the previous <see cref="TpsRecord"/> payload.
     /// </summary>
-    public byte InheritedBytes => (byte)(Flags & 0x3F);
+    public byte PayloadInheritedBytes => (byte)(Flags & 0x3F);
 
     /// <summary>
     /// Gets the length of the payload in bytes, including payload header.

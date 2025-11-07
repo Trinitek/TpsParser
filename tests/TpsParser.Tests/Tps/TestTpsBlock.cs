@@ -10,6 +10,12 @@ internal sealed class TestTpsBlock
     [Test]
     public void ShouldReadTwoBlocks()
     {
+        byte[] data = [
+            0x00, 0x00, 0x00, 0x00, /* AbsoluteAddress */
+            0x00, 0x02,             /* Size */
+
+            ];
+
         var rx = new TpsRandomAccess(new byte[4 * 256], Encoding.ASCII);
 
         rx.WriteLongLE(0);
@@ -80,7 +86,7 @@ internal sealed class TestTpsBlock
         using (Assert.EnterMultipleScope())
         {
             Assert.That(pages, Has.Count.EqualTo(1));
-            Assert.That(pages[0].Address, Is.EqualTo(0x100));
+            Assert.That(pages[0].AbsoluteAddress, Is.EqualTo(0x100));
             Assert.That(pages[0].Size, Is.EqualTo(0x200));
         }
     }

@@ -156,38 +156,29 @@ public sealed record TpsBlock
 
     private static bool IsCompletePage(TpsRandomAccess rx)
     {
-        ushort pageSize;
+        var mem = rx.PeekRemainingMemory();
+        var span = mem.Span;
 
-        pageSize = BinaryPrimitives.ReadUInt16LittleEndian(rx.PeekRemainingMemory().Span[4..]);
+        ushort pageSize = BinaryPrimitives.ReadUInt16LittleEndian(span[4..]);
 
-        rx.PushPosition();
+        int offset = 0;
+        int position = rx.Position;
 
-        try
+        while (offset < pageSize)
         {
-            int offset = 0;
+            offset += 0x100;
+            position += 0x100;
 
-            while (offset < pageSize)
+            if (offset < pageSize)
             {
-                offset += 0x100;
-                rx.JumpRelative(0x100);
+                int address = BinaryPrimitives.ReadInt32LittleEndian(span[offset..]);
 
-                if (offset < pageSize)
+                if (address == position)
                 {
-                    int address;
-
-                    address = BinaryPrimitives.ReadInt32LittleEndian(rx.PeekRemainingMemory().Span[0..]);
-
-                    if (address == rx.Position)
-                    {
-                        Debug.WriteLine("Incomplete page");
-                        return false;
-                    }
+                    Debug.WriteLine("Incomplete page");
+                    return false;
                 }
             }
-        }
-        finally
-        {
-            rx.PopPosition();
         }
 
         return true;

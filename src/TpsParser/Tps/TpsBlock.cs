@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -155,19 +156,9 @@ public sealed record TpsBlock
 
     private static bool IsCompletePage(TpsRandomAccess rx)
     {
-        int pageSize;
+        ushort pageSize;
 
-        rx.PushPosition();
-
-        try
-        {
-            _ = rx.ReadLongLE();
-            pageSize = rx.ReadShortLE();
-        }
-        finally
-        {
-            rx.PopPosition();
-        }
+        pageSize = BinaryPrimitives.ReadUInt16LittleEndian(rx.PeekRemainingMemory().Span[4..]);
 
         rx.PushPosition();
 
@@ -184,16 +175,7 @@ public sealed record TpsBlock
                 {
                     int address;
 
-                    rx.PushPosition();
-
-                    try
-                    {
-                        address = rx.ReadLongLE();
-                    }
-                    finally
-                    {
-                        rx.PopPosition();
-                    }
+                    address = BinaryPrimitives.ReadInt32LittleEndian(rx.PeekRemainingMemory().Span[0..]);
 
                     if (address == rx.Position)
                     {

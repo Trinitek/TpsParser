@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Linq;
 using System.Text;
 using TpsParser.Tps;
 
@@ -10,22 +11,43 @@ internal sealed class TestTpsBlock
     [Test]
     public void ShouldReadTwoBlocks()
     {
-        byte[] data = [
-            0x00, 0x00, 0x00, 0x00, /* AbsoluteAddress */
-            0x00, 0x02,             /* Size */
-
-            ];
+        //byte[] data = [
+        //    /* Block[0] */
+        //
+        //    /* Block[0]Page[0] */
+        //    0x00, 0x00, 0x00, 0x00, /* AbsoluteAddress */
+        //    0x00, 0x02,             /* Size */
+        //    0x00, 0x02,             /* SizeUncompressed */
+        //    0x00, 0x01,             /* RecordCount */
+        //    0x00,                   /* Flags */
+        //
+        //    ..Enumerable.Repeat<byte>(0xff, 0x200 - 11),    /* Page data (junk) */
+        //
+        //    /* Block[1] */
+        //
+        //    /* Block[1]Page[0] */
+        //    0x00, 0x00, 0x02, 0x00, /* AbsoluteAddress */
+        //    0x00, 0x02,             /* Size */
+        //    0x00, 0x02,             /* SizeUncompressed */
+        //    0x00, 0x01,             /* RecordCount */
+        //    0x00,                   /* Flags */
+        //
+        //    ..Enumerable.Repeat<byte>(0xee, 0x200 - 11),    /* Page data (junk) */
+        //    ];
+        //
+        //var rx = new TpsRandomAccess(data, Encoding.ASCII);
 
         var rx = new TpsRandomAccess(new byte[4 * 256], Encoding.ASCII);
-
+        
         rx.WriteLongLE(0);
         rx.WriteLongLE(0x200);
-
+        
         rx.JumpAbsolute(0x200);
         rx.WriteLongLE(0x200);
         rx.WriteLongLE(0x100);
-
+        
         rx.JumpAbsolute(0);
+
 
         var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
 

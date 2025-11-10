@@ -6,7 +6,7 @@ using TpsParser.Tps;
 namespace TpsParser.TypeModel;
 
 /// <summary>
-/// Represents a typed object within the TopSpeed file.
+/// Represents a typed field value within the TopSpeed file.
 /// <see cref="IClaObject"/> types are modeled to correspond directly to types found in the Clarion runtime.
 /// </summary>
 public interface IClaObject

@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/TpsParser.Data/TpsParser.Data.csproj" Id="d2c5ca94-d372-48fe-8564-bfbca3365ee9" />
     <Project Path="src/TpsParser/TpsParser.csproj" />
   </Folder>
   <Folder Name="/tests/">

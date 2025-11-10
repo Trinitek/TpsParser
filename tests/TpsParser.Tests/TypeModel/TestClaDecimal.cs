@@ -53,12 +53,6 @@ internal sealed class TestClaDecimal
             var converted = dec.ToDecimal();
 
             Assert.That(converted.HasValue);
-
-            if (converted.HasValue)
-            {
-                return;
-            }
-
             Assert.That(converted.Value, Is.EqualTo(expected));
         }
     }

@@ -17,12 +17,8 @@
     <PackageTags>clarion tps topspeed softvelocity</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\debug\TpsParser.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\release\TpsParser.xml</DocumentationFile>
-  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TpsParser\TpsParser.csproj"/>
+  </ItemGroup>
 
 </Project>

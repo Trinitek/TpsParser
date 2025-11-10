@@ -78,7 +78,7 @@ public sealed class TpsParser : IDisposable
         return tableDefinitionRecord.Memos
             .SelectMany((definition, index) =>
             {
-                var memoRecordsForIndex = TpsFile.GetMemoRecords(table, (byte)index, ignoreErrors);
+                var memoRecordsForIndex = TpsFile.GetMemoRecordPayloads(table, (byte)index, ignoreErrors);
 
                 return memoRecordsForIndex.Select(record =>
                     (owner: record.RecordNumber, name: definition.Name, value: (IClaObject)(definition.IsMemo ? new TpsMemo(TpsFile.EncodingOptions.ContentEncoding.GetString(record.Content.Span)) : new TpsBlob(record.Content))
@@ -98,7 +98,7 @@ public sealed class TpsParser : IDisposable
     /// <returns></returns>
     public Table BuildTable(bool ignoreErrors = false)
     {
-        var tableNameDefinitions = TpsFile.GetTableNameRecords();
+        var tableNameDefinitions = TpsFile.GetTableNameRecordPayloads();
 
         var tableDefinitions = TpsFile.GetTableDefinitions(ignoreErrors: ignoreErrors);
 

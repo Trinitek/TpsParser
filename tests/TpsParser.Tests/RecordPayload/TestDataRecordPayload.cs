@@ -16,9 +16,7 @@ internal sealed class TestDataRecordPayload
             0xde, 0xad, 0xbe, 0xef, /* Content (bogus deadbeef) */
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = DataRecordPayload.Parse(rx);
+        var result = new DataRecordPayload { PayloadData = data };
 
         using (Assert.EnterMultipleScope())
         {

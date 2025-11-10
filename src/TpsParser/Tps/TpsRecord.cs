@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Buffers.Binary;
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;
 
@@ -247,7 +245,8 @@ public sealed record TpsRecord
         return payloadType switch
         {
             RecordPayloadType.TableName => TableNameRecordPayload.Parse(rx, PayloadHeaderLength),
-            RecordPayloadType.Data => DataRecordPayload.Parse(rx),
+            //RecordPayloadType.Data => DataRecordPayload.Parse(rx),
+            RecordPayloadType.Data => new DataRecordPayload { PayloadData = PayloadData },
             RecordPayloadType.Metadata => MetadataRecordPayload.Parse(rx),
             RecordPayloadType.TableDef => TableDefinitionRecordPayload.Parse(rx),
             //RecordPayloadType.Memo => MemoRecordPayload.Parse(rx),
@@ -580,13 +579,15 @@ public sealed record TableNameRecordPayload : IRecordPayload, IPayloadTableNumbe
     }
 }
 
-public sealed record DataRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
+public readonly record struct DataRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
 {
+    public required ReadOnlyMemory<byte> PayloadData { get; init; }
+
     /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>
-    public int TableNumber { get; init; }
+    public int TableNumber => BinaryPrimitives.ReadInt32BigEndian(PayloadData.Span[0..]);
 
     /// <inheritdoc cref="IPayloadRecordNumber.RecordNumber"/>
-    public int RecordNumber { get; init; }
+    public int RecordNumber => BinaryPrimitives.ReadInt32BigEndian(PayloadData.Span[5..]);
 
     /// <summary>
     /// Gets the memory region of the content in this entry.
@@ -595,29 +596,29 @@ public sealed record DataRecordPayload : IRecordPayload, IPayloadTableNumber, IP
     /// Reverse-engineering note: these can be somewhat large compared to the other record types.
     /// You should expect the length of this to be equal to <see cref="TableDefinition.RecordLength"/>.
     /// </remarks>
-    public required ReadOnlyMemory<byte> Content { get; init; }
+    public ReadOnlyMemory<byte> Content => PayloadData[9..];
 
-    /// <summary>
-    /// Creates a new <see cref="DataRecordPayload"/> from the given data reader.
-    /// </summary>
-    /// <param name="rx"></param>
-    /// <returns></returns>
-    public static DataRecordPayload Parse(TpsRandomAccess rx)
-    {
-        var mem = rx.PeekRemainingMemory();
-        var span = mem.Span;
-
-        int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
-        // byte payloadType = span[4];
-
-        int recordNumber = BinaryPrimitives.ReadInt32BigEndian(span[5..]);
-        var content = mem[9..];
-
-        return new DataRecordPayload
-        {
-            TableNumber = tableNumber,
-            RecordNumber = recordNumber,
-            Content = content,
-        };
-    }
+    ///// <summary>
+    ///// Creates a new <see cref="DataRecordPayload"/> from the given data reader.
+    ///// </summary>
+    ///// <param name="rx"></param>
+    ///// <returns></returns>
+    //public static DataRecordPayload Parse(TpsRandomAccess rx)
+    //{
+    //    var mem = rx.PeekRemainingMemory();
+    //    var span = mem.Span;
+    //
+    //    int tableNumber = BinaryPrimitives.ReadInt32BigEndian(span[0..]);
+    //    // byte payloadType = span[4];
+    //
+    //    int recordNumber = BinaryPrimitives.ReadInt32BigEndian(span[5..]);
+    //    var content = mem[9..];
+    //
+    //    return new DataRecordPayload
+    //    {
+    //        TableNumber = tableNumber,
+    //        RecordNumber = recordNumber,
+    //        Content = content,
+    //    };
+    //}
 }

@@ -40,7 +40,7 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var tableNames = file.GetTableNameRecords();
+        var tableNames = file.GetTableNameRecordPayloads();
 
         Assert.That(tableNames.Count(), Is.EqualTo(1));
 
@@ -96,13 +96,13 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var indexes1 = file.GetIndexes(table: 1, index: 0)
+        var indexes1 = file.GetIndexRecordPayloads(table: 1, index: 0)
             .ToList();
 
         Assert.That(indexes1, Has.Count.EqualTo(1));
         Assert.That(indexes1[0].RecordNumber, Is.EqualTo(2));
 
-        var indexes2 = file.GetIndexes(table: 1, index: 1)
+        var indexes2 = file.GetIndexRecordPayloads(table: 1, index: 1)
             .ToList();
 
         Assert.That(indexes2, Has.Count.EqualTo(1));
@@ -115,7 +115,7 @@ internal sealed class TestTpsFile
         var file = GetTableWithMemosFile();
 
         var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-        var memos = file.GetMemoRecords(tableDefinitions.First().Key, ignoreErrors: false);
+        var memos = file.GetMemoRecordPayloads(tableDefinitions.First().Key, ignoreErrors: false);
 
         Assert.That(memos.Count(), Is.EqualTo(5));
     }

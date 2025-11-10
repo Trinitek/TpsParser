@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using TpsParser.Tps.Record;
 
 namespace TpsParser.Tps;
@@ -124,25 +123,54 @@ public sealed class TpsFile
     /// <param name="tableDefinition">The table definition that describes the table schema.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public IEnumerable<DataRecordPayload> GetDataRecords(int table, TableDefinition tableDefinition, bool ignoreErrors)
+    public IEnumerable<DataRecordPayload> GetDataRecordPayloads(int table, TableDefinition tableDefinition, bool ignoreErrors)
     {
-        return VisitRecords(ignoreErrors)
-            .Where(record => record.GetPayload() is DataRecordPayload pl && pl.TableNumber == table)
-            .Select(record => (DataRecordPayload)record.GetPayload()!);
+        return GetDataRecordPayloads(
+            table: table,
+            ignoreErrors: ignoreErrors);
+    }
+
+    public IEnumerable<DataRecordPayload> GetDataRecordPayloads(
+        int table,
+        bool ignoreErrors = false)
+    {
+        IEnumerable<DataRecordPayload> VisitData()
+        {
+            var records = VisitRecords();
+
+            foreach (var r in records)
+            {
+                if (r.PayloadType != RecordPayloadType.Data)
+                {
+                    continue;
+                }
+
+                var payload = new DataRecordPayload { PayloadData = r.PayloadData };
+
+                if (payload.TableNumber != table)
+                {
+                    continue;
+                }
+
+                yield return payload;
+            }
+        }
+
+        return VisitData();
     }
 
     /// <summary>
     /// Gets a list of table name records that describe the name of the tables included in the file.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<TableNameRecordPayload> GetTableNameRecords()
+    public IEnumerable<TableNameRecordPayload> GetTableNameRecordPayloads()
     {
         return VisitRecords()
             .Where(record => record.GetPayload() is TableNameRecordPayload)
             .Select(record => (TableNameRecordPayload)record.GetPayload()!);
     }
 
-    public IEnumerable<IndexRecordPayload> GetIndexes(int table, int index)
+    public IEnumerable<IndexRecordPayload> GetIndexRecordPayloads(int table, int index)
     {
         return VisitRecords()
             .Where(record =>
@@ -157,7 +185,7 @@ public sealed class TpsFile
     /// </summary>
     /// <param name="table">The table for which to get the metadata.</param>
     /// <returns></returns>
-    public IEnumerable<MetadataRecordPayload> GetMetadata(int table)
+    public IEnumerable<MetadataRecordPayload> GetMetadataRecordPayloads(int table)
     {
         return VisitRecords()
             .Where(record => record.GetPayload() is MetadataRecordPayload header && header.TableNumber == table)
@@ -218,9 +246,9 @@ public sealed class TpsFile
     /// <param name="table">The table number that owns the memos.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public IEnumerable<MemoRecordPayload> GetMemoRecords(int table, bool ignoreErrors)
+    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(int table, bool ignoreErrors)
     {
-        var memoRecords = GetMemoRecords(
+        var memoRecords = GetMemoRecordPayloads(
             table: table,
             owningRecord: null,
             memoDefinitionIndex: null,
@@ -236,9 +264,9 @@ public sealed class TpsFile
     /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
     /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
     /// <returns></returns>
-    public IEnumerable<MemoRecordPayload> GetMemoRecords(int table, byte memoIndex, bool ignoreErrors)
+    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(int table, byte memoIndex, bool ignoreErrors)
     {
-        var memoRecords = GetMemoRecords(
+        var memoRecords = GetMemoRecordPayloads(
             table: table,
             owningRecord: null,
             memoDefinitionIndex: memoIndex,
@@ -247,7 +275,7 @@ public sealed class TpsFile
         return OrderAndGroupMemos(memoRecords);
     }
 
-    public IEnumerable<MemoRecordPayload> GetMemoRecords(
+    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(
         int table,
         int? owningRecord = null,
         byte? memoDefinitionIndex = null,

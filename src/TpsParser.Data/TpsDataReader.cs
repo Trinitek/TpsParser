@@ -410,7 +410,7 @@ public class TpsDataReader : DbDataReader
         var ret = Enumerable.Range(0, tableDefinitionRecord.Memos.Length)
             .SelectMany(index => {
                 var definition = tableDefinitionRecord.Memos[index];
-                var memoRecordsForIndex = Parser?.TpsFile.GetMemoRecords(table, (byte)index, ignoreErrors);
+                var memoRecordsForIndex = Parser?.TpsFile.GetMemoRecordPayloads(table, (byte)index, ignoreErrors);
 
                 return memoRecordsForIndex.EmptyIfNull().Select(record => (owner: record.RecordNumber, name: definition.Name, value: record.GetValue(definition)));
             })

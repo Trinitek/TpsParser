@@ -31,7 +31,7 @@ public sealed class TpsParser : IDisposable
     public TpsParser(Stream stream)
     {
         Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-        TpsFile = new RandomAccessTpsFile(Stream);
+        TpsFile = new TpsFile(Stream);
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public sealed class TpsParser : IDisposable
     public TpsParser(Stream stream, string password)
     {
         Stream = stream ?? throw new ArgumentNullException(nameof(stream));
-        TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
+        TpsFile = new TpsFile(Stream, new Key(password));
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public sealed class TpsParser : IDisposable
     public TpsParser(string filename)
     {
         Stream = new FileStream(filename, FileMode.Open);
-        TpsFile = new RandomAccessTpsFile(Stream);
+        TpsFile = new TpsFile(Stream);
     }
 
     /// <summary>
@@ -63,26 +63,25 @@ public sealed class TpsParser : IDisposable
     public TpsParser(string filename, string password)
     {
         Stream = new FileStream(filename, FileMode.Open);
-        TpsFile = new RandomAccessTpsFile(Stream, new Key(password));
+        TpsFile = new TpsFile(Stream, new Key(password));
     }
 
     private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
     {
-        var dataRecords = TpsFile.GetDataRows(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
+        var dataRecords = TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, ignoreErrors);
 
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
     private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
     {
-        return Enumerable.Range(0, tableDefinitionRecord.Memos.Count())
-            .SelectMany(index =>
+        return tableDefinitionRecord.Memos
+            .SelectMany((definition, index) =>
             {
-                var definition = tableDefinitionRecord.Memos[index];
-                var memoRecordsForIndex = TpsFile.GetMemoRecords(table, index, ignoreErrors);
+                var memoRecordsForIndex = TpsFile.GetMemoRecords(table, (byte)index, ignoreErrors);
 
                 return memoRecordsForIndex.Select(record =>
-                    (owner: record.RecordNumber, name: definition.Name, value: (IClaObject)(definition.IsMemo ? new TpsMemo(TpsFile.Encoding.GetString(record.Content.Span)) : new TpsBlob(record.Content))
+                    (owner: record.RecordNumber, name: definition.Name, value: (IClaObject)(definition.IsMemo ? new TpsMemo(TpsFile.EncodingOptions.ContentEncoding.GetString(record.Content.Span)) : new TpsBlob(record.Content))
                 ));
             })
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))

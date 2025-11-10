@@ -2,13 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using TpsParser.TypeModel;
 
 namespace TpsParser.Data;
 
-public class TpsDataReader : System.Data.Common.DbDataReader
+public class TpsDataReader : DbDataReader
 {
     private TpsParser? Parser;
     private List<(int, TableDefinition)> TableDefinitions;
@@ -32,7 +33,9 @@ public class TpsDataReader : System.Data.Common.DbDataReader
     private const int VIRTUAL_FIELDS_RECORDNUMBER_OFFSET = 0;
 
     private bool IsDisposed;
-    public override void Close() {
+
+    public override void Close()
+    {
         base.Close();
         
         Parser?.Dispose();
@@ -44,6 +47,7 @@ public class TpsDataReader : System.Data.Common.DbDataReader
         ColumnNames_ToCase.Clear();
         ColumnDefinitions.Clear();
         Rows.Clear();
+
         IsDisposed = true;
     }
 
@@ -396,7 +400,7 @@ public class TpsDataReader : System.Data.Common.DbDataReader
 
     private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
     {
-        var dataRecords = Parser?.TpsFile.GetDataRows(table, tableDefinitionRecord: tableDefinitionRecord, ignoreErrors);
+        var dataRecords = Parser?.TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, ignoreErrors);
 
         return dataRecords.EmptyIfNull().ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
@@ -406,7 +410,7 @@ public class TpsDataReader : System.Data.Common.DbDataReader
         var ret = Enumerable.Range(0, tableDefinitionRecord.Memos.Length)
             .SelectMany(index => {
                 var definition = tableDefinitionRecord.Memos[index];
-                var memoRecordsForIndex = Parser?.TpsFile.GetMemoRecords(table, index, ignoreErrors);
+                var memoRecordsForIndex = Parser?.TpsFile.GetMemoRecords(table, (byte)index, ignoreErrors);
 
                 return memoRecordsForIndex.EmptyIfNull().Select(record => (owner: record.RecordNumber, name: definition.Name, value: record.GetValue(definition)));
             })

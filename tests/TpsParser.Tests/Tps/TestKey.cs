@@ -73,8 +73,8 @@ internal sealed class TestKey
         using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
         using (var fsUnencrypted = new FileStream("Resources/not-encrypted.tps", FileMode.Open))
         {
-            var encryptedFile = new RandomAccessTpsFile(fsEncrypted, new Key("a"));
-            var decryptedFile = new RandomAccessTpsFile(fsUnencrypted);
+            var encryptedFile = new TpsFile(fsEncrypted, new Key("a"));
+            var decryptedFile = new TpsFile(fsUnencrypted);
 
             var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
             var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
@@ -101,7 +101,7 @@ internal sealed class TestKey
     {
         using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
         {
-            var encryptedFile = new RandomAccessTpsFile(fsEncrypted);
+            var encryptedFile = new TpsFile(fsEncrypted);
 
             Assert.That(() => encryptedFile.GetFileHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
         }

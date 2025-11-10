@@ -10,7 +10,7 @@ internal sealed class TestTpsFileHeader
     [Test]
     public void ShouldParseHeader()
     {
-        var file = new RandomAccessTpsFile(new FileStream("Resources/header.dat", FileMode.Open));
+        var file = new TpsFile(new FileStream("Resources/header.dat", FileMode.Open));
 
         var header = file.GetFileHeader();
 
@@ -27,7 +27,7 @@ internal sealed class TestTpsFileHeader
     [Test]
     public void ShouldNotParseHeaderIfNotTopSpeed()
     {
-        var file = new RandomAccessTpsFile(new FileStream("Resources/bad-header.dat", FileMode.Open));
+        var file = new TpsFile(new FileStream("Resources/bad-header.dat", FileMode.Open));
 
         Assert.That(() => file.GetFileHeader(), Throws.TypeOf<TpsParserException>().With.Message.Contains("not a TopSpeed file").IgnoreCase);
     }

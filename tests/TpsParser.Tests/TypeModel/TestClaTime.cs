@@ -14,7 +14,7 @@ internal sealed class TestClaTime
     {
         using (var stream = new FileStream("Resources/table-with-time.tps", FileMode.Open))
         {
-            var file = new RandomAccessTpsFile(stream);
+            var file = new TpsFile(stream);
 
             var tableDef = file.GetTableDefinitions(false).First().Value;
             var record = file.GetDataRows(1, tableDef, false).First();

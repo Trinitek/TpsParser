@@ -13,7 +13,7 @@ internal sealed class TestTpsFile
     {
         using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
         {
-            return new RandomAccessTpsFile(stream);
+            return new TpsFile(stream);
         }
     }
 
@@ -21,7 +21,7 @@ internal sealed class TestTpsFile
     {
         using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
         {
-            return new RandomAccessTpsFile(stream);
+            return new TpsFile(stream);
         }
     }
 

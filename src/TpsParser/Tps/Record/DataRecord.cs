@@ -50,7 +50,7 @@ internal sealed class DataRecord : IDataRecord
     /// <inheritdoc/>
     public TpsRecord Record { get; }
 
-    public DataRecordPayload DataRecordPayload => (DataRecordPayload)Record.Payload!;
+    public DataRecordPayload DataRecordPayload => (DataRecordPayload)Record.GetPayload()!;
 
     /// <inheritdoc/>
     public int RecordNumber => DataRecordPayload.RecordNumber;

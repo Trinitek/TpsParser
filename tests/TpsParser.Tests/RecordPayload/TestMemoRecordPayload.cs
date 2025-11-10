@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Text;
 using TpsParser.Tps;
 
 namespace TpsParser.Tests;
@@ -33,9 +32,7 @@ internal sealed class TestMemoRecordPayload
             0x75, 0x6d, 0x20, 0x61, 0x6c, 0x69, 0x71, 0x75, 0x61, 0x20, 0x75, 0x74, 0x20, 0x73, 0x69, 0x74,
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = MemoRecordPayload.Parse(rx);
+        var result = new MemoRecordPayload { PayloadData = data };
 
         using (Assert.EnterMultipleScope())
         {

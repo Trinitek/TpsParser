@@ -321,15 +321,37 @@ public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal
     }
 
     /// <inheritdoc/>
-    public Maybe<decimal> ToDecimal() =>
-        Scale > 28 && (ValueHigh & 0x0FFFF_0000_0000_0000) > 0ul
-            ? Maybe.None<decimal>()
-            : Maybe.Some(new decimal(
-                lo: 0,
-                mid: 0,
-                hi: 0,
-                isNegative: IsNegative,
-                scale: Scale));
+    public Maybe<decimal> ToDecimal()
+    {
+        if (Scale > 28 && (ValueHigh & 0x0FFFF_0000_0000_0000) > 0ul)
+        {
+            return Maybe.None<decimal>();
+        }
+
+        UInt128 counter = 0;
+        UInt128 placeMultiplier = 1;
+
+        for (int lowShift = 0; lowShift < 64; lowShift += 4)
+        {
+            counter += ((ValueLow >> lowShift) & 0xF) * placeMultiplier;
+
+            placeMultiplier *= 10;
+        }
+
+        for (int highShift = 0; highShift < 48; highShift += 4)
+        {
+            counter += ((ValueHigh >> highShift) & 0xF) * placeMultiplier;
+
+            placeMultiplier *= 10;
+        }
+
+        return Maybe.Some(new decimal(
+            lo: (int)counter,
+            mid: (int)(counter >> 32),
+            hi: (int)(counter >> 64),
+            isNegative: IsNegative,
+            scale: Scale));
+    }
 
     /// <inheritdoc/>
     public Maybe<float> ToFloat() => ToDecimal().ConvertSome(d => (float)d);

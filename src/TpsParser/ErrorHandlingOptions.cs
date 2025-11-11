@@ -7,6 +7,17 @@ public sealed record class ErrorHandlingOptions
     public static readonly ErrorHandlingOptions Default = new();
 
     /// <summary>
+    /// Gets an <see cref="ErrorHandlingOptions"/> instance that uses the strictest error handling behavior, throwing exceptions where possible.
+    /// </summary>
+    public static readonly ErrorHandlingOptions Strict = new()
+    {
+        ThrowOnInvalidStructure = true,
+        ThrowOnRleDecompressionError = true,
+        RleUndersizedDecompressionBehavior = RleSizeMismatchBehavior.Throw,
+        RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Throw
+    };
+
+    /// <summary>
     /// Whether to throw an exception when an invalid TPS file structure is encountered.
     /// If <see langword="false"/>, the parser will attempt to continue parsing despite errors.
     /// Default is <see langword="true"/>.

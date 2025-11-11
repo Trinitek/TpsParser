@@ -58,7 +58,7 @@ public static class RleDecoder
                     skip = (msb << 7 & 0xFF00) + lsb + shift;
                 }
 
-                unpackedBytes.AddRange(packed[position..(position + skip)]);
+                unpackedBytes.AddRange(packed.Slice(position, skip));
                 position += skip;
 
                 if (position < packed.Length)

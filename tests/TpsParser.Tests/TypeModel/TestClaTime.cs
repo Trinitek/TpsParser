@@ -13,10 +13,10 @@ internal sealed class TestClaTime
     {
         using (var stream = new FileStream("Resources/table-with-time.tps", FileMode.Open))
         {
-            var file = new TpsFile(stream);
+            var file = new TpsFile(stream, errorHandlingOptions: ErrorHandlingOptions.Strict);
 
-            var tableDef = file.GetTableDefinitions(false).First().Value;
-            var record = file.GetDataRows(1, tableDef, false).First();
+            var tableDef = file.GetTableDefinitions().First().Value;
+            var record = file.GetDataRows(1, tableDef).First();
 
             var valuePairs = record.GetFieldValuePairs();
 

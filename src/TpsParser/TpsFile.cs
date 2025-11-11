@@ -104,13 +104,15 @@ public sealed class TpsFile
         return blocks;
     }
 
-    public IEnumerable<TpsRecord> EnumerateRecords(bool ignoreErrors = false)
+    public IEnumerable<TpsRecord> EnumerateRecords(ErrorHandlingOptions? errorHandlingOptions = null)
     {
+        errorHandlingOptions ??= ErrorHandlingOptions;
+
         foreach (var block in GetBlocks())
         {
-            foreach (var page in block.GetPages(ignoreErrors))
+            foreach (var page in block.GetPages())
             {
-                foreach (var record in page.GetRecords())
+                foreach (var record in page.GetRecords(errorHandlingOptions))
                 {
                     yield return record;
                 }
@@ -123,11 +125,11 @@ public sealed class TpsFile
     /// </summary>
     /// <param name="table">The table from which to get the records.</param>
     /// <param name="tableDefinition">The table definition that describes the table schema.</param>
-    /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+    /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IEnumerable<IDataRecord> GetDataRows(int table, TableDefinition tableDefinition, bool ignoreErrors)
+    public IEnumerable<IDataRecord> GetDataRows(int table, TableDefinition tableDefinition, ErrorHandlingOptions? errorHandlingOptions = null)
     {
-        return EnumerateRecords(ignoreErrors)
+        return EnumerateRecords(errorHandlingOptions)
             .Where(record => record.GetPayload() is DataRecordPayload pl && pl.TableNumber == table)
             .Select(record => new DataRecord(record, tableDefinition, EncodingOptions.ContentEncoding));
     }
@@ -137,22 +139,25 @@ public sealed class TpsFile
     /// </summary>
     /// <param name="table">The table from which to get the records.</param>
     /// <param name="tableDefinition">The table definition that describes the table schema.</param>
-    /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+    /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IEnumerable<DataRecordPayload> GetDataRecordPayloads(int table, TableDefinition tableDefinition, bool ignoreErrors)
+    public IEnumerable<DataRecordPayload> GetDataRecordPayloads(
+        int table,
+        TableDefinition tableDefinition,
+        ErrorHandlingOptions? errorHandlingOptions = null)
     {
         return GetDataRecordPayloads(
             table: table,
-            ignoreErrors: ignoreErrors);
+            errorHandlingOptions: errorHandlingOptions);
     }
 
     public IEnumerable<DataRecordPayload> GetDataRecordPayloads(
         int table,
-        bool ignoreErrors = false)
+        ErrorHandlingOptions? errorHandlingOptions = null)
     {
         IEnumerable<DataRecordPayload> VisitData()
         {
-            var records = EnumerateRecords();
+            var records = EnumerateRecords(errorHandlingOptions);
 
             foreach (var r in records)
             {
@@ -260,15 +265,15 @@ public sealed class TpsFile
     /// Gets a dictionary of memo and blob records for the associated table.
     /// </summary>
     /// <param name="table">The table number that owns the memos.</param>
-    /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+    /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(int table, bool ignoreErrors)
+    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(int table, ErrorHandlingOptions? errorHandlingOptions = null)
     {
-        var memoRecords = GetMemoRecordPayloads(
+        var memoRecords = EnumerateMemoRecordPayloads(
             table: table,
             owningRecord: null,
             memoDefinitionIndex: null,
-            ignoreErrors: ignoreErrors);
+            errorHandlingOptions: errorHandlingOptions);
 
         return OrderAndGroupMemos(memoRecords);
     }
@@ -278,28 +283,28 @@ public sealed class TpsFile
     /// </summary>
     /// <param name="table">The table number that owns the memo.</param>
     /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
-    /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+    /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(int table, byte memoIndex, bool ignoreErrors)
+    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(int table, byte memoIndex, ErrorHandlingOptions? errorHandlingOptions = null)
     {
-        var memoRecords = GetMemoRecordPayloads(
+        var memoRecords = EnumerateMemoRecordPayloads(
             table: table,
             owningRecord: null,
             memoDefinitionIndex: memoIndex,
-            ignoreErrors: ignoreErrors);
+            errorHandlingOptions: errorHandlingOptions);
 
         return OrderAndGroupMemos(memoRecords);
     }
 
-    public IEnumerable<MemoRecordPayload> GetMemoRecordPayloads(
+    public IEnumerable<MemoRecordPayload> EnumerateMemoRecordPayloads(
         int table,
         int? owningRecord = null,
         byte? memoDefinitionIndex = null,
-        bool ignoreErrors = false)
+        ErrorHandlingOptions? errorHandlingOptions = null)
     {
         IEnumerable<MemoRecordPayload> VisitMemos()
         {
-            var records = EnumerateRecords(ignoreErrors);
+            var records = EnumerateRecords(errorHandlingOptions);
 
             foreach (var r in records)
             {
@@ -335,11 +340,11 @@ public sealed class TpsFile
     /// <summary>
     /// Gets a dictionary of table definitions and their associated table numbers.
     /// </summary>
-    /// <param name="ignoreErrors">True if exceptions should not be thrown when unexpected data is encountered.</param>
+    /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(bool ignoreErrors)
+    public IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(ErrorHandlingOptions? errorHandlingOptions = null)
     {
-        return EnumerateRecords(ignoreErrors)
+        return EnumerateRecords(errorHandlingOptions)
             .Where(record => record.GetPayload() is TableDefinitionRecordPayload)
             .Select(record => (TableDefinitionRecordPayload)record.GetPayload()!)
 

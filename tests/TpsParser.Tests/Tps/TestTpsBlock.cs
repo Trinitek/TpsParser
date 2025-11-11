@@ -49,7 +49,7 @@ internal sealed class TestTpsBlock
 
         var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
 
-        var pages = block.GetPages(ignorePageErrors: false);
+        var pages = block.GetPages();
 
         using (Assert.EnterMultipleScope())
         {
@@ -75,7 +75,7 @@ internal sealed class TestTpsBlock
 
         var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
 
-        var pages = block.GetPages(ignorePageErrors: false);
+        var pages = block.GetPages();
 
         using (Assert.EnterMultipleScope())
         {
@@ -101,7 +101,7 @@ internal sealed class TestTpsBlock
 
         var block = TpsBlock.Parse(new TpsBlockDescriptor(0, 0x300), rx);
 
-        var pages = block.GetPages(ignorePageErrors: false);
+        var pages = block.GetPages();
 
         using (Assert.EnterMultipleScope())
         {

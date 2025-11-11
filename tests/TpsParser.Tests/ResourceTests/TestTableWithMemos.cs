@@ -73,7 +73,7 @@ internal sealed class TestTableWithMemos
             Assert.That(blocks, Has.Count.EqualTo(1));
 
             var b0 = blocks[0];
-            var b0pages = b0.GetPages(ignorePageErrors: false);
+            var b0pages = b0.GetPages();
 
             Assert.That(b0pages, Has.Count.EqualTo(1));
 
@@ -93,7 +93,7 @@ internal sealed class TestTableWithMemos
     {
         using var parser = new TpsParser(Filename);
 
-        var tableDefinitions = parser.TpsFile.GetTableDefinitions(ignoreErrors: false);
+        var tableDefinitions = parser.TpsFile.GetTableDefinitions(errorHandlingOptions: ErrorHandlingOptions.Strict);
 
         Assert.That(tableDefinitions, Has.Count.EqualTo(1));
 

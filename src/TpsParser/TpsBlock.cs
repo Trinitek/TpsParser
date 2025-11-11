@@ -72,7 +72,7 @@ public sealed record TpsBlock
     /// Gets all pages in this block.
     /// </summary>
     /// <returns></returns>
-    public IReadOnlyList<TpsPage> GetPages(bool ignorePageErrors)
+    public IReadOnlyList<TpsPage> GetPages()
     {
         if (_pages is not null)
         {
@@ -95,23 +95,9 @@ public sealed record TpsBlock
         {
             if (IsCompletePage(rx))
             {
-                try
-                {
-                    var page = TpsPage.Parse(rx);
+                var page = TpsPage.Parse(rx);
 
-                    pages.Add(page);
-                }
-                catch (RunLengthEncodingException ex)
-                {
-                    if (ignorePageErrors)
-                    {
-                        Debug.WriteLine($"Ignored RLE error: {ex}");
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                pages.Add(page);
             }
             else
             {

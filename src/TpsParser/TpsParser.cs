@@ -65,19 +65,19 @@ public sealed class TpsParser : IDisposable
         TpsFile = new TpsFile(Stream, new Key(password));
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, ErrorHandlingOptions? errorHandlingOptions)
     {
-        var dataRecords = TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, ignoreErrors);
+        var dataRecords = TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, errorHandlingOptions: errorHandlingOptions);
 
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, ErrorHandlingOptions? errorHandlingOptions)
     {
         return tableDefinitionRecord.Memos
             .SelectMany((definition, index) =>
             {
-                var memoRecordsForIndex = TpsFile.GetMemoRecordPayloads(table, (byte)index, ignoreErrors);
+                var memoRecordsForIndex = TpsFile.GetMemoRecordPayloads(table, (byte)index, errorHandlingOptions);
 
                 return memoRecordsForIndex.Select(record =>
                     (owner: record.RecordNumber, name: definition.Name, value: (IClaObject)(definition.IsMemo ? new TpsMemo(TpsFile.EncodingOptions.ContentEncoding.GetString(record.Content.Span)) : new TpsBlob(record.Content))
@@ -93,18 +93,18 @@ public sealed class TpsParser : IDisposable
     /// <summary>
     /// Gets a high level representation of the first table in the file.
     /// </summary>
-    /// <param name="ignoreErrors">If true, the reader will not throw an exception when it encounters unexpected data.</param>
+    /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public Table BuildTable(bool ignoreErrors = false)
+    public Table BuildTable(ErrorHandlingOptions? errorHandlingOptions = null)
     {
         var tableNameDefinitions = TpsFile.GetTableNameRecordPayloads();
 
-        var tableDefinitions = TpsFile.GetTableDefinitions(ignoreErrors: ignoreErrors);
+        var tableDefinitions = TpsFile.GetTableDefinitions(errorHandlingOptions);
 
         var firstTableDefinition = tableDefinitions.First();
 
-        var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
-        var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, ignoreErrors);
+        var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, errorHandlingOptions);
+        var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, errorHandlingOptions);
 
         var unifiedRecords = new Dictionary<int, Dictionary<string, IClaObject>>();
 

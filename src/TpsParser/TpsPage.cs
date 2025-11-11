@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TpsParser;
 
@@ -15,18 +16,18 @@ public sealed record TpsPage
     public int AbsoluteAddress { get; init; }
 
     /// <summary>
-    /// Gets the size of the page in bytes.
+    /// Gets the size of the page in bytes, including page header.
     /// </summary>
     public ushort Size { get; init; }
 
     /// <summary>
-    /// Gets the size of the page in bytes when uncompressed.
+    /// Gets the size of the page in bytes when uncompressed, including page header.
     /// </summary>
     public ushort SizeUncompressed { get; init; }
 
     /// <summary>
     /// <para>
-    /// Gets the size of the page in bytes when uncompressed and all <see cref="TpsRecord"/> data is fully expanded.
+    /// Gets the size of the page in bytes when uncompressed and all <see cref="TpsRecord"/> data is fully expanded, including page header.
     /// </para>
     /// <para>
     /// When stored, records are deduplicated by partially referencing data from the previous record in the page.
@@ -68,6 +69,8 @@ public sealed record TpsPage
     private TpsRandomAccess? _data;
     private IReadOnlyList<TpsRecord>? _records = null;
 
+    private const int PAGE_HEADER_LENGTH = 13;
+
     /// <summary>
     /// Creates a new <see cref="TpsPage"/> by parsing the data from the given <see cref="TpsRandomAccess"/> reader.
     /// </summary>
@@ -100,7 +103,7 @@ public sealed record TpsPage
             + sizeof(ushort)
             + sizeof(byte));
 
-        var compressedDataRx = header.Read(size - 13);
+        var compressedDataRx = header.Read(size - PAGE_HEADER_LENGTH);
 
         // TODO need to update TpsBlock tests before we can constrain the mem length.
         var pageData = mem;
@@ -109,7 +112,8 @@ public sealed record TpsPage
         //    + sizeof(ushort)
         //    + size)];
 
-        var compressedData = mem[13..];
+        //var compressedData = mem.Slice(13, size - 13);
+        var compressedData = compressedDataRx.PeekRemainingMemory();
 
         return new TpsPage
         {
@@ -125,23 +129,30 @@ public sealed record TpsPage
         };
     }
 
-    private TpsRandomAccess Decompress()
+    private bool TryDecompress(ErrorHandlingOptions errorHandlingOptions, [NotNullWhen(true)] out TpsRandomAccess? rx)
     {
         if (Size != SizeUncompressed
             && Flags == 0)
         {
             try
             {
-                CompressedDataRx.PushPosition();
-                _data = CompressedDataRx.UnpackRunLengthEncoding();
+                if (!RleDecoder.TryUnpack(
+                    packed: CompressedData.Span,
+                    expectedUnpackedSize: SizeUncompressed - PAGE_HEADER_LENGTH,
+                    errorHandlingOptions: errorHandlingOptions,
+                    out byte[]? unpackedData))
+                {
+                    rx = null;
+                    return false;
+                }
+
+                _data = new TpsRandomAccess(
+                    data: unpackedData,
+                    encoding: CompressedDataRx.Encoding);
             }
             catch (Exception ex)
             {
-                throw new RunLengthEncodingException($"Bad RLE data block at index {CompressedDataRx} in {ToString()}", ex);
-            }
-            finally
-            {
-                CompressedDataRx.PopPosition();
+                throw new TpsParserException($"RLE decompression failed at page {AbsoluteAddress:x8}.", ex);
             }
         }
         else
@@ -149,21 +160,28 @@ public sealed record TpsPage
             _data = CompressedDataRx;
         }
 
-        return _data;
+        rx = _data;
+        return true;
     }
 
     /// <summary>
     /// Gets all records in this page.
     /// </summary>
     /// <returns></returns>
-    public IReadOnlyList<TpsRecord> GetRecords()
+    public IReadOnlyList<TpsRecord> GetRecords(ErrorHandlingOptions errorHandlingOptions)
     {
         if (_records is not null)
         {
             return _records;
         }
 
-        var rx = Decompress();
+        if (!TryDecompress(errorHandlingOptions, out var rx))
+        {
+            // Decompression failed; no records.
+
+            _records = [];
+            return _records;
+        }
 
         List<TpsRecord> records = new(RecordCount);
         
@@ -204,5 +222,13 @@ public sealed record TpsPage
         _records = records;
 
         return _records;
+    }
+
+    /// <summary>
+    /// Clears the record cache so that records will be re-parsed on the next call to <see cref="GetRecords"/>.
+    /// </summary>
+    public void ClearRecordCache()
+    {
+        _records = null;
     }
 }

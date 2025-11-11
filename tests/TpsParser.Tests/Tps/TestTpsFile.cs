@@ -12,7 +12,7 @@ internal sealed class TestTpsFile
     {
         using (var stream = new FileStream("Resources/table.tps", FileMode.Open))
         {
-            return new TpsFile(stream);
+            return new TpsFile(stream, errorHandlingOptions: ErrorHandlingOptions.Strict);
         }
     }
 
@@ -20,7 +20,7 @@ internal sealed class TestTpsFile
     {
         using (var stream = new FileStream("Resources/table-with-memos.tps", FileMode.Open))
         {
-            return new TpsFile(stream);
+            return new TpsFile(stream, errorHandlingOptions: ErrorHandlingOptions.Strict);
         }
     }
 
@@ -43,7 +43,7 @@ internal sealed class TestTpsFile
 
         Assert.That(tableNames.Count(), Is.EqualTo(1));
 
-        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+        var tableDefinitions = file.GetTableDefinitions();
 
         Assert.That(tableDefinitions, Has.Count.EqualTo(1));
         Assert.That(tableDefinitions[1].Fields, Has.Length.EqualTo(2));
@@ -56,7 +56,7 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
+        var tableDefinitions = file.GetTableDefinitions();
         var fields = tableDefinitions[1].Fields;
 
         using (Assert.EnterMultipleScope())
@@ -76,8 +76,8 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-        var dataRecords = file.GetDataRows(table: 1, tableDefinitions[1], ignoreErrors: false)
+        var tableDefinitions = file.GetTableDefinitions();
+        var dataRecords = file.GetDataRows(table: 1, tableDefinition: tableDefinitions[1])
             .ToList();
 
         using (Assert.EnterMultipleScope())
@@ -113,8 +113,8 @@ internal sealed class TestTpsFile
     {
         var file = GetTableWithMemosFile();
 
-        var tableDefinitions = file.GetTableDefinitions(ignoreErrors: false);
-        var memos = file.GetMemoRecordPayloads(tableDefinitions.First().Key, ignoreErrors: false);
+        var tableDefinitions = file.GetTableDefinitions();
+        var memos = file.GetMemoRecordPayloads(tableDefinitions.First().Key);
 
         Assert.That(memos.Count(), Is.EqualTo(5));
     }

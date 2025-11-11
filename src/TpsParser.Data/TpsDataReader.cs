@@ -400,7 +400,7 @@ public class TpsDataReader : DbDataReader
 
     private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
     {
-        var dataRecords = Parser?.TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, ignoreErrors);
+        var dataRecords = Parser?.TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, errorHandlingOptions: TODO);
 
         return dataRecords.EmptyIfNull().ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }

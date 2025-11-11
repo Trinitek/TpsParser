@@ -72,17 +72,19 @@ internal sealed class TestKey
         using (var fsEncrypted = new FileStream("Resources/encrypted-a.tps", FileMode.Open))
         using (var fsUnencrypted = new FileStream("Resources/not-encrypted.tps", FileMode.Open))
         {
-            var encryptedFile = new TpsFile(fsEncrypted, new Key("a"));
-            var decryptedFile = new TpsFile(fsUnencrypted);
+            var errorOpt = ErrorHandlingOptions.Strict;
 
-            var encryptedDefinitions = encryptedFile.GetTableDefinitions(ignoreErrors: false);
-            var decryptedDefinitions = decryptedFile.GetTableDefinitions(ignoreErrors: false);
+            var encryptedFile = new TpsFile(fsEncrypted, new Key("a"), errorHandlingOptions: errorOpt);
+            var decryptedFile = new TpsFile(fsUnencrypted, errorHandlingOptions: errorOpt);
+
+            var encryptedDefinitions = encryptedFile.GetTableDefinitions();
+            var decryptedDefinitions = decryptedFile.GetTableDefinitions();
 
             Assert.That(encryptedDefinitions, Has.Count.EqualTo(decryptedDefinitions.Count));
 
             // Note that record IDs may differ.
-            var encryptedRecords = encryptedFile.GetDataRecordPayloads(table: 2, tableDefinition: encryptedDefinitions[2], ignoreErrors: false);
-            var decryptedRecords = decryptedFile.GetDataRecordPayloads(table: 1, tableDefinition: decryptedDefinitions[1], ignoreErrors: false);
+            var encryptedRecords = encryptedFile.GetDataRecordPayloads(table: 2, tableDefinition: encryptedDefinitions[2]);
+            var decryptedRecords = decryptedFile.GetDataRecordPayloads(table: 1, tableDefinition: decryptedDefinitions[1]);
 
             Assert.That(encryptedRecords.Count(), Is.EqualTo(decryptedRecords.Count()));
 

@@ -1,18 +1,30 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TpsParser;
 
+/// <summary></summary>
 public static class RleDecoder
 {
-    public static byte[] Unpack(
+    /// <summary>
+    /// Unpacks a run-length encoded sequence of bytes into a new byte array.
+    /// </summary>
+    /// <param name="packed"></param>
+    /// <param name="expectedUnpackedSize"></param>
+    /// <param name="errorHandlingOptions"></param>
+    /// <param name="unpacked"></param>
+    /// <returns></returns>
+    /// <exception cref="RunLengthEncodingException"></exception>
+    public static bool TryUnpack(
         ReadOnlySpan<byte> packed,
         int expectedUnpackedSize,
-        Encoding encoding,
-        ErrorHandlingOptions errorHandlingOptions)
+        ErrorHandlingOptions errorHandlingOptions,
+        [NotNullWhen(true)] out byte[]? unpacked)
     {
+        // TODO need to detect buffer overruns conditional on the error handling options
+
         var unpackedBytes = new List<byte>(expectedUnpackedSize);
 
         var arrayPool = ArrayPool<byte>.Shared;
@@ -29,7 +41,13 @@ public static class RleDecoder
 
                 if (skip == 0)
                 {
-                    throw new RunLengthEncodingException("Bad RLE Skip (0x00)");
+                    if (errorHandlingOptions.ThrowOnRleDecompressionError)
+                    {
+                        throw new RunLengthEncodingException($"Bad RLE Skip (0x00) at position {position - 1}.");
+                    }
+
+                    unpacked = null;
+                    return false;
                 }
 
                 if (skip > 0x7F)
@@ -74,7 +92,33 @@ public static class RleDecoder
             arrayPool.Return(repeatBuffer);
         }
 
-        //return new TpsRandomAccess([.. unpackedBytes], encoding);
-        return [.. unpackedBytes];
+        if (unpackedBytes.Count < expectedUnpackedSize)
+        {
+            if (errorHandlingOptions.RleUndersizedDecompressionBehavior == RleSizeMismatchBehavior.Throw)
+            {
+                throw new RunLengthEncodingException($"RLE unpacked size mismatch (expected {expectedUnpackedSize}, got {unpackedBytes.Count}).");
+            }
+            else if (errorHandlingOptions.RleUndersizedDecompressionBehavior == RleSizeMismatchBehavior.Skip)
+            {
+                unpacked = null;
+                return false;
+            }
+        }
+
+        if (unpackedBytes.Count > expectedUnpackedSize)
+        {
+            if (errorHandlingOptions.RleOversizedDecompressionBehavior == RleSizeMismatchBehavior.Throw)
+            {
+                throw new RunLengthEncodingException($"RLE unpacked size mismatch (expected {expectedUnpackedSize}, got {unpackedBytes.Count}).");
+            }
+            else if (errorHandlingOptions.RleOversizedDecompressionBehavior == RleSizeMismatchBehavior.Skip)
+            {
+                unpacked = null;
+                return false;
+            }
+        }
+
+        unpacked = [.. unpackedBytes];
+        return true;
     }
 }

@@ -13,7 +13,9 @@ internal sealed class TestRleDecoder
 
         byte[] data = [0x01, 0x31, 0x07];
 
-        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 8, Encoding.ASCII, ErrorHandlingOptions.Default);
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, ErrorHandlingOptions.Default, out byte[] unpacked0);
+
+        Assert.That(unpackResult, Is.True);
 
         var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
@@ -41,7 +43,9 @@ internal sealed class TestRleDecoder
 
         //var ra = new TpsRandomAccess([0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03], Encoding.ASCII).UnpackRunLengthEncoding();
 
-        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 13, Encoding.ASCII, ErrorHandlingOptions.Default);
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 13, ErrorHandlingOptions.Default, out byte[] unpacked0);
+
+        Assert.That(unpackResult, Is.True);
 
         var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
@@ -68,7 +72,9 @@ internal sealed class TestRleDecoder
 
         //var ra = new TpsRandomAccess([0x01, 0x31], Encoding.ASCII).UnpackRunLengthEncoding();
 
-        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 1, Encoding.ASCII, ErrorHandlingOptions.Default);
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 1, ErrorHandlingOptions.Default, out byte[] unpacked0);
+
+        Assert.That(unpackResult, Is.True);
 
         var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
@@ -91,7 +97,9 @@ internal sealed class TestRleDecoder
 
         //var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
 
-        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 8, Encoding.ASCII, ErrorHandlingOptions.Default);
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, ErrorHandlingOptions.Default, out byte[] unpacked0);
+
+        Assert.That(unpackResult, Is.True);
 
         var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
@@ -116,13 +124,13 @@ internal sealed class TestRleDecoder
         block[1] = 0x01;
         block[130] = 0x10;
 
-        //var ra = new TpsRandomAccess(block, Encoding.ASCII).UnpackRunLengthEncoding();
+        bool unpackResult = RleDecoder.TryUnpack(block, expectedUnpackedSize: 128 + 16, ErrorHandlingOptions.Default, out byte[] unpacked0);
 
-        var unpacked0 = RleDecoder.Unpack(block, expectedUnpackedSize: 13, Encoding.ASCII, ErrorHandlingOptions.Default);
-
-        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
-
-        Assert.That(ra.Length, Is.EqualTo(128 + 16));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.True);
+            Assert.That(unpacked0, Has.Length.EqualTo(128 + 16));
+        }
     }
 
     [Test]
@@ -132,10 +140,12 @@ internal sealed class TestRleDecoder
 
         //var ra = new TpsRandomAccess([0x01, 0x31, 0x80, 0x01], Encoding.ASCII).UnpackRunLengthEncoding();
 
-        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 13, Encoding.ASCII, ErrorHandlingOptions.Default);
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 129, ErrorHandlingOptions.Default, out byte[] unpacked0);
 
-        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
-
-        Assert.That(ra.Length, Is.EqualTo(129));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.True);
+            Assert.That(unpacked0, Has.Length.EqualTo(129));
+        }
     }
 }

@@ -19,12 +19,12 @@ public class TpsDbConnection : DbConnection {
     public override string Database => _database;
     private string _database = string.Empty;
 
-    public IDbTransaction BeginTransaction()
+    public new IDbTransaction BeginTransaction()
     {
         throw new NotImplementedException();
     }
 
-    public IDbTransaction BeginTransaction(IsolationLevel il)
+    public new IDbTransaction BeginTransaction(IsolationLevel il)
     {
         throw new NotImplementedException();
     }

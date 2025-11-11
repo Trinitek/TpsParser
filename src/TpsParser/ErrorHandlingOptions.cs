@@ -60,7 +60,6 @@ public enum RleSizeMismatchBehavior
 
     /// <summary>
     /// Decompress the RLE data, and allow the decompression to allocate a different amount of memory than the expected size.
-    /// 
     /// </summary>
     Allow,
 

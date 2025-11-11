@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Text;
 
-namespace TpsParser.RandomAccess.Tests;
+namespace TpsParser.Tests;
 
 [TestFixture]
 internal sealed class TestRleDecoder
@@ -11,7 +11,13 @@ internal sealed class TestRleDecoder
     {
         // Skip one, '1', repeat 7 '1'.
 
-        var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 8, Encoding.ASCII, ErrorHandlingOptions.Default);
+
+        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
+
+        //var ra = new TpsRandomAccess(, Encoding.ASCII).UnpackRunLengthEncoding();
 
         using (Assert.EnterMultipleScope())
         {
@@ -31,7 +37,13 @@ internal sealed class TestRleDecoder
     {
         // Skip one, '1', repeat 7 '1', skip '2', '3', repeat '3' 3 times
 
-        var ra = new TpsRandomAccess([0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03], Encoding.ASCII).UnpackRunLengthEncoding();
+        byte[] data = [0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03];
+
+        //var ra = new TpsRandomAccess([0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03], Encoding.ASCII).UnpackRunLengthEncoding();
+
+        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 13, Encoding.ASCII, ErrorHandlingOptions.Default);
+
+        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
         using (Assert.EnterMultipleScope())
         {
@@ -52,7 +64,13 @@ internal sealed class TestRleDecoder
     [Test]
     public void ShouldEndAfterSkip()
     {
-        var ra = new TpsRandomAccess([0x01, 0x31], Encoding.ASCII).UnpackRunLengthEncoding();
+        byte[] data = [0x01, 0x31];
+
+        //var ra = new TpsRandomAccess([0x01, 0x31], Encoding.ASCII).UnpackRunLengthEncoding();
+
+        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 1, Encoding.ASCII, ErrorHandlingOptions.Default);
+
+        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
         using (Assert.EnterMultipleScope())
         {
@@ -69,7 +87,13 @@ internal sealed class TestRleDecoder
     [Test]
     public void ShouldEndAfterRepeat()
     {
-        var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
+        byte[] data = [0x01, 0x31, 0x07];
+
+        //var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
+
+        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 8, Encoding.ASCII, ErrorHandlingOptions.Default);
+
+        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
         using (Assert.EnterMultipleScope())
         {
@@ -92,7 +116,11 @@ internal sealed class TestRleDecoder
         block[1] = 0x01;
         block[130] = 0x10;
 
-        var ra = new TpsRandomAccess(block, Encoding.ASCII).UnpackRunLengthEncoding();
+        //var ra = new TpsRandomAccess(block, Encoding.ASCII).UnpackRunLengthEncoding();
+
+        var unpacked0 = RleDecoder.Unpack(block, expectedUnpackedSize: 13, Encoding.ASCII, ErrorHandlingOptions.Default);
+
+        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
         Assert.That(ra.Length, Is.EqualTo(128 + 16));
     }
@@ -100,7 +128,13 @@ internal sealed class TestRleDecoder
     [Test]
     public void ShouldUnpackRleLongRepeat()
     {
-        var ra = new TpsRandomAccess([0x01, 0x31, 0x80, 0x01], Encoding.ASCII).UnpackRunLengthEncoding();
+        byte[] data = [0x01, 0x31, 0x80, 0x01];
+
+        //var ra = new TpsRandomAccess([0x01, 0x31, 0x80, 0x01], Encoding.ASCII).UnpackRunLengthEncoding();
+
+        var unpacked0 = RleDecoder.Unpack(data, expectedUnpackedSize: 13, Encoding.ASCII, ErrorHandlingOptions.Default);
+
+        var ra = new TpsRandomAccess(unpacked0, Encoding.ASCII);
 
         Assert.That(ra.Length, Is.EqualTo(129));
     }

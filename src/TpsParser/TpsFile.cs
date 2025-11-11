@@ -14,11 +14,16 @@ public sealed class TpsFile
     private TpsRandomAccess Data { get; }
 
     public EncodingOptions EncodingOptions { get; }
+    public ErrorHandlingOptions ErrorHandlingOptions { get; }
 
-    public TpsFile(Stream stream, EncodingOptions? encodingOptions = null)
+    public TpsFile(
+        Stream stream,
+        EncodingOptions? encodingOptions = null,
+        ErrorHandlingOptions? errorHandlingOptions = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
         EncodingOptions = encodingOptions ?? EncodingOptions.Default;
+        ErrorHandlingOptions = errorHandlingOptions ?? ErrorHandlingOptions.Default;
 
         byte[] fileData;
 
@@ -31,8 +36,15 @@ public sealed class TpsFile
         Data = new TpsRandomAccess(fileData, EncodingOptions.ContentEncoding);
     }
 
-    public TpsFile(Stream stream, Key key, EncodingOptions? encodingOptions = null)
-        : this(stream, encodingOptions)
+    public TpsFile(
+        Stream stream,
+        Key key,
+        EncodingOptions? encodingOptions = null,
+        ErrorHandlingOptions? errorHandlingOptions = null)
+        : this(
+              stream,
+              encodingOptions,
+              errorHandlingOptions)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -75,6 +87,10 @@ public sealed class TpsFile
         return header;
     }
 
+    /// <summary>
+    /// Gets all the blocks in the file.
+    /// </summary>
+    /// <returns></returns>
     public IEnumerable<TpsBlock> GetBlocks()
     {
         var header = GetFileHeader();
@@ -88,7 +104,7 @@ public sealed class TpsFile
         return blocks;
     }
 
-    private IEnumerable<TpsRecord> VisitRecords(bool ignoreErrors = false)
+    public IEnumerable<TpsRecord> EnumerateRecords(bool ignoreErrors = false)
     {
         foreach (var block in GetBlocks())
         {
@@ -111,7 +127,7 @@ public sealed class TpsFile
     /// <returns></returns>
     public IEnumerable<IDataRecord> GetDataRows(int table, TableDefinition tableDefinition, bool ignoreErrors)
     {
-        return VisitRecords(ignoreErrors)
+        return EnumerateRecords(ignoreErrors)
             .Where(record => record.GetPayload() is DataRecordPayload pl && pl.TableNumber == table)
             .Select(record => new DataRecord(record, tableDefinition, EncodingOptions.ContentEncoding));
     }
@@ -136,7 +152,7 @@ public sealed class TpsFile
     {
         IEnumerable<DataRecordPayload> VisitData()
         {
-            var records = VisitRecords();
+            var records = EnumerateRecords();
 
             foreach (var r in records)
             {
@@ -165,14 +181,14 @@ public sealed class TpsFile
     /// <returns></returns>
     public IEnumerable<TableNameRecordPayload> GetTableNameRecordPayloads()
     {
-        return VisitRecords()
+        return EnumerateRecords()
             .Where(record => record.GetPayload() is TableNameRecordPayload)
             .Select(record => (TableNameRecordPayload)record.GetPayload()!);
     }
 
     public IEnumerable<IndexRecordPayload> GetIndexRecordPayloads(int table, int index)
     {
-        return VisitRecords()
+        return EnumerateRecords()
             .Where(record =>
                 record.GetPayload() is IndexRecordPayload payload
                 && payload.TableNumber == table
@@ -187,7 +203,7 @@ public sealed class TpsFile
     /// <returns></returns>
     public IEnumerable<MetadataRecordPayload> GetMetadataRecordPayloads(int table)
     {
-        return VisitRecords()
+        return EnumerateRecords()
             .Where(record => record.GetPayload() is MetadataRecordPayload header && header.TableNumber == table)
             .Select(r => (MetadataRecordPayload)r.GetPayload()!);
     }
@@ -198,7 +214,7 @@ public sealed class TpsFile
     /// <returns></returns>
     public IEnumerable<TpsRecord> GetTpsRecords()
     {
-        return VisitRecords();
+        return EnumerateRecords();
     }
 
     private IEnumerable<MemoRecordPayload> OrderAndGroupMemos(IEnumerable<MemoRecordPayload> memoRecords)
@@ -283,7 +299,7 @@ public sealed class TpsFile
     {
         IEnumerable<MemoRecordPayload> VisitMemos()
         {
-            var records = VisitRecords(ignoreErrors);
+            var records = EnumerateRecords(ignoreErrors);
 
             foreach (var r in records)
             {
@@ -323,7 +339,7 @@ public sealed class TpsFile
     /// <returns></returns>
     public IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(bool ignoreErrors)
     {
-        return VisitRecords(ignoreErrors)
+        return EnumerateRecords(ignoreErrors)
             .Where(record => record.GetPayload() is TableDefinitionRecordPayload)
             .Select(record => (TableDefinitionRecordPayload)record.GetPayload()!)
 

@@ -9,7 +9,7 @@ namespace TpsParser.TypeModel;
 public readonly struct ClaCString : IClaString, IEquatable<ClaCString>
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.CString;
+    public FieldTypeCode TypeCode => FieldTypeCode.CString;
 
     /// <summary>
     /// Gets the string backing this type.

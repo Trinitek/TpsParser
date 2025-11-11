@@ -11,9 +11,9 @@ namespace TpsParser;
 public sealed record FieldDefinition
 {
     /// <summary>
-    /// Gets the type code of the value contained within the field.
+    /// Gets the data type.
     /// </summary>
-    public ClaTypeCode TypeCode { get; init; }
+    public FieldTypeCode TypeCode { get; init; }
 
     /// <summary>
     /// Gets the offset, in bytes, of the field within the record.
@@ -90,7 +90,7 @@ public sealed record FieldDefinition
     {
         ArgumentNullException.ThrowIfNull(rx);
 
-        ClaTypeCode typeCode = (ClaTypeCode)rx.ReadByte();
+        FieldTypeCode typeCode = (FieldTypeCode)rx.ReadByte();
         ushort offset = rx.ReadUnsignedShortLE();
         string fullName = rx.ReadZeroTerminatedString();
         ushort elementCount = rx.ReadUnsignedShortLE();
@@ -104,14 +104,14 @@ public sealed record FieldDefinition
         ushort stringLength = 0;
         string stringMask = string.Empty;
 
-        if (typeCode == ClaTypeCode.Decimal)
+        if (typeCode == FieldTypeCode.Decimal)
         {
             bcdDigitsAfterDecimalPoint = rx.ReadByte();
             bcdElementLength = rx.ReadByte();
         }
-        else if (typeCode == ClaTypeCode.FString
-            || typeCode == ClaTypeCode.CString
-            || typeCode == ClaTypeCode.PString)
+        else if (typeCode == FieldTypeCode.FString
+            || typeCode == FieldTypeCode.CString
+            || typeCode == FieldTypeCode.PString)
         {
             stringLength = rx.ReadUnsignedShortLE();
             stringMask = rx.ReadZeroTerminatedString();

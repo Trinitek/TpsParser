@@ -9,7 +9,7 @@ namespace TpsParser.TypeModel;
 public sealed class TpsBlob : IClaObject
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.None;
+    public FieldTypeCode TypeCode => FieldTypeCode.None;
 
     /// <summary>
     /// Gets the byte array backing this type.

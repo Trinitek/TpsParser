@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System.Text;
-using TpsParser.Tps;
 
 namespace TpsParser.Tests;
 
@@ -15,14 +14,15 @@ internal sealed class TestTableNameRecordPayload
             0x00, 0x01, 0xb3, 0x82                      /* TableNumber */
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = TableNameRecordPayload.Parse(rx, payloadHeaderLength: 8);
+        var result = new TableNameRecordPayload { PayloadData = data, PayloadHeaderLength = 8 };
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.TableNumber, Is.EqualTo(0x0001b382));
-            Assert.That(result.Name, Is.EqualTo("UNNAMED"));
+
+            string name = result.GetName(Encoding.ASCII);
+
+            Assert.That(name, Is.EqualTo("UNNAMED"));
         }
     }
 }

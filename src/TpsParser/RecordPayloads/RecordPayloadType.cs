@@ -1,4 +1,4 @@
-﻿namespace TpsParser.Tps;
+﻿namespace TpsParser;
 
 /// <summary>
 /// Represents the type of record and what information it describes.

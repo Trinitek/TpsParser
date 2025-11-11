@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Text;
-using TpsParser.Tps;
 
 namespace TpsParser.Tests;
 
@@ -16,9 +14,7 @@ internal sealed class TestTableDefinitionRecordPayload
             0xde, 0xad, 0xbe, 0xef, /* Content (bogus deadbeef) */
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = TableDefinitionRecordPayload.Parse(rx);
+        var result = new TableDefinitionRecordPayload { PayloadData = data };
 
         using (Assert.EnterMultipleScope())
         {

@@ -2,7 +2,7 @@
 using System.Buffers.Binary;
 using System.Collections.Generic;
 
-namespace TpsParser.Tps;
+namespace TpsParser;
 
 /// <summary>
 /// Represents a page within a TPS file. Pages contain records.
@@ -127,8 +127,8 @@ public sealed record TpsPage
 
     private TpsRandomAccess Decompress()
     {
-        if ((Size != SizeUncompressed)
-            && (Flags == 0))
+        if (Size != SizeUncompressed
+            && Flags == 0)
         {
             try
             {

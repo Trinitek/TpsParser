@@ -8,7 +8,7 @@ namespace TpsParser.TypeModel;
 public readonly struct ClaUnsignedShort : IClaNumeric, IEquatable<ClaUnsignedShort>
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.UShort;
+    public FieldTypeCode TypeCode => FieldTypeCode.UShort;
 
     /// <summary>
     /// Gets the .NET CLR value.

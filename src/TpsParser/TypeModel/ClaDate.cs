@@ -63,7 +63,7 @@ public readonly struct ClaDate : IClaBoolean, IClaDate, IEquatable<ClaDate>
     public static readonly int ClarionStandardDateMaxValue = 2994626;
 
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.Date;
+    public FieldTypeCode TypeCode => FieldTypeCode.Date;
 
     /// <summary>
     /// Gets the .NET CLR value.

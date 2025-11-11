@@ -9,7 +9,7 @@ namespace TpsParser.TypeModel;
 public readonly struct ClaByte : IClaNumeric, IEquatable<ClaByte>
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.Byte;
+    public FieldTypeCode TypeCode => FieldTypeCode.Byte;
 
     /// <summary>
     /// Gets the .NET CLR value.

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TpsParser.Tps;
 using TpsParser.TypeModel;
 
 namespace TpsParser;
@@ -129,7 +128,7 @@ public sealed class TpsParser : IDisposable
         var rows = unifiedRecords.Select(r => new Row(r.Key, r.Value));
 
         string tableName = tableNameDefinitions
-            .First(n => n.TableNumber == firstTableDefinition.Key).Name;
+            .First(n => n.TableNumber == firstTableDefinition.Key).GetName(TpsFile.EncodingOptions.MetadataEncoding);
 
         var table = new Table(tableName, rows);
 

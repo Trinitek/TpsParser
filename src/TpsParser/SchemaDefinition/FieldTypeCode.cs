@@ -1,10 +1,12 @@
-﻿namespace TpsParser.TypeModel;
+﻿using TpsParser.TypeModel;
+
+namespace TpsParser;
 
 /// <summary>
-/// Represents a code point in a TopSpeed file that represents a particular data type.
+/// A code point in a TopSpeed file that represents the data type for a <see cref="FieldDefinition"/>.
 /// Member names are labeled after the corresponding Clarion language keyword.
 /// </summary>
-public enum ClaTypeCode : byte
+public enum FieldTypeCode : byte
 {
     /// <summary>
     /// Represents a code point that is not defined in the file format.

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
-using TpsParser.Tps;
 
 namespace TpsParser.TypeModel;
 
@@ -14,7 +13,7 @@ public interface IClaObject
     /// <summary>
     /// Gets the type code of the object.
     /// </summary>
-    ClaTypeCode TypeCode { get; }
+    FieldTypeCode TypeCode { get; }
 }
 
 /// <summary>
@@ -148,33 +147,33 @@ internal static class ClaObject
 
         switch (current.TypeCode)
         {
-            case ClaTypeCode.Byte:
+            case FieldTypeCode.Byte:
                 return rx.ReadClaByte();
-            case ClaTypeCode.Short:
+            case FieldTypeCode.Short:
                 return rx.ReadClaShort();
-            case ClaTypeCode.UShort:
+            case FieldTypeCode.UShort:
                 return rx.ReadClaUnsignedShort();
-            case ClaTypeCode.Date:
+            case FieldTypeCode.Date:
                 return rx.ReadClaDate();
-            case ClaTypeCode.Time:
+            case FieldTypeCode.Time:
                 return rx.ReadClaTime();
-            case ClaTypeCode.Long:
+            case FieldTypeCode.Long:
                 return rx.ReadClaLong();
-            case ClaTypeCode.ULong:
+            case FieldTypeCode.ULong:
                 return rx.ReadClaUnsignedLong();
-            case ClaTypeCode.SReal:
+            case FieldTypeCode.SReal:
                 return rx.ReadClaFloat();
-            case ClaTypeCode.Real:
+            case FieldTypeCode.Real:
                 return rx.ReadClaDouble();
-            case ClaTypeCode.Decimal:
+            case FieldTypeCode.Decimal:
                 return rx.ReadClaDecimal(length, current.BcdDigitsAfterDecimalPoint);
-            case ClaTypeCode.FString:
+            case FieldTypeCode.FString:
                 return rx.ReadClaFString(length, encoding);
-            case ClaTypeCode.CString:
+            case FieldTypeCode.CString:
                 return rx.ReadClaCString(encoding);
-            case ClaTypeCode.PString:
+            case FieldTypeCode.PString:
                 return rx.ReadClaPString(encoding);
-            case ClaTypeCode.Group:
+            case FieldTypeCode.Group:
                 return TpsGroup.BuildFromFieldDefinitions(rx, encoding, enumerator);
             default:
                 throw new ArgumentException($"Unsupported type {current.TypeCode} ({length})", nameof(enumerator));

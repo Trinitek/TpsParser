@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TpsParser.Tps;
+namespace TpsParser;
 
 internal sealed class FieldDefinitionEnumerator : IEnumerator<FieldDefinition>
 {

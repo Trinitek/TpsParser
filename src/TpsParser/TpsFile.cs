@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using TpsParser.Tps.Record;
 
-namespace TpsParser.Tps;
+namespace TpsParser;
 
 /// <summary>
 /// Represents a TopSpeed file and provides access to low level file and record structures.
@@ -81,7 +81,7 @@ public sealed class TpsFile
 
         var blocks = header.BlockDescriptors
             // Skip zero-length pages and any blocks that are beyond the file size.
-            .Where(range => !((range.Length == 0) || (range.StartOffset >= Data.Length)))
+            .Where(range => !(range.Length == 0 || range.StartOffset >= Data.Length))
 
             .Select(range => TpsBlock.Parse(range, Data));
 
@@ -174,7 +174,7 @@ public sealed class TpsFile
     {
         return VisitRecords()
             .Where(record =>
-                (record.GetPayload() is IndexRecordPayload payload)
+                record.GetPayload() is IndexRecordPayload payload
                 && payload.TableNumber == table
                 && (payload.DefinitionIndex == index || index == -1))
             .Select(record => (IndexRecordPayload)record.GetPayload()!);

@@ -1,4 +1,4 @@
-﻿namespace TpsParser.Tps;
+﻿namespace TpsParser;
 
 /// <summary>
 /// Represents a range of offsets for where a <see cref="TpsBlock"/> starts and stops in the file.

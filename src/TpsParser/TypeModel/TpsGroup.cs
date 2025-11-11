@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using TpsParser.Tps;
 
 namespace TpsParser.TypeModel;
 
@@ -12,7 +11,7 @@ namespace TpsParser.TypeModel;
 public sealed class TpsGroup : IComplex
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.Group;
+    public FieldTypeCode TypeCode => FieldTypeCode.Group;
 
     /// <summary>
     /// Gets the list of objects in this group.

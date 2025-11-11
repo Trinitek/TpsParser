@@ -14,7 +14,7 @@ namespace TpsParser.TypeModel;
 public readonly struct ClaUnsignedLong : IClaNumeric, IEquatable<ClaUnsignedLong>
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.ULong;
+    public FieldTypeCode TypeCode => FieldTypeCode.ULong;
 
     /// <summary>
     /// Gets the .NET CLR value.

@@ -1,7 +1,5 @@
 ﻿using NUnit.Framework;
 using System.Linq;
-using TpsParser.Tps;
-using TpsParser.TypeModel;
 
 namespace TpsParser.Tests.ResourceTests;
 
@@ -118,7 +116,7 @@ internal sealed class TestTableWithMemos
             Assert.That(f0.Length, Is.EqualTo(64));
             Assert.That(f0.StringLength, Is.EqualTo(64));
             Assert.That(f0.StringMask, Is.EqualTo(string.Empty));
-            Assert.That(f0.TypeCode, Is.EqualTo(ClaTypeCode.FString));
+            Assert.That(f0.TypeCode, Is.EqualTo(FieldTypeCode.FString));
 
             var f1 = def.Fields[1];
 
@@ -131,7 +129,7 @@ internal sealed class TestTableWithMemos
             Assert.That(f1.Length, Is.EqualTo(4));
             Assert.That(f1.StringLength, Is.Zero);
             Assert.That(f1.StringMask, Is.EqualTo(string.Empty));
-            Assert.That(f1.TypeCode, Is.EqualTo(ClaTypeCode.Date));
+            Assert.That(f1.TypeCode, Is.EqualTo(FieldTypeCode.Date));
 
             var m0 = def.Memos[0];
 

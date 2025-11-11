@@ -92,7 +92,7 @@ public readonly struct ClaTime : IClaTime, IEquatable<ClaTime>
     public TimeOnly Value => new(hour: Hours, minute: Minutes, second: Seconds, millisecond: Centiseconds * 10);
 
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.Time;
+    public FieldTypeCode TypeCode => FieldTypeCode.Time;
 
     /// <summary>
     /// Instantiates a new <c>TIME</c> from the given total number of centiseconds (hundredths of a second) since midnight.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace TpsParser.Tps;
+namespace TpsParser;
 
 /// <summary>
 /// Represents a sequence of bytes hashed from a password string that is used to encrypt and decrypt the file.
@@ -29,7 +29,7 @@ public sealed class Key
 
         for (int i = 0; i < block.Length; i++)
         {
-            int x = (i * 0x11) & 0x3F;
+            int x = i * 0x11 & 0x3F;
             block[x] = (byte)(i + keyBytes[(i + 1) % keyBytes.Length]);
         }
 

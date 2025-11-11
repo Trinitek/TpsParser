@@ -9,7 +9,7 @@ namespace TpsParser.TypeModel;
 public readonly struct ClaSingleReal : IClaNumeric, IEquatable<ClaSingleReal>
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.SReal;
+    public FieldTypeCode TypeCode => FieldTypeCode.SReal;
 
     /// <summary>
     /// Gets the .NET CLR value.

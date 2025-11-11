@@ -15,7 +15,7 @@ namespace TpsParser.TypeModel;
 public readonly struct ClaLong : IClaNumeric, IClaDate, IClaTime, IEquatable<ClaLong>
 {
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.Long;
+    public FieldTypeCode TypeCode => FieldTypeCode.Long;
 
     /// <summary>
     /// Gets the .NET CLR value.

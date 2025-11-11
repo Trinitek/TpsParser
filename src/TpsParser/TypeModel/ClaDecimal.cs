@@ -29,7 +29,7 @@ public readonly struct ClaDecimal : IClaNumeric, IClaDate, IEquatable<ClaDecimal
     public const int MaxLength = 31;
 
     /// <inheritdoc/>
-    public ClaTypeCode TypeCode => ClaTypeCode.Decimal;
+    public FieldTypeCode TypeCode => FieldTypeCode.Decimal;
 
     /// <summary>
     /// Gets the upper 64 bits of the packed decimal, including the sign in the highest nibble.

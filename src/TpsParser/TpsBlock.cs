@@ -3,7 +3,7 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace TpsParser.Tps;
+namespace TpsParser;
 
 /// <summary>
 /// Represents a block within a TPS file. Blocks contain pages.
@@ -150,7 +150,7 @@ public sealed record TpsBlock
                     rx.JumpRelative(0x100);
                 }
             }
-            while ((address != rx.Position) && !rx.IsAtEnd);
+            while (address != rx.Position && !rx.IsAtEnd);
         }
     }
 

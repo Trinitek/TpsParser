@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Text;
-using TpsParser.Tps;
 
 namespace TpsParser.Tests;
 
@@ -18,9 +16,7 @@ internal sealed class TestIndexRecordPayload
             0x00, 0x03, 0x0a, 0xe1, /* RecordNumber */
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = IndexRecordPayload.Parse(rx);
+        var result = new IndexRecordPayload { PayloadData = data };
 
         using (Assert.EnterMultipleScope())
         {

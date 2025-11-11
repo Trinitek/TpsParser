@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace TpsParser.Tps;
+namespace TpsParser;
 
 /// <summary>
 /// Represents a TopSpeed file header.

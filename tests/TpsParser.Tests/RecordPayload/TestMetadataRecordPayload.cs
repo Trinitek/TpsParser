@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Text;
-using TpsParser.Tps;
 
 namespace TpsParser.Tests;
 
@@ -17,9 +15,7 @@ internal sealed class TestMetadataRecordPayload
             0x00, 0x00, 0x00, 0x00, /* (Unknown) */
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = MetadataRecordPayload.Parse(rx);
+        var result = new MetadataRecordPayload { PayloadData = data };
 
         using (Assert.EnterMultipleScope())
         {
@@ -51,9 +47,7 @@ internal sealed class TestMetadataRecordPayload
             0x00, 0x00, 0x00, 0x00, /* (Unknown) */
             ];
 
-        var rx = new TpsRandomAccess(data, Encoding.ASCII);
-
-        var result = MetadataRecordPayload.Parse(rx);
+        var result = new MetadataRecordPayload { PayloadData = data };
 
         using (Assert.EnterMultipleScope())
         {

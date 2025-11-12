@@ -78,7 +78,7 @@ public sealed class TpsParser : IDisposable
         return tableDefinitionRecord.Memos
             .SelectMany((definition, index) =>
             {
-                var tpsMemosForIndex = TpsFile.GetTpsMemos(table, (byte)index, errorHandlingOptions);
+                var tpsMemosForIndex = TpsFile.GetTpsMemos(table, memoIndex: (byte)index, errorHandlingOptions: errorHandlingOptions);
 
                 return tpsMemosForIndex.Select(record =>
                     (owner: record.RecordNumber, name: definition.Name, value: record)
@@ -106,27 +106,6 @@ public sealed class TpsParser : IDisposable
 
         var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, errorHandlingOptions);
         var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, errorHandlingOptions);
-
-        //var unifiedRecords = new Dictionary<int, Dictionary<string, IClaObject>>();
-        //
-        //foreach (var dataKvp in dataRecords)
-        //{
-        //    unifiedRecords.Add(dataKvp.Key, dataKvp.Value.ToDictionary(pair => pair.Key, pair => pair.Value));
-        //}
-        //
-        //foreach (var memoRecord in memoRecords)
-        //{
-        //    int recordNumber = memoRecord.Key;
-        //
-        //    var dataNameValues = dataRecords[recordNumber];
-        //
-        //    foreach (var memoNameValue in memoRecord.Value)
-        //    {
-        //        unifiedRecords[recordNumber].Add(memoNameValue.Key, memoNameValue.Value);
-        //    }
-        //}
-        //
-        //var rows = unifiedRecords.Select(r => new Row(r.Key, r.Value));
 
         var rows = dataRecords.Select(dataKvp =>
         {

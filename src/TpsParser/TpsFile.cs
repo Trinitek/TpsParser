@@ -222,7 +222,7 @@ public sealed class TpsFile
         return EnumerateRecords();
     }
 
-    private IEnumerable<TpsMemo> BuildTpsMemoFromPayloads(IEnumerable<MemoRecordPayload> memoRecords)
+    private static IEnumerable<TpsMemo> BuildTpsMemoFromPayloads(IEnumerable<MemoRecordPayload> memoRecords)
     {
         // Group the records by their owner and index.
         var groupedByOwnerAndIndex = memoRecords
@@ -252,17 +252,6 @@ public sealed class TpsFile
                 };
 
                 return mergedMemo;
-
-                //var first = group.payloads.First();
-                //
-                //var mergedMemo = MemoRecordPayload.Create(
-                //    tableNumber: first.TableNumber,
-                //    recordNumber: first.RecordNumber,
-                //    definitionIndex: first.DefinitionIndex,
-                //    sequenceNumber: first.SequenceNumber,
-                //    content: MergeMemory(group.payloads.Select(r => r.Content)));
-                //
-                //return mergedMemo;
             });
 
         return resultingMemoRecords;
@@ -272,31 +261,19 @@ public sealed class TpsFile
     /// Gets a dictionary of memo and blob records for the associated table.
     /// </summary>
     /// <param name="table">The table number that owns the memos.</param>
-    /// <param name="errorHandlingOptions"></param>
-    /// <returns></returns>
-    public IEnumerable<TpsMemo> GetTpsMemos(int table, ErrorHandlingOptions? errorHandlingOptions = null)
-    {
-        var memoRecords = EnumerateMemoRecordPayloads(
-            table: table,
-            owningRecord: null,
-            memoDefinitionIndex: null,
-            errorHandlingOptions: errorHandlingOptions);
-
-        return BuildTpsMemoFromPayloads(memoRecords);
-    }
-
-    /// <summary>
-    /// Gets a dictionary of memo and blob records for the associated table.
-    /// </summary>
-    /// <param name="table">The table number that owns the memo.</param>
+    /// <param name="owningRecord">The record number that owns the memo.</param>
     /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
     /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IEnumerable<TpsMemo> GetTpsMemos(int table, byte memoIndex, ErrorHandlingOptions? errorHandlingOptions = null)
+    public IEnumerable<TpsMemo> GetTpsMemos(
+        int table,
+        int? owningRecord = null,
+        byte? memoIndex = null,
+        ErrorHandlingOptions? errorHandlingOptions = null)
     {
         var memoRecords = EnumerateMemoRecordPayloads(
             table: table,
-            owningRecord: null,
+            owningRecord: owningRecord,
             memoDefinitionIndex: memoIndex,
             errorHandlingOptions: errorHandlingOptions);
 

@@ -38,9 +38,9 @@ internal sealed class TestClaDecimal
     [TestCase(null)]
     [TestCase("")]
     [TestCase(" ")]
-    public void ShouldThrowWhenStringIsEmptyOrWhitespace(string value)
+    public void ShouldThrowWhenStringIsEmptyOrWhitespace(string? value)
     {
-        Assert.Throws<ArgumentException>(() => ClaDecimal.Parse(value));
+        Assert.Throws<ArgumentException>(() => ClaDecimal.Parse(value!));
     }
 
     [TestCaseSource(typeof(ShouldConvertToDecimalData), nameof(ShouldConvertToDecimalData.TestCases))]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using TpsParser.TypeModel;
@@ -72,21 +73,21 @@ public sealed class TpsParser : IDisposable
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, ErrorHandlingOptions? errorHandlingOptions)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsMemo>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, ErrorHandlingOptions? errorHandlingOptions)
     {
         return tableDefinitionRecord.Memos
             .SelectMany((definition, index) =>
             {
-                var memoRecordsForIndex = TpsFile.GetMemoRecordPayloads(table, (byte)index, errorHandlingOptions);
+                var tpsMemosForIndex = TpsFile.GetTpsMemos(table, (byte)index, errorHandlingOptions);
 
-                return memoRecordsForIndex.Select(record =>
-                    (owner: record.RecordNumber, name: definition.Name, value: (IClaObject)(definition.IsMemo ? new TpsMemo(TpsFile.EncodingOptions.ContentEncoding.GetString(record.Content.Span)) : new TpsBlob(record.Content))
-                ));
+                return tpsMemosForIndex.Select(record =>
+                    (owner: record.RecordNumber, name: definition.Name, value: record)
+                );
             })
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
             .ToDictionary(
-                groupedPair => groupedPair.Key,
-                groupedPair => (IReadOnlyDictionary<string, IClaObject>)groupedPair
+                keySelector: groupedPair => groupedPair.Key,
+                elementSelector: groupedPair => (IReadOnlyDictionary<string, TpsMemo>)groupedPair
                     .ToDictionary(pair => pair.name, pair => pair.value));
     }
 
@@ -106,26 +107,44 @@ public sealed class TpsParser : IDisposable
         var dataRecords = GatherDataRecords(firstTableDefinition.Key, firstTableDefinition.Value, errorHandlingOptions);
         var memoRecords = GatherMemoRecords(firstTableDefinition.Key, firstTableDefinition.Value, errorHandlingOptions);
 
-        var unifiedRecords = new Dictionary<int, Dictionary<string, IClaObject>>();
+        //var unifiedRecords = new Dictionary<int, Dictionary<string, IClaObject>>();
+        //
+        //foreach (var dataKvp in dataRecords)
+        //{
+        //    unifiedRecords.Add(dataKvp.Key, dataKvp.Value.ToDictionary(pair => pair.Key, pair => pair.Value));
+        //}
+        //
+        //foreach (var memoRecord in memoRecords)
+        //{
+        //    int recordNumber = memoRecord.Key;
+        //
+        //    var dataNameValues = dataRecords[recordNumber];
+        //
+        //    foreach (var memoNameValue in memoRecord.Value)
+        //    {
+        //        unifiedRecords[recordNumber].Add(memoNameValue.Key, memoNameValue.Value);
+        //    }
+        //}
+        //
+        //var rows = unifiedRecords.Select(r => new Row(r.Key, r.Value));
 
-        foreach (var dataKvp in dataRecords)
+        var rows = dataRecords.Select(dataKvp =>
         {
-            unifiedRecords.Add(dataKvp.Key, dataKvp.Value.ToDictionary(pair => pair.Key, pair => pair.Value));
-        }
+            var recordNumber = dataKvp.Key;
+            
+            IReadOnlyDictionary<string, TpsMemo> memoValues;
 
-        foreach (var memoRecord in memoRecords)
-        {
-            int recordNumber = memoRecord.Key;
-
-            var dataNameValues = dataRecords[recordNumber];
-
-            foreach (var memoNameValue in memoRecord.Value)
+            if (memoRecords.TryGetValue(recordNumber, out var memosForRecord))
             {
-                unifiedRecords[recordNumber].Add(memoNameValue.Key, memoNameValue.Value);
+                memoValues = memosForRecord;
             }
-        }
+            else
+            {
+                memoValues = ReadOnlyDictionary<string, TpsMemo>.Empty;
+            }
 
-        var rows = unifiedRecords.Select(r => new Row(r.Key, r.Value));
+            return new Row(recordNumber, dataKvp.Value, memoValues);
+        });
 
         string tableName = tableNameDefinitions
             .First(n => n.TableNumber == firstTableDefinition.Key).GetName(TpsFile.EncodingOptions.MetadataEncoding);

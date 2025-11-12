@@ -114,7 +114,7 @@ internal sealed class TestTpsFile
         var file = GetTableWithMemosFile();
 
         var tableDefinitions = file.GetTableDefinitions();
-        var memos = file.GetMemoRecordPayloads(tableDefinitions.First().Key);
+        var memos = file.GetTpsMemos(tableDefinitions.First().Key);
 
         Assert.That(memos.Count(), Is.EqualTo(5));
     }

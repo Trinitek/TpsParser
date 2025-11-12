@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Text;
@@ -434,15 +433,6 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Gets a span that reflects the data starting from the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ReadOnlySpan<byte> PeekRemainingSpan()
-    {
-        return PeekRemainingMemory().Span;
-    }
-
-    /// <summary>
     /// Gets a memory region that reflects the data starting from the current position.
     /// </summary>
     /// <returns></returns>
@@ -495,35 +485,6 @@ public sealed class TpsRandomAccess
 
         return rom;
     }
-
-    /// <summary>
-    /// Gets an array of the remaining unread data array.
-    /// </summary>
-    /// <returns></returns>
-    public byte[] GetRemainderAsByteArray()
-    {
-        byte[] result = new byte[Length - Position];
-
-        Array.Copy(
-            sourceArray: Data,
-            sourceIndex: AbsolutePosition,
-            destinationArray: result,
-            destinationIndex: 0,
-            length: result.Length);
-
-        return result;
-    }
-
-    /// <summary>
-    /// Gets a new reader instance for the remainder of the unread data.
-    /// </summary>
-    /// <returns></returns>
-    public TpsRandomAccess GetReaderForRemainder() =>
-        new(
-            existing: this,
-            additiveOffset: Position,
-            length: Length - Position,
-            encoding: Encoding);
 
     /// <inheritdoc/>
     public override string ToString()

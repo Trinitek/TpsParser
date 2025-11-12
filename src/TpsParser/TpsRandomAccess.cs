@@ -838,24 +838,4 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <returns></returns>
     public ClaPString ReadClaPString(Encoding? encoding = null) => new(ReadPascalString(encoding));
-
-    /// <summary>
-    /// Reads a <see cref="TpsMemo"/> and consumes the entire data array.
-    /// </summary>
-    /// <returns></returns>
-    [Obsolete]
-    public TypeModel.TpsMemo ReadMemo(Encoding? encoding = null) => new(ReadClaFString(encoding).Value);
-
-    /// <summary>
-    /// Reads a <see cref="TpsBlob"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    [Obsolete]
-    public TpsBlob ReadBlob()
-    {
-        int length = ReadLongLE();
-        var bytes = ReadBytes(length);
-
-        return new TpsBlob(bytes);
-    }
 }

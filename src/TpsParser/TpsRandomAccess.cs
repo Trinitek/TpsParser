@@ -14,8 +14,6 @@ public sealed class TpsRandomAccess
 {
     private byte[] Data { get; }
 
-    private Stack<int>? _positionStack;
-
     /// <summary>
     /// Gets the default encoding used when reading strings.
     /// </summary>
@@ -98,28 +96,6 @@ public sealed class TpsRandomAccess
               length: length,
               encoding: encoding ?? existing.Encoding)
     { }
-
-    /// <summary>
-    /// Saves the current position on the stack.
-    /// </summary>
-    public void PushPosition()
-    {
-        _positionStack ??= [];
-        _positionStack.Push(Position);
-    }
-
-    /// <summary>
-    /// Restores the previous position saved to the stack with <see cref="PushPosition"/>.
-    /// </summary>
-    public void PopPosition()
-    {
-        if (_positionStack is null)
-        {
-            throw new InvalidOperationException("Cannot pop without pushing first.");
-        }
-
-        Position = _positionStack.Pop();
-    }
 
     private void AssertSpace(int numberOfBytes)
     {

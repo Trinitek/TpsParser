@@ -188,8 +188,8 @@ public sealed record TpsPage
         // Skip pages with non 0x00 flags as they don't seem to contain TpsRecords.
         if (Flags == 0x00)
         {
-            rx.PushPosition();
-
+            int absolutePosition = rx.AbsolutePosition;
+            
             try
             {
                 TpsRecord? previousRecord = null;
@@ -215,7 +215,7 @@ public sealed record TpsPage
             }
             finally
             {
-                rx.PopPosition();
+                rx.JumpAbsolute(absolutePosition);
             }
         }
 

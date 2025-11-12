@@ -92,15 +92,12 @@ public sealed record TpsRecord
 
         var payloadData = payloadRx.PeekRemainingMemory();
 
-        //var payload = BuildPayload(payloadRx, payloadHeaderLength: payloadHeaderLength);
-
         return new TpsRecord
         {
             Flags = flags,
             PayloadTotalLength = payloadTotalLength,
             PayloadHeaderLength = payloadHeaderLength,
             RecordData = actualRecordData,
-            //Payload = payload,
             PayloadData = payloadData
         };
     }
@@ -183,15 +180,12 @@ public sealed record TpsRecord
 
         var payloadData = payloadRx.PeekRemainingMemory();
 
-        //var payload = BuildPayload(payloadRx, payloadHeaderLength: payloadHeaderLength);
-
         return new TpsRecord
         {
             Flags = flags,
             PayloadTotalLength = payloadTotalLength,
             PayloadHeaderLength = payloadHeaderLength,
             RecordData = actualRecordData,
-            //Payload = payload,
             PayloadData = payloadData,
         };
     }

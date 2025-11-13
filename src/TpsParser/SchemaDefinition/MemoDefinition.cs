@@ -42,14 +42,23 @@ public sealed record MemoDefinition
     public ushort Flags { get; init; }
 
     /// <summary>
+    /// Returns <see langword="true"/> if the record has the <c>BINARY</c> attribute.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering note: the presence or lack of this attribute does not seem to affect how
+    /// data is read. The only thing that matters is whether the data is <c>MEMO</c> or <c>BLOB</c>.
+    /// </remarks>
+    public bool HasBinaryAttribute => (Flags & 0x02) != 0;
+
+    /// <summary>
     /// Returns <see langword="true"/> if the record contains <c>MEMO</c> data; <see langword="false"/> if it contains <c>BLOB</c> data.
     /// </summary>
-    public bool IsMemo => (Flags & 0x04) == 0;
+    public bool IsTextMemo => (Flags & 0x04) == 0;
 
     /// <summary>
     /// Returns <see langword="true"/> if the record contains <c>BLOB</c> data; <see langword="false"/> if it contains <c>MEMO</c> data.
     /// </summary>
-    public bool IsBlob => !IsMemo;
+    public bool IsBlob => !IsTextMemo;
 
     /// <summary>
     /// Creates a new <see cref="MemoDefinition"/> using the given data reader.

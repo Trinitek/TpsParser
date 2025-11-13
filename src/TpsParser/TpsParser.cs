@@ -73,7 +73,7 @@ public sealed class TpsParser : IDisposable
         return dataRecords.ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, TpsMemo>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, ErrorHandlingOptions? errorHandlingOptions)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, ITpsMemo>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, ErrorHandlingOptions? errorHandlingOptions)
     {
         return tableDefinitionRecord.Memos
             .SelectMany((definition, index) =>
@@ -87,7 +87,7 @@ public sealed class TpsParser : IDisposable
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
             .ToDictionary(
                 keySelector: groupedPair => groupedPair.Key,
-                elementSelector: groupedPair => (IReadOnlyDictionary<string, TpsMemo>)groupedPair
+                elementSelector: groupedPair => (IReadOnlyDictionary<string, ITpsMemo>)groupedPair
                     .ToDictionary(pair => pair.name, pair => pair.value));
     }
 
@@ -111,7 +111,7 @@ public sealed class TpsParser : IDisposable
         {
             var recordNumber = dataKvp.Key;
             
-            IReadOnlyDictionary<string, TpsMemo> memoValues;
+            IReadOnlyDictionary<string, ITpsMemo> memoValues;
 
             if (memoRecords.TryGetValue(recordNumber, out var memosForRecord))
             {
@@ -119,7 +119,7 @@ public sealed class TpsParser : IDisposable
             }
             else
             {
-                memoValues = ReadOnlyDictionary<string, TpsMemo>.Empty;
+                memoValues = ReadOnlyDictionary<string, ITpsMemo>.Empty;
             }
 
             return new Row(recordNumber, dataKvp.Value, memoValues);

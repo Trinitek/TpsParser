@@ -24,9 +24,9 @@ public sealed class Row
     public IReadOnlyDictionary<string, IClaObject> Values { get; }
 
     /// <summary>
-    /// Gets the <c>MEMO</c> or <c>BLOB</c> objects that belong to the record, where each <see cref="TpsMemo"/> is associated with the name of its column.
+    /// Gets the <c>MEMO</c> or <c>BLOB</c> objects that belong to the record, where each <see cref="ITpsMemo"/> is associated with the name of its column.
     /// </summary>
-    public IReadOnlyDictionary<string, TpsMemo> Memos { get; }
+    public IReadOnlyDictionary<string, ITpsMemo> Memos { get; }
 
     /// <summary>
     /// Instantiates a new row.
@@ -34,7 +34,7 @@ public sealed class Row
     /// <param name="recordNumber">The record number of the row.</param>
     /// <param name="values">The values in the row, keyed by their column names.</param>
     /// <param name="memos">The <c>MEMO</c>s in the row, keyed by their column names.</param>
-    public Row(int recordNumber, IReadOnlyDictionary<string, IClaObject> values, IReadOnlyDictionary<string, TpsMemo> memos)
+    public Row(int recordNumber, IReadOnlyDictionary<string, IClaObject> values, IReadOnlyDictionary<string, ITpsMemo> memos)
     {
         RecordNumber = recordNumber;
         Values = values ?? throw new ArgumentNullException(nameof(values));
@@ -91,7 +91,7 @@ public sealed class Row
     /// <param name="isRequired"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public TpsMemo? GetMemoCaseInsensitive(string column, bool isRequired)
+    public ITpsMemo? GetMemoCaseInsensitive(string column, bool isRequired)
     {
         var matchingKey = Memos.Keys.FirstOrDefault(k => k.Equals(column, StringComparison.OrdinalIgnoreCase));
         if (matchingKey is null)

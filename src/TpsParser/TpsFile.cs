@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using TpsParser.Memos;
 using TpsParser.Tps.Record;
 
 namespace TpsParser;
@@ -222,41 +223,6 @@ public sealed class TpsFile
         return EnumerateRecords();
     }
 
-    private static IEnumerable<TpsMemo> BuildTpsMemoFromPayloads(IEnumerable<MemoRecordPayload> memoRecords)
-    {
-        // Group the records by their owner and index.
-        var groupedByOwnerAndIndex = memoRecords
-            .GroupBy(
-                keySelector: record =>
-                {
-                    return (owner: record.RecordNumber, index: record.DefinitionIndex);
-                },
-                // Records must be merged in order according to the memo's sequence number, so we order them.
-                // Large memos are spread across multiple structures and must be joined later.
-                resultSelector: (key, payloads) =>
-                    (key,
-                    payloads: payloads.OrderBy(payload => payload.SequenceNumber)));
-
-        // Drop memos that have skipped sequence numbers, as this means the memo is missing a chunk of data.
-        // Sequence numbers are zero-based.
-        var filteredByCompleteSequences = groupedByOwnerAndIndex
-            .Where(group => group.payloads.Count() - 1 == group.payloads.Last().SequenceNumber);
-
-        // Merge memo sequences into a single memo record.
-        var resultingMemoRecords = filteredByCompleteSequences
-            .Select(group =>
-            {
-                var mergedMemo = new TpsMemo
-                {
-                    MemoPayloads = [..group.payloads]
-                };
-
-                return mergedMemo;
-            });
-
-        return resultingMemoRecords;
-    }
-
     /// <summary>
     /// Gets a dictionary of memo and blob records for the associated table.
     /// </summary>
@@ -265,7 +231,7 @@ public sealed class TpsFile
     /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
     /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
-    public IEnumerable<TpsMemo> GetTpsMemos(
+    public IEnumerable<ITpsMemo> GetTpsMemos(
         int table,
         int? owningRecord = null,
         byte? memoIndex = null,
@@ -277,7 +243,9 @@ public sealed class TpsFile
             memoDefinitionIndex: memoIndex,
             errorHandlingOptions: errorHandlingOptions);
 
-        return BuildTpsMemoFromPayloads(memoRecords);
+        var tableDef = GetTableDefinitions()[table];
+
+        return TpsMemoBuilder.BuildTpsMemo(memoRecords, tableDef);
     }
 
     public IEnumerable<MemoRecordPayload> EnumerateMemoRecordPayloads(

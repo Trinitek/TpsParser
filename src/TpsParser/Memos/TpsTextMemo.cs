@@ -9,15 +9,23 @@ using System.Text;
 namespace TpsParser;
 
 /// <summary>
-/// Represents a Clarion <c>MEMO</c> or <c>BLOB</c>, which are large variable-length bodies of data.
-/// A <see cref="TpsMemo"/> logically represents a single body of data that is assembled from one or more
+/// <para>
+/// Represents a Clarion <c>MEMO</c>, which is a large variable-length body of text.
+/// </para>
+/// <para>
+/// A <see cref="TpsTextMemo"/> follows a <see cref="MemoDefinition"/> where
+/// <see cref="MemoDefinition.IsTextMemo"/> is <see langword="true"/>.
+/// </para>
+/// <para>
+/// A <see cref="TpsTextMemo"/> logically represents a single body of text that is assembled from one or more
 /// <see cref="TpsRecord"/> objects with a <see cref="MemoRecordPayload"/>, assembled in sequence according
 /// to the <see cref="MemoRecordPayload.SequenceNumber"/>.
+/// </para>
 /// </summary>
-public sealed class TpsMemo
+public sealed class TpsTextMemo : ITpsMemo
 {
     /// <summary>
-    /// The collection of <c>MEMO</c> or <c>BLOB</c> payloads that make up this <see cref="TpsMemo"/>,
+    /// The collection of <c>MEMO</c> payloads that make up this <see cref="TpsTextMemo"/>,
     /// ordered by their <see cref="MemoRecordPayload.SequenceNumber"/>.
     /// </summary>
     public required ImmutableArray<MemoRecordPayload> MemoPayloads { get; init; }
@@ -128,13 +136,7 @@ public sealed class TpsMemo
     /// <returns></returns>
     public override string ToString() => ToString(EncodingOptions.Default.ContentEncoding);
 
-    /// <summary>
-    /// Copies the byte contents into the provided <see cref="Span{Byte}"/>.
-    /// </summary>
-    /// <param name="destination"></param>
-    /// <exception cref="ArgumentException">
-    /// <paramref name="destination"/> is shorter than the content length <see cref="Length"/>.
-    /// </exception>
+    /// <inheritdoc cref="ITpsMemo.CopyTo(Span{byte})" />
     public void CopyTo(Span<byte> destination)
     {
         int expectedLength = Length;
@@ -153,10 +155,7 @@ public sealed class TpsMemo
         }
     }
 
-    /// <summary>
-    /// Copies the byte contents into a new array.
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc cref="ITpsMemo.ToArray" />
     public byte[] ToArray()
     {
         byte[] result = new byte[Length];

@@ -30,26 +30,9 @@ public readonly record struct MemoRecordPayload : IRecordPayload, IPayloadTableN
     /// </summary>
     /// <remarks>
     /// Reverse-engineering note: for text <c>MEMO</c>s, this seems to be at most 256 bytes.
+    /// For <c>BLOB</c>s, the first 4 bytes is a little-endian 32-bit integer describing the size of
+    /// the blob content, followed by the content. It's unclear if the reported size differs from
+    /// the implied size based on <see cref="TpsRecord.PayloadTotalLength"/>, or if it could be shorter.
     /// </remarks>
     public readonly ReadOnlyMemory<byte> Content => PayloadData[12..];
-
-    public static MemoRecordPayload Create(
-        int tableNumber,
-        int recordNumber,
-        byte definitionIndex,
-        ushort sequenceNumber,
-        ReadOnlyMemory<byte> content)
-    {
-        byte[] payloadData = new byte[12 + content.Length];
-        var span = payloadData.AsSpan();
-
-        BinaryPrimitives.WriteInt32BigEndian(span[0..], tableNumber);
-        span[4] = (byte)RecordPayloadType.Memo;
-        BinaryPrimitives.WriteInt32BigEndian(span[5..], recordNumber);
-        span[9] = definitionIndex;
-        BinaryPrimitives.WriteUInt16BigEndian(span[10..], sequenceNumber);
-        content.Span.CopyTo(span[12..]);
-
-        return new MemoRecordPayload { PayloadData = payloadData };
-    }
 }

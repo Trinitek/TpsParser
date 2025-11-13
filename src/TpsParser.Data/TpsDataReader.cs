@@ -212,7 +212,7 @@ public class TpsDataReader : DbDataReader
                 {
                     ret = typeof(byte[]);
                 }
-                if (V2.IsMemo)
+                if (V2.IsTextMemo)
                 {
                     ret = typeof(string);
                 }
@@ -358,7 +358,7 @@ public class TpsDataReader : DbDataReader
 
                     foreach (var Record in ActualTableDefinition.Memos)
                     {
-                        if (Record.IsMemo)
+                        if (Record.IsTextMemo)
                         {
                             Values[Record.Name] = string.Empty;
                         }

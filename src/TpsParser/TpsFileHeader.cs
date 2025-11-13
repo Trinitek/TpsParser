@@ -14,6 +14,9 @@ public sealed record TpsFileHeader
     /// </summary>
     public const string TopSpeedMagicNumber = "tOpS";
 
+    /// <summary>
+    /// Gets the base address of the file. For well-formed TopSpeed files, this is always zero.
+    /// </summary>
     public int Address { get; init; }
 
     /// <summary>
@@ -21,7 +24,22 @@ public sealed record TpsFileHeader
     /// </summary>
     public int HeaderSize { get; init; }
 
+    /// <summary>
+    /// Gets the length of the file.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering note: This appears to always be the same as <see cref="FileLength2"/>.
+    /// It may be used by the TopSpeed database driver to detect incomplete writes.
+    /// </remarks>
     public int FileLength1 { get; init; }
+
+    /// <summary>
+    /// Gets the length of the file.
+    /// </summary>
+    /// <remarks>
+    /// Reverse-engineering note: This appears to always be the same as <see cref="FileLength1"/>.
+    /// It may be used by the TopSpeed database driver to detect incomplete writes.
+    /// </remarks>
     public int FileLength2 { get; init; }
 
     /// <summary>
@@ -29,6 +47,10 @@ public sealed record TpsFileHeader
     /// </summary>
     public required string MagicNumber { get; init; }
 
+    /// <summary></summary>
+    /// <remarks>
+    /// Reverse-engineering note: This appears to always be zero.
+    /// </remarks>
     public short Zeroes { get; init; }
 
     /// <summary>

@@ -67,7 +67,7 @@ public partial class TpsDbCommand : DbCommand {
 
         var Parser = new TpsParser(FoundFile);
 
-        var Definitions = Parser.TpsFile.GetTableDefinitions(true);
+        var Definitions = Parser.TpsFile.GetTableDefinitions();
 
         var ret = new TpsDataReader(Parser, Definitions);
         ret.NextResult();

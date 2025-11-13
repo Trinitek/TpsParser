@@ -398,21 +398,21 @@ public class TpsDataReader : DbDataReader
         return ret;
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherDataRecords(int table, TableDefinition tableDefinitionRecord)
     {
-        var dataRecords = Parser?.TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord, errorHandlingOptions: TODO);
+        var dataRecords = Parser?.TpsFile.GetDataRows(table, tableDefinition: tableDefinitionRecord);
 
-        return dataRecords.EmptyIfNull().ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
+        return (dataRecords ?? []).ToDictionary(r => r.RecordNumber, r => r.GetFieldValuePairs());
     }
 
-    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord, bool ignoreErrors)
+    private IReadOnlyDictionary<int, IReadOnlyDictionary<string, IClaObject>> GatherMemoRecords(int table, TableDefinition tableDefinitionRecord)
     {
         var ret = Enumerable.Range(0, tableDefinitionRecord.Memos.Length)
             .SelectMany(index => {
                 var definition = tableDefinitionRecord.Memos[index];
-                var memoRecordsForIndex = Parser?.TpsFile.GetMemoRecordPayloads(table, (byte)index, ignoreErrors);
+                var memoRecordsForIndex = Parser?.TpsFile.GetMemoRecordPayloads(table, (byte)index);
 
-                return memoRecordsForIndex.EmptyIfNull().Select(record => (owner: record.RecordNumber, name: definition.Name, value: record.GetValue(definition)));
+                return (memoRecordsForIndex ?? []).Select(record => (owner: record.RecordNumber, name: definition.Name, value: record.GetValue(definition)));
             })
             .GroupBy(pair => pair.owner, pair => (pair.name, pair.value))
             .ToDictionary(

@@ -2,7 +2,6 @@
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace TpsParser;
 
@@ -40,11 +39,11 @@ public sealed class TpsBlob : ITpsMemo
     /// <summary>
     /// Gets the total length in bytes of the combined blob content segments.
     /// </summary>
-    public int Length => MemoPayloads.Sum(mp => 
-    {
-        int length = BinaryPrimitives.ReadInt32LittleEndian(mp.Content.Span);
-        return length;
-    });
+    /// <remarks>
+    /// Reverse-engineering note: the first 4 bytes of the first payload's content is a little-endian
+    /// Int32 that specifies the length of the entire blob.
+    /// </remarks>
+    public int Length => BinaryPrimitives.ReadInt32LittleEndian(MemoPayloads[0].Content.Span);
 
     /// <summary>
     /// Gets the binary content segments of the <c>BLOB</c> from each <see cref="MemoRecordPayload"/>
@@ -53,11 +52,16 @@ public sealed class TpsBlob : ITpsMemo
     /// <returns></returns>
     public IEnumerable<ReadOnlyMemory<byte>> GetBlobContentSegments()
     {
-        foreach (var payload in MemoPayloads)
-        {
-            int length = BinaryPrimitives.ReadInt32LittleEndian(payload.Content.Span);
+        // The first payload contains a little-endian Int32 that specifies the number of bytes.
 
-            yield return payload.Content[..length];
+        var first = MemoPayloads[0];
+
+        yield return first.Content[4..];
+
+        for (int i = 1; i < MemoPayloads.Length; i++)
+        {
+            var payload = MemoPayloads[i];
+            yield return payload.Content;
         }
     }
 

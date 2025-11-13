@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TpsParser.Memos;
 using TpsParser.Tps.Record;
 
 namespace TpsParser;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TpsParser.Memos;
+namespace TpsParser;
 
 internal static class TpsMemoBuilder
 {

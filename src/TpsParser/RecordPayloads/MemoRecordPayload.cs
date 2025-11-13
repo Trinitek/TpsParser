@@ -30,9 +30,8 @@ public readonly record struct MemoRecordPayload : IRecordPayload, IPayloadTableN
     /// </summary>
     /// <remarks>
     /// Reverse-engineering note: for text <c>MEMO</c>s, this seems to be at most 256 bytes.
-    /// For <c>BLOB</c>s, the first 4 bytes is a little-endian 32-bit integer describing the size of
-    /// the blob content, followed by the content. It's unclear if the reported size differs from
-    /// the implied size based on <see cref="TpsRecord.PayloadTotalLength"/>, or if it could be shorter.
+    /// For <c>BLOB</c>s, the first payload in the sequence has, in the first 4 bytes, a little-endian
+    /// 32-bit integer describing the size of the blob content, followed by the content.
     /// </remarks>
     public readonly ReadOnlyMemory<byte> Content => PayloadData[12..];
 }

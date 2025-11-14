@@ -540,19 +540,19 @@ public sealed class TpsRandomAccess
     /// Reads a <see cref="ClaByte"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaByte ReadClaByte() => new(ReadByte());
+    public ClaByte ReadClaByte() => ClaBinaryPrimitives.ReadClaByte(ReadBytes(1).Span);// new(ReadByte());
 
     /// <summary>
     /// Reads a <see cref="ClaShort"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaShort ReadClaShort() => new(ReadShortLE());
+    public ClaShort ReadClaShort() => ClaBinaryPrimitives.ReadClaShort(ReadBytes(2).Span);// new(ReadShortLE());
 
     /// <summary>
     /// Reads a <see cref="ClaUnsignedShort"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaUnsignedShort ReadClaUnsignedShort() => new(ReadUnsignedShortLE());
+    public ClaUnsignedShort ReadClaUnsignedShort() => ClaBinaryPrimitives.ReadClaUnsignedShort(ReadBytes(2).Span);// new(ReadUnsignedShortLE());
 
     /// <summary>
     /// Reads a <see cref="ClaDate"/> and advances the current position.
@@ -560,6 +560,8 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ClaDate ReadClaDate()
     {
+        return ClaBinaryPrimitives.ReadClaDate(ReadBytes(4).Span);
+
         long date = ReadUnsignedLongLE();
 
         if (date != 0)
@@ -581,6 +583,8 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ClaTime ReadClaTime()
     {
+        return ClaBinaryPrimitives.ReadClaTime(ReadBytes(4).Span);
+
         int time = ReadLongLE();
 
         // Hours 0 - 23
@@ -602,25 +606,25 @@ public sealed class TpsRandomAccess
     /// Reads a <see cref="ClaLong"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaLong ReadClaLong() => new(ReadLongLE());
+    public ClaLong ReadClaLong() => ClaBinaryPrimitives.ReadClaLong(ReadBytes(4).Span);// new(ReadLongLE());
 
     /// <summary>
     /// Reads a <see cref="ClaUnsignedLong"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaUnsignedLong ReadClaUnsignedLong() => new(ReadUnsignedLongLE());
+    public ClaUnsignedLong ReadClaUnsignedLong() => ClaBinaryPrimitives.ReadClaUnsignedLong(ReadBytes(4).Span);// new(ReadUnsignedLongLE());
 
     /// <summary>
     /// Reads a <see cref="ClaSingleReal"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaSingleReal ReadClaFloat() => new(ReadFloatLE());
+    public ClaSingleReal ReadClaFloat() => ClaBinaryPrimitives.ReadClaSingleReal(ReadBytes(4).Span);// new(ReadFloatLE());
 
     /// <summary>
     /// Reads a <see cref="ClaReal"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaReal ReadClaDouble() => new(ReadDoubleLE());
+    public ClaReal ReadClaDouble() => ClaBinaryPrimitives.ReadClaReal(ReadBytes(8).Span); //new(ReadDoubleLE());
 
     /// <summary>
     /// Reads a <see cref="ClaDecimal"/> and advances the current position.
@@ -630,6 +634,8 @@ public sealed class TpsRandomAccess
     /// <returns></returns>
     public ClaDecimal ReadClaDecimal(int length, byte digitsAfterDecimalPoint)
     {
+        return ClaBinaryPrimitives.ReadClaDecimal(ReadBytes(length).Span, length, digitsAfterDecimalPoint);
+
         if (length < 1 || length > 16)
         {
             throw new ArgumentOutOfRangeException(nameof(length), actualValue: length, "Expected a byte length between 1 and 16 inclusive.");

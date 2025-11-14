@@ -66,7 +66,7 @@ public sealed record FieldDefinition
     /// <summary>
     /// If the field contains a <see cref="ClaFString"/>, <see cref="ClaCString"/>, or <see cref="ClaPString"/>, gets the number of bytes in the string.
     /// </summary>
-    public int StringLength { get; init; }
+    public ushort StringLength { get; init; }
 
     /// <summary>
     /// If the field contains a <see cref="ClaFString"/>, <see cref="ClaCString"/>, or <see cref="ClaPString"/>, gets the string mask.

@@ -25,28 +25,28 @@ internal sealed partial class TpsParserTest
 
                 Assert.That(rows[0].Values, Has.Count.EqualTo(2));
                 Assert.That(rows[0].Memos, Has.Count.EqualTo(2));
-                Assert.That(((ClaFString)rows[0].Values["Name"]).Value, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
+                Assert.That(((ClaFString)rows[0].Values["Name"]).StringValue, Is.EqualTo("Joe Smith".PadRight(64, ' ')));
                 Assert.That(((ClaDate)rows[0].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2016, 2, 9)));
                 Assert.That(rows[0].Memos["Notes"].ToString(), Is.EqualTo("Joe is a great guy to work with."));
                 Assert.That(rows[0].Memos["AdditionalNotes"].ToString(), Is.EqualTo("He also likes sushi."));
 
                 Assert.That(rows[1].Values, Has.Count.EqualTo(2));
                 Assert.That(rows[1].Memos, Has.Count.EqualTo(2));
-                Assert.That(((ClaFString)rows[1].Values["Name"]).Value, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
+                Assert.That(((ClaFString)rows[1].Values["Name"]).StringValue, Is.EqualTo("Jane Jones".PadRight(64, ' ')));
                 Assert.That(((ClaDate)rows[1].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2019, 8, 22)));
                 Assert.That(rows[1].Memos["Notes"].ToString(), Is.EqualTo("Jane knows how to make a great pot of coffee."));
                 Assert.That(rows[1].Memos["AdditionalNotes"].ToString(), Is.EqualTo("She doesn't like sushi as much as Joe."));
 
                 Assert.That(rows[2].Values, Has.Count.EqualTo(2));
                 Assert.That(rows[2].Memos, Has.Count.EqualTo(0));
-                Assert.That(((ClaFString)rows[2].Values["Name"]).Value, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
+                Assert.That(((ClaFString)rows[2].Values["Name"]).StringValue, Is.EqualTo("John NoNotes".PadRight(64, ' ')));
                 Assert.That(((ClaDate)rows[2].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2019, 10, 7)));
                 Assert.That(rows[2].Memos.TryGetValue("Notes", out var _), Is.False);
                 Assert.That(rows[2].Memos.TryGetValue("AdditionalNotes", out var _), Is.False);
 
                 Assert.That(rows[3].Values, Has.Count.EqualTo(2));
                 Assert.That(rows[3].Memos, Has.Count.EqualTo(1));
-                Assert.That(((ClaFString)rows[3].Values["Name"]).Value, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
+                Assert.That(((ClaFString)rows[3].Values["Name"]).StringValue, Is.EqualTo("Jimmy OneNote".PadRight(64, ' ')));
                 Assert.That(((ClaDate)rows[3].Values["Date"]).ToDateOnly().Value, Is.EqualTo(new DateOnly(2013, 3, 14)));
                 Assert.That(rows[3].Memos.TryGetValue("Notes", out var _), Is.False);
                 Assert.That(rows[3].Memos["AdditionalNotes"].ToString(), Is.EqualTo("Has a strange last name."));

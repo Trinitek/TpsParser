@@ -193,9 +193,32 @@ public interface IComplex : IClaObject
 public interface IClaString : IClaBoolean
 {
     /// <summary>
-    /// Gets the string value.
+    /// Gets the <see cref="string"/> backing this type, if available.
+    /// If <see langword="null"/>, the string content will be available in <see cref="ContentValue"/>.
     /// </summary>
-    string Value { get; }
+    string? StringValue { get; }
+
+    /// <summary>
+    /// Gets the memory content backing this type, if available.
+    /// If <see langword="null"/>, the string content will be available in <see cref="StringValue"/>.
+    /// </summary>
+    ReadOnlyMemory<byte>? ContentValue { get; }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the string's length is greater than zero and is not entirely filled with SPACE as padding.
+    /// If <see cref="StringValue"/> is not available, <see cref="ContentValue"/> is used and
+    /// the SPACE character is determined using the default <see cref="EncodingOptions.ContentEncoding"/> set by <see cref="EncodingOptions.Default"/>.
+    /// </summary>
+    /// <returns></returns>
+    bool ToBoolean(Encoding encoding);
+
+    /// <summary>
+    /// Gets the string value stored in <see cref="StringValue"/> if available,
+    /// or returns a new string from <see cref="ContentValue"/> using the given encoding.
+    /// </summary>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    string ToString(Encoding encoding);
 }
 
 /// <summary>

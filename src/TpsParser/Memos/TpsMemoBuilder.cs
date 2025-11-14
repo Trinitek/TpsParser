@@ -4,8 +4,18 @@ using System.Linq;
 
 namespace TpsParser;
 
+/// <summary>
+/// Contains static methods for constructing <see cref="ITpsMemo"/> instances from payloads.
+/// </summary>
 public static class TpsMemoBuilder
 {
+    /// <summary>
+    /// Builds an enumerable of <see cref="ITpsMemo"/> objects from an enumerable of <see cref="MemoRecordPayload"/> objects,
+    /// joined and merged based on the payloads' definition index, record number, and sequence number.
+    /// </summary>
+    /// <param name="memoPayloads"></param>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static IEnumerable<T> BuildTpsMemos<T>(
         IEnumerable<MemoRecordPayload> memoPayloads,
         Func<IEnumerable<MemoRecordPayload>, T> builder)
@@ -41,6 +51,13 @@ public static class TpsMemoBuilder
         return resultingMemoRecords;
     }
 
+    /// <summary>
+    /// Builds an enumerable of <see cref="ITpsMemo"/> objects from an enumerable of <see cref="MemoRecordPayload"/> objects,
+    /// joined and merged based on the payloads' definition index, record number, and sequence number.
+    /// </summary>
+    /// <param name="memoPayloads"></param>
+    /// <param name="tableDefinition"></param>
+    /// <returns></returns>
     public static IEnumerable<ITpsMemo> BuildTpsMemos(
         IEnumerable<MemoRecordPayload> memoPayloads,
         TableDefinition tableDefinition)
@@ -70,10 +87,18 @@ public static class TpsMemoBuilder
             });
     }
 
-    public static IEnumerable<TpsBlob> BuildTpsBlobs(IEnumerable<MemoRecordPayload> memoPayloads)
+    /// <summary>
+    /// Builds an enumerable of <see cref="TpsBlob"/> objects from an enumerable of <see cref="MemoRecordPayload"/> objects,
+    /// joined and merged based on the payloads' definition index, record number, and sequence number.
+    /// All record payloads are assumed to describe <c>BLOB</c> payloads.
+    /// The inclusion of <c>MEMO</c> payloads will produce incorrectly-formed <see cref="TpsBlob"/> objects.
+    /// </summary>
+    /// <param name="blobPayloads"></param>
+    /// <returns></returns>
+    public static IEnumerable<TpsBlob> BuildTpsBlobs(IEnumerable<MemoRecordPayload> blobPayloads)
     {
         return BuildTpsMemos(
-            memoPayloads: memoPayloads,
+            memoPayloads: blobPayloads,
             builder: payloads =>
             {
                 var blob = new TpsBlob
@@ -84,10 +109,18 @@ public static class TpsMemoBuilder
             });
     }
 
-    public static IEnumerable<TpsTextMemo> BuildTpsTextMemos(IEnumerable<MemoRecordPayload> memoPayloads)
+    /// <summary>
+    /// Builds an enumerable of <see cref="TpsTextMemo"/> objects from an enumerable of <see cref="MemoRecordPayload"/> objects,
+    /// joined and merged based on the payloads' definition index, record number, and sequence number.
+    /// All record payloads are assumed to describe <c>MEMO</c> payloads.
+    /// The inclusion of <c>BLOB</c> payloads will produce incorrectly-formed <see cref="TpsTextMemo"/> objects.
+    /// </summary>
+    /// <param name="textMemoPayloads"></param>
+    /// <returns></returns>
+    public static IEnumerable<TpsTextMemo> BuildTpsTextMemos(IEnumerable<MemoRecordPayload> textMemoPayloads)
     {
         return BuildTpsMemos(
-            memoPayloads: memoPayloads,
+            memoPayloads: textMemoPayloads,
             builder: payloads =>
             {
                 var blob = new TpsTextMemo

@@ -39,11 +39,6 @@ public sealed class TpsRandomAccess
     public int Length { get; }
 
     /// <summary>
-    /// Returns true if there is one byte available at <see cref="Position"/>.
-    /// </summary>
-    public bool IsOneByteLeft => Position > Length - 1;
-
-    /// <summary>
     /// Returns true if no more data is available at <see cref="Position"/>.
     /// </summary>
     public bool IsAtEnd => Position >= Length - 1;
@@ -273,13 +268,6 @@ public sealed class TpsRandomAccess
 
         return result;
     }
-
-    /// <summary>
-    /// Reads a byte from the given offset without advancing the position.
-    /// </summary>
-    /// <param name="offset"></param>
-    /// <returns></returns>
-    public byte PeekByte(int offset) => Data[BaseOffset + offset];
 
     /// <summary>
     /// Reads a little endian float and advances the current position.
@@ -558,49 +546,13 @@ public sealed class TpsRandomAccess
     /// Reads a <see cref="ClaDate"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaDate ReadClaDate()
-    {
-        return ClaBinaryPrimitives.ReadClaDate(ReadBytes(4).Span);
-
-        long date = ReadUnsignedLongLE();
-
-        if (date != 0)
-        {
-            long years = (date & 0xFFFF0000) >> 16;
-            long months = (date & 0x0000FF00) >> 8;
-            long days = date & 0x000000FF;
-            return new ClaDate(new DateOnly((int)years, (int)months, (int)days));
-        }
-        else
-        {
-            return new ClaDate(null);
-        }
-    }
+    public ClaDate ReadClaDate() => ClaBinaryPrimitives.ReadClaDate(ReadBytes(4).Span);
 
     /// <summary>
     /// Reads a <see cref="ClaTime"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
-    public ClaTime ReadClaTime()
-    {
-        return ClaBinaryPrimitives.ReadClaTime(ReadBytes(4).Span);
-
-        int time = ReadLongLE();
-
-        // Hours 0 - 23
-        int hours = (time & 0x7F000000) >> 24;
-
-        // Minutes 0 - 59
-        int mins = (time & 0x00FF0000) >> 16;
-
-        // Seconds 0 - 59
-        int secs = (time & 0x0000FF00) >> 8;
-
-        // Centiseconds (seconds/100) 0 - 99
-        int centi = time & 0x000000FF;
-
-        return new ClaTime((byte)hours, (byte)mins, (byte)secs, (byte)centi);
-    }
+    public ClaTime ReadClaTime() => ClaBinaryPrimitives.ReadClaTime(ReadBytes(4).Span);
 
     /// <summary>
     /// Reads a <see cref="ClaLong"/> and advances the current position.
@@ -632,49 +584,7 @@ public sealed class TpsRandomAccess
     /// <param name="length">The total number of bytes that represent the number.</param>
     /// <param name="digitsAfterDecimalPoint">The number of digits in the fractional part of the number.</param>
     /// <returns></returns>
-    public ClaDecimal ReadClaDecimal(int length, byte digitsAfterDecimalPoint)
-    {
-        return ClaBinaryPrimitives.ReadClaDecimal(ReadBytes(length).Span, length, digitsAfterDecimalPoint);
-
-        if (length < 1 || length > 16)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length), actualValue: length, "Expected a byte length between 1 and 16 inclusive.");
-        }
-
-        ulong high = default;
-        ulong low = default;
-        byte places = digitsAfterDecimalPoint;
-
-        ref ulong current = ref length > 16 ? ref high : ref low;
-
-        ReadOnlySpan<byte> data = ReadBytes(length).Span;
-
-        int shift = 0;
-
-        // Write the least significant 30 digits
-        for (int i = length - 1; i > 0; i--)
-        {
-            current |= (ulong)data[i] << 8 * shift;
-
-            if (i == 16)
-            {
-                shift = 0;
-                current = ref high;
-            }
-            else
-            {
-                shift++;
-            }
-        }
-
-        // Most significant digit (may be zero)
-        current |= ((ulong)data[0] & 0x0F) << 8 * shift;
-
-        // Sign
-        high |= ((ulong)data[0] & 0xF0) << 56;
-
-        return new ClaDecimal(high, low, places);
-    }
+    public ClaDecimal ReadClaDecimal(int length, byte digitsAfterDecimalPoint) => ClaBinaryPrimitives.ReadClaDecimal(ReadBytes(length).Span, length, digitsAfterDecimalPoint);
 
     /// <summary>
     /// Reads a <see cref="ClaFString"/> and consumes the entire data array.

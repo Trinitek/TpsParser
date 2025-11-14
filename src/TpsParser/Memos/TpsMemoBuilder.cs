@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace TpsParser;
 
-internal static class TpsMemoBuilder
+public static class TpsMemoBuilder
 {
-    internal static IEnumerable<T> BuildTpsMemo<T>(
+    public static IEnumerable<T> BuildTpsMemos<T>(
         IEnumerable<MemoRecordPayload> memoPayloads,
         Func<IEnumerable<MemoRecordPayload>, T> builder)
         where T : ITpsMemo
@@ -41,11 +41,11 @@ internal static class TpsMemoBuilder
         return resultingMemoRecords;
     }
 
-    internal static IEnumerable<ITpsMemo> BuildTpsMemo(
+    public static IEnumerable<ITpsMemo> BuildTpsMemos(
         IEnumerable<MemoRecordPayload> memoPayloads,
         TableDefinition tableDefinition)
     {
-        return BuildTpsMemo<ITpsMemo>(
+        return BuildTpsMemos<ITpsMemo>(
             memoPayloads: memoPayloads,
             builder: payloads =>
             {
@@ -70,9 +70,9 @@ internal static class TpsMemoBuilder
             });
     }
 
-    internal static IEnumerable<TpsBlob> BuildTpsBlob(IEnumerable<MemoRecordPayload> memoPayloads)
+    public static IEnumerable<TpsBlob> BuildTpsBlobs(IEnumerable<MemoRecordPayload> memoPayloads)
     {
-        return BuildTpsMemo(
+        return BuildTpsMemos(
             memoPayloads: memoPayloads,
             builder: payloads =>
             {
@@ -84,9 +84,9 @@ internal static class TpsMemoBuilder
             });
     }
 
-    internal static IEnumerable<TpsTextMemo> BuildTpsTextMemo(IEnumerable<MemoRecordPayload> memoPayloads)
+    public static IEnumerable<TpsTextMemo> BuildTpsTextMemos(IEnumerable<MemoRecordPayload> memoPayloads)
     {
-        return BuildTpsMemo(
+        return BuildTpsMemos(
             memoPayloads: memoPayloads,
             builder: payloads =>
             {

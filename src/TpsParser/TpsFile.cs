@@ -244,7 +244,7 @@ public sealed class TpsFile
 
         var tableDef = GetTableDefinitions()[table];
 
-        return TpsMemoBuilder.BuildTpsMemo(memoRecords, tableDef);
+        return TpsMemoBuilder.BuildTpsMemos(memoRecords, tableDef);
     }
 
     public IEnumerable<MemoRecordPayload> EnumerateMemoRecordPayloads(

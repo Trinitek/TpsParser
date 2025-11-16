@@ -197,6 +197,14 @@ public sealed class FieldDefinitionEnumerable
         FieldIteratorPointer groupToBeMerged,
         FieldIteratorPointer newPointer)
     {
+        // The expected shape of groupToBeMerged is essentially a linked list starting at the outer-most group
+        // in the original FieldDefinition array, with exactly one ChildIterator that is the next inner group.
+        // The last inner group has one ChildIterator that is newPointer.
+        //
+        // The newPointer can either be a group itself (in the case where the user has SELECTed the inclusion
+        // of the entire group by name) or it can be a simple scalar field like LONG or STRING (in the case where
+        // the user has SELECTed the inclusion of a group sub-field).
+
         for (int ii = 0; ii < existingIterators.Count; ii++)
         {
             var existing = existingIterators[ii];

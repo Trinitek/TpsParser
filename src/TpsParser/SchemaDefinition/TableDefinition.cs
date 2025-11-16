@@ -12,9 +12,9 @@ namespace TpsParser;
 public sealed record TableDefinition
 {
     /// <summary>
-    /// Gets the Clarion database driver version that created the table.
+    /// Gets the minimum required TopSpeed database driver version required to read the table.
     /// </summary>
-    public int DriverVersion { get; init; }
+    public int MinimumDriverVersion { get; init; }
 
     /// <summary>
     /// Gets the number of bytes in each record.
@@ -22,7 +22,7 @@ public sealed record TableDefinition
     public int RecordLength { get; init; }
 
     /// <summary>
-    /// Gets the field definitions for this table. For <c>MEMO</c>s s and <c>BLOB</c>s, see <see cref="Memos"/>.
+    /// Gets the field definitions for this table. For <c>MEMO</c>s and <c>BLOB</c>s, see <see cref="Memos"/>.
     /// </summary>
     public required ImmutableArray<FieldDefinition> Fields { get; init; }
 
@@ -75,7 +75,7 @@ public sealed record TableDefinition
 
         return new TableDefinition
         {
-            DriverVersion = DriverVersion,
+            MinimumDriverVersion = DriverVersion,
             RecordLength = RecordLength,
             Fields = [..fields],
             Memos = [..memos],

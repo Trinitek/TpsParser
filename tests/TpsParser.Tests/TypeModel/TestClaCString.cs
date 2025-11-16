@@ -14,7 +14,7 @@ internal sealed class TestClaCString
 
         var str = rx.ReadClaCString();
 
-        Assert.That(str.Value, Is.EqualTo("Hello"));
+        Assert.That(str.ToString(), Is.EqualTo("Hello"));
     }
 
     [Test]
@@ -22,12 +22,12 @@ internal sealed class TestClaCString
     {
         var str = new ClaCString("Hello");
 
-        Assert.That(str.Value, Is.EqualTo("Hello"));
+        Assert.That(str.ToString(), Is.EqualTo("Hello"));
     }
 
     [Test]
     public void ShouldThrowWhenStringCtorIsNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new ClaCString(null));
+        Assert.Throws<ArgumentNullException>(() => new ClaCString((string)null!));
     }
 }

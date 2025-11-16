@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Runtime.InteropServices;
 using TpsParser.TypeModel;
 
 namespace TpsParser;
@@ -49,14 +49,198 @@ public readonly record struct FieldEnumerationResult(
     FieldDefinitionPointer FieldDefinition,
     IClaObject Value);
 
+//private sealed class SingleFieldEnumerator
+
+public sealed record FieldIteratorPointer(
+    FieldDefinitionPointer DefinitionPointer,
+    List<FieldIteratorPointer> ChildIterators);
+
 public sealed class FieldDefinitionEnumerable
 {
-    public static IEnumerable<FieldDefinitionPointer> CreateFieldDefSlims(ImmutableArray<FieldDefinition> fieldDefinitions)
+    public static ImmutableArray<FieldIteratorPointer> CreateFieldIterator(ImmutableArray<FieldDefinition> fieldDefinitions, ImmutableHashSet<int> requestedFieldIndices)
     {
-        // We need to turn our flat list of field definitions into nested pointers (FieldDefinitionSlim instances)
+        foreach (int fieldIndex in requestedFieldIndices)
+        {
+            if (fieldIndex < 0 || fieldIndex >= fieldDefinitions.Length)
+            {
+                throw new ArgumentException($"Requested field index is out of range: {fieldIndex}");
+            }
+        }
+
+        var orderedIndices = requestedFieldIndices.Order();
+
+        List<FieldIteratorPointer> iterators = [];
+
+        foreach (int fieldIndex in orderedIndices)
+        {
+            var fieldDef = fieldDefinitions[fieldIndex];
+
+            // For the selected field, we need to walk the field definitions to determine if it's inside one or more nested groups,
+            // and then recursively add those groups to our iterator list.
+            //
+            // If an index points directly to a group and not a sub-field in a group, then that group and all its sub-fields are
+            // added, and as before we recursively add the parent groups that it belongs to, if any.
+
+            //FieldIteratorPointer? currentPointer = null;
+
+            if (fieldIndex == 0)
+            {
+                // This is the first index; this field is not in a group. Add it directly.
+
+                if (fieldDef.TypeCode == FieldTypeCode.Group)
+                {
+                    var maybeExistingPointer = iterators.FirstOrDefault(fp => fp.DefinitionPointer.Inner == fieldDef);
+
+                    FieldIteratorPointer pointer;
+
+                    if (maybeExistingPointer is { } existing)
+                    {
+                        pointer = existing;
+                    }
+                    else
+                    {
+                        pointer = new FieldIteratorPointer(
+                            FieldDefinitionPointer.Create(fieldDef),
+                            []);
+
+                        iterators.Add(pointer);
+                    }
+
+                    // TODO populate all the subfields.
+                }
+                else
+                {
+                    iterators.Add(new(
+                        FieldDefinitionPointer.Create(fieldDef),
+                        []));
+                }
+            }
+            else
+            {
+                var pointer = new FieldIteratorPointer(
+                    FieldDefinitionPointer.Create(fieldDef),
+                    []);
+
+                if (fieldDef.TypeCode == FieldTypeCode.Group)
+                {
+                    // TODO populate all the subfields
+
+                    // TODO when merging, if this pointer already exists in the list,
+                    // we can simply replace the old pointer with this one, as all the subfields will be included.
+                }
+
+                // Construct the tree of groups that need to be merged with the iterator list.
+
+                FieldIteratorPointer? outerGroupIterator = null;
+
+                for (int fi = fieldIndex; fi >= 0; fi--)
+                {
+                    var maybeGroup = fieldDefinitions[fi];
+
+                    bool isInsideGroup =
+                        (maybeGroup.TypeCode == FieldTypeCode.Group)
+                        && (maybeGroup.Offset <= fieldDef.Offset)
+                        && (maybeGroup.Offset + maybeGroup.Length) <= (fieldDef.Offset + fieldDef.Length);
+
+                    if (isInsideGroup is false)
+                    {
+                        continue;
+                    }
+
+                    if (outerGroupIterator == null)
+                    {
+                        // This is the first group; add the pointer here.
+
+                        outerGroupIterator = new(
+                            FieldDefinitionPointer.Create(maybeGroup),
+                            [pointer]);
+                    }
+                    else
+                    {
+                        // Successive groups are nested into each other.
+
+                        var newGroupIterator = new FieldIteratorPointer(
+                            FieldDefinitionPointer.Create(maybeGroup),
+                            [outerGroupIterator]);
+
+                        outerGroupIterator = newGroupIterator;
+                    }
+                }
+
+                // Then merge that into the iterator list...
+
+                if (outerGroupIterator is null)
+                {
+                    // If no parent group was found, add the pointer directly to the list.
+
+                    iterators.Add(pointer);
+                }
+                else
+                {
+                    MergeGroupPointers(
+                        existingIterators: iterators,
+                        groupToBeMerged: outerGroupIterator,
+                        newPointer: pointer);
+                }
+            }
+
+
+
+            
+        }
+
+        return [.. iterators];
+    }
+
+    public static void MergeGroupPointers(
+        IList<FieldIteratorPointer> existingIterators,
+        FieldIteratorPointer groupToBeMerged,
+        FieldIteratorPointer newPointer)
+    {
+        for (int ii = 0; ii < existingIterators.Count; ii++)
+        {
+            var existing = existingIterators[ii];
+
+            if (existing.DefinitionPointer == newPointer.DefinitionPointer)
+            {
+                // Our new pointer is a group and we've found it. Swap the existing one with the new one, and finish.
+
+                existingIterators[ii] = newPointer;
+
+                return;
+            }
+            else if (existing.DefinitionPointer == groupToBeMerged.DefinitionPointer)
+            {
+                // Otherwise, get the next child group and continue merging.
+
+                var innerGroupToMergeOrNewPointer = groupToBeMerged.ChildIterators.Single();
+
+                MergeGroupPointers(
+                    existing.ChildIterators,
+                    innerGroupToMergeOrNewPointer,
+                    newPointer);
+
+                return;
+            }
+            else
+            {
+                continue;
+            }
+        }
+
+        // Not found in list; add it.
+
+        existingIterators.Add(groupToBeMerged);
+
+        return;
+    }
+
+    public static IEnumerable<FieldDefinitionPointer> GetLevel0Pointers(ImmutableArray<FieldDefinition> fieldDefinitions)
+    {
+        // We need to turn our flat list of field definitions into nested pointers (FieldDefinitionPointer instances)
         // so that we can recursively iterate them. Step zero is to get an IEnumerable of all the level-0 fields,
         // that is, all of the fields that are _not_ already nested in a group. Or more literally, if we encounter
-        // a GROUP field, we return a FieldDefinitionSlim for that, then skip all its inner fields, then return the next.
+        // a GROUP field, we return a FieldDefinitionPoint for that, then skip all its inner fields, then return the next.
 
         for (int i = 0; i < fieldDefinitions.Length; i++)
         {
@@ -95,6 +279,8 @@ public sealed class FieldDefinitionEnumerable
         }
     }
 
+    //public static IEnumerable<FieldDefinition> GetFieldsInGroup()
+
     public static IEnumerable<FieldEnumerationResult> EnumerateValues(IEnumerable<FieldDefinitionPointer> fieldDefinitions, DataRecordPayload dataPayload)
     {
         foreach (var fieldDefinition in fieldDefinitions)
@@ -113,10 +299,9 @@ public sealed class FieldDefinitionEnumerable
                     }
                 }
 
-                foreach (var inner in EnumerateValues(EnumerateArrayElement(), dataPayload))
-                {
-                    yield return inner;
-                }
+                yield return new(
+                    fieldDefinition,
+                    new ClaArray(EnumerateArrayElement(), dataPayload));
 
                 // Stop processing this field.
                 continue;
@@ -126,8 +311,22 @@ public sealed class FieldDefinitionEnumerable
 
             if (fieldDefinition.TypeCode == FieldTypeCode.Group)
             {
+                IEnumerable<FieldDefinitionPointer> EnumerateGroupElement()
+                {
+                    ushort groupLength = fieldDefinition.Length;
+                    ushort sum = 0;
 
-                // TODO...
+                    while (true)
+                    {
+
+                    }
+
+                    // TODO...
+                }
+
+                yield return new(
+                    fieldDefinition,
+                    new ClaGroup(EnumerateGroupElement(), dataPayload));
 
                 // Stop processing this field.
                 continue;

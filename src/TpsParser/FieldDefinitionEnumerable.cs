@@ -81,8 +81,6 @@ public sealed class FieldDefinitionEnumerable
             // If an index points directly to a group and not a sub-field in a group, then that group and all its sub-fields are
             // added, and as before we recursively add the parent groups that it belongs to, if any.
 
-            //FieldIteratorPointer? currentPointer = null;
-
             if (fieldIndex == 0)
             {
                 // This is the first index; this field is not in a group. Add it directly.
@@ -124,12 +122,9 @@ public sealed class FieldDefinitionEnumerable
                 if (fieldDef.TypeCode == FieldTypeCode.Group)
                 {
                     // TODO populate all the subfields
-
-                    // TODO when merging, if this pointer already exists in the list,
-                    // we can simply replace the old pointer with this one, as all the subfields will be included.
                 }
 
-                // Construct the tree of groups that need to be merged with the iterator list.
+                // Construct the linked-list of groups that need to be merged with the iterator list.
 
                 FieldIteratorPointer? outerGroupIterator = null;
 
@@ -198,8 +193,8 @@ public sealed class FieldDefinitionEnumerable
         FieldIteratorPointer newPointer)
     {
         // The expected shape of groupToBeMerged is essentially a linked list starting at the outer-most group
-        // in the original FieldDefinition array, with exactly one ChildIterator that is the next inner group.
-        // The last inner group has one ChildIterator that is newPointer.
+        // in the original FieldDefinition array, with exactly one ChildIterator that represents the next inner group,
+        // and so on. The last inner group has one ChildIterator that is newPointer.
         //
         // The newPointer can either be a group itself (in the case where the user has SELECTed the inclusion
         // of the entire group by name) or it can be a simple scalar field like LONG or STRING (in the case where
@@ -211,10 +206,17 @@ public sealed class FieldDefinitionEnumerable
 
             if (existing.DefinitionPointer == newPointer.DefinitionPointer)
             {
-                // Our new pointer is a group and we've found it. Swap the existing one with the new one, and finish.
-
+                // Found our end pointer.
+                
+                // We actually only need to swap the existing pointer with the new one if our target is itself a group,
+                // but it doesn't matter if we do it for non-groups as well.
+                //
+                // If this is a group pointer, the new pointer will have been previously populated with all its child-fields
+                // before merging, so this is important. Otherwise the result set would include the group itself but none
+                // of its fields.
                 existingIterators[ii] = newPointer;
 
+                // ...and finish.
                 return;
             }
             else if (existing.DefinitionPointer == groupToBeMerged.DefinitionPointer)

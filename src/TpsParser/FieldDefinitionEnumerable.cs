@@ -49,8 +49,6 @@ public readonly record struct FieldEnumerationResult(
     FieldDefinitionPointer FieldDefinition,
     IClaObject Value);
 
-//private sealed class SingleFieldEnumerator
-
 public sealed record FieldIteratorPointer(
     FieldDefinitionPointer DefinitionPointer,
     List<FieldIteratorPointer> ChildIterators);
@@ -128,7 +126,7 @@ public sealed class FieldDefinitionEnumerable
 
                 FieldIteratorPointer? outerGroupIterator = null;
 
-                for (int fi = fieldIndex; fi >= 0; fi--)
+                for (int fi = fieldIndex - 1; fi >= 0; fi--)
                 {
                     var maybeGroup = fieldDefinitions[fi];
 
@@ -178,10 +176,6 @@ public sealed class FieldDefinitionEnumerable
                         newPointer: pointer);
                 }
             }
-
-
-
-            
         }
 
         return [.. iterators];

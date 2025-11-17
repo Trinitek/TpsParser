@@ -4,33 +4,66 @@ using TpsParser.TypeModel;
 
 namespace TpsParser;
 
+/// <summary>
+/// Reads bytes as strongly-typed <see cref="IClaObject"/> values.
+/// </summary>
 public static class ClaBinaryPrimitives
 {
+    /// <summary>
+    /// Reads a <see cref="ClaByte"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaByte ReadClaByte(ReadOnlySpan<byte> source)
     {
         return new ClaByte(source[0]);
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaShort"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaShort ReadClaShort(ReadOnlySpan<byte> source)
     {
         return new ClaShort(BinaryPrimitives.ReadInt16LittleEndian(source));
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaUnsignedShort"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaUnsignedShort ReadClaUnsignedShort(ReadOnlySpan<byte> source)
     {
         return new ClaUnsignedShort(BinaryPrimitives.ReadUInt16LittleEndian(source));
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaLong"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaLong ReadClaLong(ReadOnlySpan<byte> source)
     {
         return new ClaLong(BinaryPrimitives.ReadInt32LittleEndian(source));
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaUnsignedLong"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaUnsignedLong ReadClaUnsignedLong(ReadOnlySpan<byte> source)
     {
         return new ClaUnsignedLong(BinaryPrimitives.ReadUInt32LittleEndian(source));
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaDate"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaDate ReadClaDate(ReadOnlySpan<byte> source)
     {
         uint date = BinaryPrimitives.ReadUInt32LittleEndian(source);
@@ -48,6 +81,11 @@ public static class ClaBinaryPrimitives
         }
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaTime"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaTime ReadClaTime(ReadOnlySpan<byte> source)
     {
         uint time = BinaryPrimitives.ReadUInt32LittleEndian(source);
@@ -67,16 +105,33 @@ public static class ClaBinaryPrimitives
         return new ClaTime((byte)hours, (byte)mins, (byte)secs, (byte)centi);
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaSingleReal"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaSingleReal ReadClaSingleReal(ReadOnlySpan<byte> source)
     {
         return new ClaSingleReal(BinaryPrimitives.ReadSingleLittleEndian(source));
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaReal"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
     public static ClaReal ReadClaReal(ReadOnlySpan<byte> source)
     {
         return new ClaReal(BinaryPrimitives.ReadDoubleLittleEndian(source));
     }
 
+    /// <summary>
+    /// Reads a <see cref="ClaDecimal"/> from the beginning of a read-only span of bytes.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="length">The number of bytes to read; no less than 1, and no more than 16 bytes.</param>
+    /// <param name="digitsAfterDecimalPoint"></param>
+    /// <returns></returns>
     public static ClaDecimal ReadClaDecimal(ReadOnlySpan<byte> source, int length, byte digitsAfterDecimalPoint)
     {
         if (length < 1 || length > 16)

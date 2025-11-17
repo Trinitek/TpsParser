@@ -514,4 +514,122 @@ internal sealed class TestFieldDefinitionEnumerable
                 ]));
         }
     }
+
+    [Test]
+    public void FieldIsInsideGroup_LongA_LongB_NotInsideOneAnother()
+    {
+        FieldDefinition fd0 = new() { Index = 0, FullName = "A", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+        FieldDefinition fd1 = new() { Index = 1, FullName = "B", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 4, ElementCount = 1, StringMask = string.Empty };
+
+        bool result1 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd1);
+        bool result2 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result1, Is.False);
+            Assert.That(result2, Is.False);
+        }
+    }
+
+    [Test]
+    public void FieldIsInsideGroup_GroupIsNotInsideOfItself()
+    {
+        FieldDefinition fd0 = new() { Index = 0, FullName = "A", TypeCode = FieldTypeCode.Group, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+
+        bool result1 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result1, Is.False);
+        }
+    }
+
+    [Test]
+    public void FieldIsInsideGroup_LongADim2_LongB_NotInsideOneAnother()
+    {
+        FieldDefinition fd0 = new() { Index = 0, FullName = "A", TypeCode = FieldTypeCode.Long, Length = 8, Offset = 0, ElementCount = 2, StringMask = string.Empty };
+        FieldDefinition fd1 = new() { Index = 1, FullName = "B", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 8, ElementCount = 1, StringMask = string.Empty };
+
+        bool result1 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd1);
+        bool result2 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result1, Is.False);
+            Assert.That(result2, Is.False);
+        }
+    }
+
+    [Test]
+    public void FieldIsInsideGroup_GroupA_LongA0_LongB_A0IsInsideA()
+    {
+        FieldDefinition fd0 = new() { Index = 0, FullName = "A", TypeCode = FieldTypeCode.Group, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+        FieldDefinition fd1 = new() { Index = 1, FullName = "A0", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+        FieldDefinition fd2 = new() { Index = 2, FullName = "B", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 4, ElementCount = 1, StringMask = string.Empty };
+
+        bool result1 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd1);
+        bool result2 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd0);
+        bool result3 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd2);
+        bool result4 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd2, subject: fd0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result1, Is.True);
+            Assert.That(result2, Is.False);
+            Assert.That(result3, Is.False);
+            Assert.That(result4, Is.False);
+        }
+    }
+
+    [Test]
+    public void FieldIsInsideGroup_GroupADim2_LongA0_LongB_A0IsInsideA_BIsNotInsideA()
+    {
+        FieldDefinition fd0 = new() { Index = 0, FullName = "A", TypeCode = FieldTypeCode.Group, Length = 8, Offset = 0, ElementCount = 2, StringMask = string.Empty };
+        FieldDefinition fd1 = new() { Index = 1, FullName = "A0", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+        FieldDefinition fd2 = new() { Index = 2, FullName = "B", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 8, ElementCount = 1, StringMask = string.Empty };
+
+        bool result1 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd1);
+        bool result2 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd0);
+        bool result3 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd2);
+        bool result4 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd2, subject: fd0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result1, Is.True);
+            Assert.That(result2, Is.False);
+            Assert.That(result3, Is.False);
+            Assert.That(result4, Is.False);
+        }
+    }
+
+    [Test]
+    public void FieldIsInsideGroup_GroupA_GroupA0_LongA00_A00IsInsideAAndA0()
+    {
+        FieldDefinition fd0 = new() { Index = 0, FullName = "A", TypeCode = FieldTypeCode.Group, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+        FieldDefinition fd1 = new() { Index = 1, FullName = "A0", TypeCode = FieldTypeCode.Group, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+        FieldDefinition fd2 = new() { Index = 2, FullName = "A00", TypeCode = FieldTypeCode.Long, Length = 4, Offset = 0, ElementCount = 1, StringMask = string.Empty };
+
+        bool result1 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd0);
+        bool result2 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd1);
+        bool result3 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd0, subject: fd2);
+        bool result4 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd0);
+        bool result5 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd1);
+        bool result6 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd1, subject: fd2);
+        bool result7 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd2, subject: fd0);
+        bool result8 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd2, subject: fd1);
+        bool result9 = FieldDefinitionEnumerable.FieldIsInsideGroup(maybeGroup: fd2, subject: fd2);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result1, Is.False);
+            Assert.That(result2, Is.True);
+            Assert.That(result3, Is.True);
+            Assert.That(result4, Is.False);
+            Assert.That(result5, Is.False);
+            Assert.That(result6, Is.True);
+            Assert.That(result7, Is.False);
+            Assert.That(result8, Is.False);
+            Assert.That(result9, Is.False);
+        }
+    }
 }

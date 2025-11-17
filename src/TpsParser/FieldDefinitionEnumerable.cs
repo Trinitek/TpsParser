@@ -130,10 +130,9 @@ public sealed class FieldDefinitionEnumerable
                 {
                     var maybeGroup = fieldDefinitions[fi];
 
-                    bool isInsideGroup =
-                        (maybeGroup.TypeCode == FieldTypeCode.Group)
-                        && (maybeGroup.Offset <= fieldDef.Offset)
-                        && (maybeGroup.Offset + maybeGroup.Length) <= (fieldDef.Offset + fieldDef.Length);
+                    bool isInsideGroup = FieldIsInsideGroup(
+                        maybeGroup: maybeGroup,
+                        subject: fieldDef);
 
                     if (isInsideGroup is false)
                     {
@@ -179,6 +178,34 @@ public sealed class FieldDefinitionEnumerable
         }
 
         return [.. iterators];
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if <paramref name="maybeGroup"/> is a group and <paramref name="subject"/>
+    /// is inside its scope, either as a direct parent-child or indirectly as a grandparent-grandchild.
+    /// </summary>
+    /// <param name="maybeGroup"></param>
+    /// <param name="subject"></param>
+    /// <returns></returns>
+    public static bool FieldIsInsideGroup(FieldDefinition maybeGroup, FieldDefinition subject)
+    {
+        if (maybeGroup is not { TypeCode: FieldTypeCode.Group } group)
+        {
+            return false;
+        }
+
+        // A group is not inside of itself,
+        // nor can it be inside of a child group that has the same offset.
+        if (subject.Index <= group.Index)
+        {
+            return false;
+        }
+
+        // Compensate for arrays-of-groups.
+        ushort groupElementLength = (ushort)(group.Length / group.ElementCount);
+
+        return (group.Offset <= subject.Offset)
+            && ((subject.Offset + subject.Length) <= (group.Offset + groupElementLength));
     }
 
     public static void MergeGroupPointers(

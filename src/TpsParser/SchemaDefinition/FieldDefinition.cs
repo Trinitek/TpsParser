@@ -61,7 +61,7 @@ public sealed record FieldDefinition
     /// <summary>
     /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
     /// </summary>
-    public int Index { get; init; }
+    public ushort Index { get; init; }
 
     /// <summary>
     /// If the field contains a <see cref="ClaFString"/>, <see cref="ClaCString"/>, or <see cref="ClaPString"/>, gets the number of bytes in the string.

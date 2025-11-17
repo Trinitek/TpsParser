@@ -102,7 +102,9 @@ public sealed class FieldDefinitionEnumerable
                         iterators.Add(pointer);
                     }
 
-                    // TODO populate all the subfields.
+                    PopulateChildFieldsForGroup(
+                        fieldDefinitions: fieldDefinitions,
+                        group: pointer);
                 }
                 else
                 {
@@ -119,7 +121,9 @@ public sealed class FieldDefinitionEnumerable
 
                 if (fieldDef.TypeCode == FieldTypeCode.Group)
                 {
-                    // TODO populate all the subfields
+                    PopulateChildFieldsForGroup(
+                        fieldDefinitions: fieldDefinitions,
+                        group: pointer);
                 }
 
                 // Construct the linked-list of groups that need to be merged with the iterator list.
@@ -178,6 +182,62 @@ public sealed class FieldDefinitionEnumerable
         }
 
         return [.. iterators];
+    }
+
+    /// <summary>
+    /// Recursively populates the child <see cref="FieldIteratorPointer"/> elements of the given group field and returns the
+    /// <see cref="FieldDefinition.Index"/> of the next non-child field outside of the group.
+    /// </summary>
+    /// <param name="fieldDefinitions"></param>
+    /// <param name="group"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static ushort PopulateChildFieldsForGroup(ImmutableArray<FieldDefinition> fieldDefinitions, FieldIteratorPointer group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+
+        var groupDefPtr = group.DefinitionPointer;
+
+        if (groupDefPtr.TypeCode != FieldTypeCode.Group)
+        {
+            throw new ArgumentException($"Cannot populate child fields for a field that is not a GROUP. Field index ({groupDefPtr.Inner.Index}) of type ({groupDefPtr.TypeCode}).", nameof(group));
+        }
+
+        ushort firstChildIndex = (ushort)(groupDefPtr.Inner.Index + 1);
+        ushort i = firstChildIndex;
+
+        while (i < fieldDefinitions.Length)
+        {
+            var child = fieldDefinitions[i];
+
+            bool childIsInsideGroup = FieldIsInsideGroup(
+                maybeGroup: groupDefPtr.Inner,
+                subject: child);
+
+            if (childIsInsideGroup is false)
+            {
+                break;
+            }
+
+            FieldIteratorPointer childPtr = new(FieldDefinitionPointer.Create(child), []);
+
+            group.ChildIterators.Add(childPtr);
+
+            if (child.TypeCode == FieldTypeCode.Group)
+            {
+                // If the child is a group, recursively build the child fields for that.
+
+                ushort nextIndex = PopulateChildFieldsForGroup(fieldDefinitions, group: childPtr);
+
+                i = nextIndex;
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        return i;
     }
 
     /// <summary>

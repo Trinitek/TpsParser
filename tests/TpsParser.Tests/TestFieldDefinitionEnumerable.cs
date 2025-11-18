@@ -12,17 +12,17 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd0 = new() { FullName = "A", TypeCode = FieldTypeCode.Group, Length = 4, StringMask = string.Empty };
         FieldDefinition fd1 = new() { FullName = "A0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [];
+        List<FieldIteratorNode> iterators = [];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd1),
             []);
 
-        FieldIteratorPointer groupToBeMerged = new(
+        FieldIteratorNode groupToBeMerged = new(
             FieldDefinitionPointer.Create(fd0),
             [newPointer]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             groupToBeMerged,
             newPointer);
@@ -50,21 +50,21 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd1 = new() { FullName = "B", TypeCode = FieldTypeCode.Group, Length = 4, StringMask = string.Empty };
         FieldDefinition fd2 = new() { FullName = "B0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [];
+        List<FieldIteratorNode> iterators = [];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             []);
 
-        FieldIteratorPointer g1 = new(
+        FieldIteratorNode g1 = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer g0 = new(
+        FieldIteratorNode g0 = new(
             FieldDefinitionPointer.Create(fd0),
             [g1]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             g0,
             newPointer);
@@ -97,23 +97,23 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd1 = new() { FullName = "B", TypeCode = FieldTypeCode.Group, Length = 4, StringMask = string.Empty };
         FieldDefinition fd2 = new() { FullName = "B0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             []);
 
-        FieldIteratorPointer g1 = new(
+        FieldIteratorNode g1 = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer g0 = new(
+        FieldIteratorNode g0 = new(
             FieldDefinitionPointer.Create(fd0),
             [g1]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             g0,
             newPointer);
@@ -146,24 +146,24 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd1 = new() { FullName = "B", TypeCode = FieldTypeCode.Group, Length = 4, StringMask = string.Empty };
         FieldDefinition fd2 = new() { FullName = "B0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [
                 new(FieldDefinitionPointer.Create(fd1), [])])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             []);
 
-        FieldIteratorPointer g1 = new(
+        FieldIteratorNode g1 = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer g0 = new(
+        FieldIteratorNode g0 = new(
             FieldDefinitionPointer.Create(fd0),
             [g1]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             g0,
             newPointer);
@@ -198,31 +198,31 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd3 = new() { FullName = "C0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
         FieldDefinition fd4 = new() { FullName = "C1", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [
                 new(FieldDefinitionPointer.Create(fd1), [])])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             [
                 new(FieldDefinitionPointer.Create(fd3), []),
                 new(FieldDefinitionPointer.Create(fd4), []),
             ]);
 
-        FieldIteratorPointer g2 = new(
+        FieldIteratorNode g2 = new(
             FieldDefinitionPointer.Create(fd2),
             [newPointer]);
 
-        FieldIteratorPointer g1 = new(
+        FieldIteratorNode g1 = new(
             FieldDefinitionPointer.Create(fd1),
             [g2]);
 
-        FieldIteratorPointer g0 = new(
+        FieldIteratorNode g0 = new(
             FieldDefinitionPointer.Create(fd0),
             [g1]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             g0,
             newPointer);
@@ -266,28 +266,28 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd3 = new() { FullName = "C0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
         FieldDefinition fd4 = new() { FullName = "C1", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [
                 new(FieldDefinitionPointer.Create(fd1), [
                     new(FieldDefinitionPointer.Create(fd2), [])])])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             [
                 new(FieldDefinitionPointer.Create(fd3), []),
                 new(FieldDefinitionPointer.Create(fd4), []),
             ]);
 
-        FieldIteratorPointer gB = new(
+        FieldIteratorNode gB = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer gA = new(
+        FieldIteratorNode gA = new(
             FieldDefinitionPointer.Create(fd0),
             [gB]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             gA,
             newPointer);
@@ -326,29 +326,29 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd3 = new() { FullName = "C0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
         FieldDefinition fd4 = new() { FullName = "C1", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [
                 new(FieldDefinitionPointer.Create(fd1), [
                     new(FieldDefinitionPointer.Create(fd2), [
                         new(FieldDefinitionPointer.Create(fd3), [])])])])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             [
                 new(FieldDefinitionPointer.Create(fd3), []),
                 new(FieldDefinitionPointer.Create(fd4), []),
             ]);
 
-        FieldIteratorPointer gB = new(
+        FieldIteratorNode gB = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer gA = new(
+        FieldIteratorNode gA = new(
             FieldDefinitionPointer.Create(fd0),
             [gB]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             gA,
             newPointer);
@@ -387,29 +387,29 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd3 = new() { FullName = "C0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
         FieldDefinition fd4 = new() { FullName = "C1", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [
                 new(FieldDefinitionPointer.Create(fd1), [
                     new(FieldDefinitionPointer.Create(fd2), [
                         new(FieldDefinitionPointer.Create(fd4), [])])])])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             [
                 new(FieldDefinitionPointer.Create(fd3), []),
                 new(FieldDefinitionPointer.Create(fd4), []),
             ]);
 
-        FieldIteratorPointer gB = new(
+        FieldIteratorNode gB = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer gA = new(
+        FieldIteratorNode gA = new(
             FieldDefinitionPointer.Create(fd0),
             [gB]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             gA,
             newPointer);
@@ -451,7 +451,7 @@ internal sealed class TestFieldDefinitionEnumerable
         FieldDefinition fd3 = new() { FullName = "C0", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
         FieldDefinition fd4 = new() { FullName = "C1", TypeCode = FieldTypeCode.Long, Length = 4, StringMask = string.Empty };
 
-        List<FieldIteratorPointer> iterators = [
+        List<FieldIteratorNode> iterators = [
             new(FieldDefinitionPointer.Create(fd0), [
                 new(FieldDefinitionPointer.Create(fdx), [
                     new(FieldDefinitionPointer.Create(fdx0), []),
@@ -462,22 +462,22 @@ internal sealed class TestFieldDefinitionEnumerable
                         new(FieldDefinitionPointer.Create(fd4), [])])])])
             ];
 
-        FieldIteratorPointer newPointer = new(
+        FieldIteratorNode newPointer = new(
             FieldDefinitionPointer.Create(fd2),
             [
                 new(FieldDefinitionPointer.Create(fd3), []),
                 new(FieldDefinitionPointer.Create(fd4), []),
             ]);
 
-        FieldIteratorPointer gB = new(
+        FieldIteratorNode gB = new(
             FieldDefinitionPointer.Create(fd1),
             [newPointer]);
 
-        FieldIteratorPointer gA = new(
+        FieldIteratorNode gA = new(
             FieldDefinitionPointer.Create(fd0),
             [gB]);
 
-        FieldDefinitionEnumerable.MergeGroupPointers(
+        FieldDefinitionEnumerable.MergeGroupNodes(
             iterators,
             gA,
             newPointer);

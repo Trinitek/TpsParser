@@ -6,56 +6,80 @@ using TpsParser.TypeModel;
 
 namespace TpsParser;
 
+/// <summary>
+/// Represents field metadata and location information regarding how or where to read the field value
+/// from a <see cref="DataRecordPayload"/>.
+/// </summary>
 public readonly record struct FieldDefinitionPointer
 {
+    /// <summary>
+    /// Gets the field definition that backs this pointer.
+    /// </summary>
     public required FieldDefinition Inner { get; init; }
+
+    /// <inheritdoc cref="FieldDefinition.Offset"/>
     public required ushort Offset { get; init; }
-    public required ushort Length { get; init; }
+
+    /// <inheritdoc cref="FieldDefinition.Length"/>
+    public ushort Length => Inner.Length;
+
+    /// <inheritdoc cref="FieldDefinition.ElementCount"/>
     public required ushort ElementCount { get; init; }
-    public required FieldTypeCode TypeCode { get; init; }
+
+    /// <inheritdoc cref="FieldDefinition.TypeCode"/>
+    public FieldTypeCode TypeCode => Inner.TypeCode;
+
+    /// <inheritdoc cref="FieldDefinition.BcdElementLength"/>
     public byte BcdElementLength => Inner.BcdElementLength;
+
+    /// <inheritdoc cref="FieldDefinition.BcdDigitsAfterDecimalPoint"/>
     public byte BcdDigitsAfterDecimalPoint => Inner.BcdDigitsAfterDecimalPoint;
+
+    /// <inheritdoc cref="FieldDefinition.StringLength"/>
     public ushort StringLength => Inner.StringLength;
 
+    /// <summary>
+    /// Creates a new definition pointer from the given <see cref="FieldDefinition"/>.
+    /// </summary>
+    /// <param name="fieldDef"></param>
+    /// <returns></returns>
     public static FieldDefinitionPointer Create(FieldDefinition fieldDef)
     {
         return new FieldDefinitionPointer
         {
             Inner = fieldDef,
             Offset = fieldDef.Offset,
-            Length = fieldDef.Length,
             ElementCount = fieldDef.ElementCount,
-            TypeCode = fieldDef.TypeCode,
-        };
-    }
-
-    public static FieldDefinitionPointer CreateArrayElement(FieldDefinitionPointer fieldDef, ushort index)
-    {
-        ushort lengthPerElement = (ushort)(fieldDef.Length / fieldDef.ElementCount);
-        ushort offset = (ushort)(fieldDef.Offset + (index * lengthPerElement));
-
-        return new FieldDefinitionPointer
-        {
-            Inner = fieldDef.Inner,
-            Offset = offset,
-            Length = lengthPerElement,
-            ElementCount = 1,
-            TypeCode = fieldDef.TypeCode,
         };
     }
 }
 
+/// <summary>
+/// Encapsulates the field value and information about where the field data is located in a <see cref="MetadataRecordPayload"/>.
+/// </summary>
+/// <param name="FieldDefinition"></param>
+/// <param name="Value"></param>
 public readonly record struct FieldEnumerationResult(
     FieldDefinitionPointer FieldDefinition,
     IClaObject Value);
 
-public readonly record struct FieldIteratorPointer(
+/// <summary>
+/// Represents a node in a tree constructed from <see cref="FieldDefinition"/> items that reflects how various
+/// scalar fields and <c>GROUP</c> composite data structures are laid out in a <see cref="DataRecordPayload"/>.
+/// </summary>
+/// <param name="DefinitionPointer">
+/// A reference to a <see cref="FieldDefinition"/> that defines the type of field and where it is located in a data payload.
+/// </param>
+/// <param name="ChildIterators">
+/// If <paramref name="DefinitionPointer"/> refers to a <c>GROUP</c>, contains the sub-fields that belong to this structure.
+/// </param>
+public readonly record struct FieldIteratorNode(
     FieldDefinitionPointer DefinitionPointer,
-    List<FieldIteratorPointer> ChildIterators);
+    List<FieldIteratorNode> ChildIterators);
 
 public sealed class FieldDefinitionEnumerable
 {
-    public static ImmutableArray<FieldIteratorPointer> CreateFieldIterator(ImmutableArray<FieldDefinition> fieldDefinitions, ImmutableHashSet<int> requestedFieldIndices)
+    public static ImmutableArray<FieldIteratorNode> CreateFieldIteratorNodes(ImmutableArray<FieldDefinition> fieldDefinitions, ImmutableHashSet<int> requestedFieldIndices)
     {
         foreach (int fieldIndex in requestedFieldIndices)
         {
@@ -67,7 +91,7 @@ public sealed class FieldDefinitionEnumerable
 
         var orderedIndices = requestedFieldIndices.Order();
 
-        List<FieldIteratorPointer> iterators = [];
+        List<FieldIteratorNode> iterators = [];
 
         foreach (int fieldIndex in orderedIndices)
         {
@@ -87,7 +111,7 @@ public sealed class FieldDefinitionEnumerable
                 {
                     var maybeExistingPointer = iterators.FirstOrDefault(fp => fp.DefinitionPointer.Inner == fieldDef);
 
-                    FieldIteratorPointer pointer;
+                    FieldIteratorNode pointer;
 
                     if (maybeExistingPointer is { } existing)
                     {
@@ -95,7 +119,7 @@ public sealed class FieldDefinitionEnumerable
                     }
                     else
                     {
-                        pointer = new FieldIteratorPointer(
+                        pointer = new FieldIteratorNode(
                             FieldDefinitionPointer.Create(fieldDef),
                             []);
 
@@ -115,7 +139,7 @@ public sealed class FieldDefinitionEnumerable
             }
             else
             {
-                var pointer = new FieldIteratorPointer(
+                var pointer = new FieldIteratorNode(
                     FieldDefinitionPointer.Create(fieldDef),
                     []);
 
@@ -128,7 +152,7 @@ public sealed class FieldDefinitionEnumerable
 
                 // Construct the linked-list of groups that need to be merged with the iterator list.
 
-                FieldIteratorPointer? outerGroupIterator = null;
+                FieldIteratorNode? outerGroupNode = null;
 
                 for (int fi = fieldIndex - 1; fi >= 0; fi--)
                 {
@@ -143,11 +167,11 @@ public sealed class FieldDefinitionEnumerable
                         continue;
                     }
 
-                    if (outerGroupIterator == null)
+                    if (outerGroupNode == null)
                     {
                         // This is the first group; add the pointer here.
 
-                        outerGroupIterator = new(
+                        outerGroupNode = new(
                             FieldDefinitionPointer.Create(maybeGroup),
                             [pointer]);
                     }
@@ -155,17 +179,17 @@ public sealed class FieldDefinitionEnumerable
                     {
                         // Successive groups are nested into each other.
 
-                        var newGroupIterator = new FieldIteratorPointer(
+                        var newGroupIterator = new FieldIteratorNode(
                             FieldDefinitionPointer.Create(maybeGroup),
-                            [outerGroupIterator.Value]);
+                            [outerGroupNode.Value]);
 
-                        outerGroupIterator = newGroupIterator;
+                        outerGroupNode = newGroupIterator;
                     }
                 }
 
                 // Then merge that into the iterator list...
 
-                if (outerGroupIterator is null)
+                if (outerGroupNode is null)
                 {
                     // If no parent group was found, add the pointer directly to the list.
 
@@ -173,10 +197,10 @@ public sealed class FieldDefinitionEnumerable
                 }
                 else
                 {
-                    MergeGroupPointers(
-                        existingIterators: iterators,
-                        groupToBeMerged: outerGroupIterator.Value,
-                        newPointer: pointer);
+                    MergeGroupNodes(
+                        existingNodes: iterators,
+                        groupToBeMerged: outerGroupNode.Value,
+                        newNode: pointer);
                 }
             }
         }
@@ -185,14 +209,14 @@ public sealed class FieldDefinitionEnumerable
     }
 
     /// <summary>
-    /// Recursively populates the child <see cref="FieldIteratorPointer"/> elements of the given group field and returns the
+    /// Recursively populates the child <see cref="FieldIteratorNode"/> elements of the given group field and returns the
     /// <see cref="FieldDefinition.Index"/> of the next non-child field outside of the group.
     /// </summary>
     /// <param name="fieldDefinitions"></param>
     /// <param name="group"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static ushort PopulateChildFieldsForGroup(ImmutableArray<FieldDefinition> fieldDefinitions, FieldIteratorPointer group)
+    public static ushort PopulateChildFieldsForGroup(ImmutableArray<FieldDefinition> fieldDefinitions, FieldIteratorNode group)
     {
         var groupDefPtr = group.DefinitionPointer;
 
@@ -217,17 +241,17 @@ public sealed class FieldDefinitionEnumerable
                 break;
             }
 
-            FieldIteratorPointer childPtr = new(
+            FieldIteratorNode childNode = new(
                 FieldDefinitionPointer.Create(child),
                 []);
 
-            group.ChildIterators.Add(childPtr);
+            group.ChildIterators.Add(childNode);
 
             if (child.TypeCode == FieldTypeCode.Group)
             {
                 // If the child is a group, recursively build the child fields for that.
 
-                ushort nextIndex = PopulateChildFieldsForGroup(fieldDefinitions, group: childPtr);
+                ushort nextIndex = PopulateChildFieldsForGroup(fieldDefinitions, group: childNode);
 
                 i = nextIndex;
             }
@@ -268,34 +292,34 @@ public sealed class FieldDefinitionEnumerable
             && ((subject.Offset + subject.Length) <= (group.Offset + groupElementLength));
     }
 
-    public static void MergeGroupPointers(
-        IList<FieldIteratorPointer> existingIterators,
-        FieldIteratorPointer groupToBeMerged,
-        FieldIteratorPointer newPointer)
+    public static void MergeGroupNodes(
+        IList<FieldIteratorNode> existingNodes,
+        FieldIteratorNode groupToBeMerged,
+        FieldIteratorNode newNode)
     {
         // The expected shape of groupToBeMerged is essentially a linked list starting at the outer-most group
         // in the original FieldDefinition array, with exactly one ChildIterator that represents the next inner group,
-        // and so on. The last inner group has one ChildIterator that is newPointer.
+        // and so on. The last inner group has one ChildIterator that is newNode.
         //
-        // The newPointer can either be a group itself (in the case where the user has SELECTed the inclusion
+        // The newNode can either be a group itself (in the case where the user has SELECTed the inclusion
         // of the entire group by name) or it can be a simple scalar field like LONG or STRING (in the case where
         // the user has SELECTed the inclusion of a group sub-field).
 
-        for (int ii = 0; ii < existingIterators.Count; ii++)
+        for (int ii = 0; ii < existingNodes.Count; ii++)
         {
-            var existing = existingIterators[ii];
+            var existing = existingNodes[ii];
 
-            if (existing.DefinitionPointer == newPointer.DefinitionPointer)
+            if (existing.DefinitionPointer == newNode.DefinitionPointer)
             {
-                // Found our end pointer.
+                // Found our end node.
                 
-                // We actually only need to swap the existing pointer with the new one if our target is itself a group,
+                // We actually only need to swap the existing node with the new one if our target is itself a group,
                 // but it doesn't matter if we do it for non-groups as well.
                 //
-                // If this is a group pointer, the new pointer will have been previously populated with all its child-fields
+                // If this is a group node, the new node will have been previously populated with all its child-fields
                 // before merging, so this is important. Otherwise the result set would include the group itself but none
                 // of its fields.
-                existingIterators[ii] = newPointer;
+                existingNodes[ii] = newNode;
 
                 // ...and finish.
                 return;
@@ -306,10 +330,10 @@ public sealed class FieldDefinitionEnumerable
 
                 var innerGroupToMergeOrNewPointer = groupToBeMerged.ChildIterators.Single();
 
-                MergeGroupPointers(
+                MergeGroupNodes(
                     existing.ChildIterators,
                     innerGroupToMergeOrNewPointer,
-                    newPointer);
+                    newNode);
 
                 return;
             }
@@ -321,36 +345,51 @@ public sealed class FieldDefinitionEnumerable
 
         // Not found in list; add it.
 
-        existingIterators.Add(groupToBeMerged);
+        existingNodes.Add(groupToBeMerged);
 
         return;
     }
 
     public static IEnumerable<FieldEnumerationResult> EnumerateValuesForArray(
-        FieldIteratorPointer arrayPointer,
+        FieldIteratorNode arrayPointer,
         DataRecordPayload dataRecordPayload)
     {
         ushort elementCount = arrayPointer.DefinitionPointer.ElementCount;
 
-        for (int elementIndex = 0; elementIndex < elementCount; elementIndex++)
+        for (ushort elementIndex = 0; elementIndex < elementCount; elementIndex++)
         {
-            // Create a new single-element iterator with a fixed-up offset
+            var newPointer = GetPointerForArrayIndex(arrayPointer, elementIndex);
 
-            ushort baseOffset = arrayPointer.DefinitionPointer.Offset;
-            ushort lengthPerElement = (ushort)(arrayPointer.DefinitionPointer.Length / elementCount);
-
-            ushort adjustedOffset = (ushort)(baseOffset + (lengthPerElement * elementIndex));
-
-            var newDefPtr = arrayPointer.DefinitionPointer with { Offset = adjustedOffset, ElementCount = 1 };
-
-            var newIterator = arrayPointer with { DefinitionPointer = newDefPtr };
-
-            yield return GetValue(newIterator, dataRecordPayload);
+            yield return GetValue(newPointer, dataRecordPayload);
         }
     }
 
+    public static FieldIteratorNode GetPointerForArrayIndex(FieldIteratorNode arrayPointer, ushort elementIndex)
+    {
+        ushort elementCount = arrayPointer.DefinitionPointer.ElementCount;
+
+        if (elementIndex >= elementCount)
+        {
+            throw new ArgumentOutOfRangeException($"Element index ({elementIndex}) exceeds the number of elements in pointer ({elementCount}).");
+        }
+
+        // Create a new single-element iterator with a fixed-up offset
+
+        ushort baseOffset = arrayPointer.DefinitionPointer.Offset;
+        ushort lengthPerElement = (ushort)(arrayPointer.DefinitionPointer.Length / elementCount);
+
+        ushort adjustedOffset = (ushort)(baseOffset + (lengthPerElement * elementIndex));
+
+        var newDefPtr = arrayPointer.DefinitionPointer with { Offset = adjustedOffset, ElementCount = 1 };
+
+        var newIterator = arrayPointer with { DefinitionPointer = newDefPtr };
+
+        //yield return GetValue(newIterator, dataRecordPayload);
+        return newIterator;
+    }
+
     public static FieldEnumerationResult GetValue(
-        FieldIteratorPointer fieldIteratorPointer,
+        FieldIteratorNode fieldIteratorPointer,
         DataRecordPayload dataRecordPayload)
     {
         var fieldDefPointer = fieldIteratorPointer.DefinitionPointer;
@@ -360,7 +399,7 @@ public sealed class FieldDefinitionEnumerable
         if (fieldDefPointer.ElementCount > 1)
         {
             var array = new ClaArray(
-                fieldIteratorPointer: fieldIteratorPointer,
+                fieldIteratorNode: fieldIteratorPointer,
                 dataRecordPayload: dataRecordPayload);
 
             return new(
@@ -414,7 +453,7 @@ public sealed class FieldDefinitionEnumerable
     }
 
     public static IEnumerable<FieldEnumerationResult> EnumerateValues(
-        IEnumerable<FieldIteratorPointer> fieldIteratorPointers,
+        IEnumerable<FieldIteratorNode> fieldIteratorPointers,
         DataRecordPayload dataRecordPayload)
     {
         foreach (var fieldIteratorPointer in fieldIteratorPointers)

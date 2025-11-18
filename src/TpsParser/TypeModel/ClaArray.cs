@@ -61,7 +61,8 @@ public sealed class ClaArray : IClaObject
     public IEnumerable<FieldEnumerationResult> GetValues()
     {
         //var results = FieldDefinitionEnumerable.EnumerateValues(FieldDefinitions, DataRecordPayload);
-        var results = FieldDefinitionEnumerable.EnumerateValues(FieldIteratorPointer.ChildIterators, DataRecordPayload);
+        //var results = FieldDefinitionEnumerable.EnumerateValues(FieldIteratorPointer.ChildIterators, DataRecordPayload);
+        var results = FieldDefinitionEnumerable.EnumerateValuesForArray(FieldIteratorPointer, DataRecordPayload);
 
         foreach (var result in results)
         {

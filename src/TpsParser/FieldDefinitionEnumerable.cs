@@ -49,7 +49,7 @@ public readonly record struct FieldEnumerationResult(
     FieldDefinitionPointer FieldDefinition,
     IClaObject Value);
 
-public sealed record FieldIteratorPointer(
+public readonly record struct FieldIteratorPointer(
     FieldDefinitionPointer DefinitionPointer,
     List<FieldIteratorPointer> ChildIterators);
 
@@ -157,7 +157,7 @@ public sealed class FieldDefinitionEnumerable
 
                         var newGroupIterator = new FieldIteratorPointer(
                             FieldDefinitionPointer.Create(maybeGroup),
-                            [outerGroupIterator]);
+                            [outerGroupIterator.Value]);
 
                         outerGroupIterator = newGroupIterator;
                     }
@@ -175,7 +175,7 @@ public sealed class FieldDefinitionEnumerable
                 {
                     MergeGroupPointers(
                         existingIterators: iterators,
-                        groupToBeMerged: outerGroupIterator,
+                        groupToBeMerged: outerGroupIterator.Value,
                         newPointer: pointer);
                 }
             }
@@ -194,8 +194,6 @@ public sealed class FieldDefinitionEnumerable
     /// <exception cref="ArgumentException"></exception>
     public static ushort PopulateChildFieldsForGroup(ImmutableArray<FieldDefinition> fieldDefinitions, FieldIteratorPointer group)
     {
-        ArgumentNullException.ThrowIfNull(group);
-
         var groupDefPtr = group.DefinitionPointer;
 
         if (groupDefPtr.TypeCode != FieldTypeCode.Group)
@@ -328,85 +326,100 @@ public sealed class FieldDefinitionEnumerable
         return;
     }
 
-    public static IEnumerable<FieldEnumerationResult> EnumerateValues(IEnumerable<FieldIteratorPointer> fieldIteratorPointers, DataRecordPayload dataPayload)
+    public static IEnumerable<FieldEnumerationResult> EnumerateValuesForArray(
+        FieldIteratorPointer arrayPointer,
+        DataRecordPayload dataRecordPayload)
+    {
+        ushort elementCount = arrayPointer.DefinitionPointer.ElementCount;
+
+        for (int elementIndex = 0; elementIndex < elementCount; elementIndex++)
+        {
+            // Create a new single-element iterator with a fixed-up offset
+
+            ushort baseOffset = arrayPointer.DefinitionPointer.Offset;
+            ushort lengthPerElement = (ushort)(arrayPointer.DefinitionPointer.Length / elementCount);
+
+            ushort adjustedOffset = (ushort)(baseOffset + (lengthPerElement * elementIndex));
+
+            var newDefPtr = arrayPointer.DefinitionPointer with { Offset = adjustedOffset, ElementCount = 1 };
+
+            var newIterator = arrayPointer with { DefinitionPointer = newDefPtr };
+
+            yield return GetValue(newIterator, dataRecordPayload);
+        }
+    }
+
+    public static FieldEnumerationResult GetValue(
+        FieldIteratorPointer fieldIteratorPointer,
+        DataRecordPayload dataRecordPayload)
+    {
+        var fieldDefPointer = fieldIteratorPointer.DefinitionPointer;
+
+        // Special case: Array of any type.
+
+        if (fieldDefPointer.ElementCount > 1)
+        {
+            var array = new ClaArray(
+                fieldIteratorPointer: fieldIteratorPointer,
+                dataRecordPayload: dataRecordPayload);
+
+            return new(
+                FieldDefinition: fieldDefPointer,
+                Value: array);
+        }
+
+        // Remainder of cases proceed as normal.
+
+        ushort offset = fieldDefPointer.Offset;
+
+        var span = dataRecordPayload.Content.Span[offset..];
+
+        switch (fieldDefPointer.TypeCode)
+        {
+            case FieldTypeCode.Byte:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaByte(span));
+            case FieldTypeCode.Short:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaShort(span));
+            case FieldTypeCode.UShort:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaUnsignedShort(span));
+            case FieldTypeCode.Long:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaLong(span));
+            case FieldTypeCode.ULong:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaUnsignedLong(span));
+            case FieldTypeCode.Date:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaDate(span));
+            case FieldTypeCode.Time:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaTime(span));
+            case FieldTypeCode.SReal:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaSingleReal(span));
+            case FieldTypeCode.Real:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaReal(span));
+            case FieldTypeCode.Decimal:
+                return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaDecimal(
+                    span,
+                    length: fieldDefPointer.BcdElementLength,
+                    digitsAfterDecimalPoint: fieldDefPointer.BcdDigitsAfterDecimalPoint));
+            case FieldTypeCode.FString:
+                return new(fieldDefPointer, new ClaFString(dataRecordPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
+            case FieldTypeCode.CString:
+                return new(fieldDefPointer, new ClaCString(dataRecordPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
+            case FieldTypeCode.PString:
+                return new(fieldDefPointer, new ClaPString(dataRecordPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
+            case FieldTypeCode.Group:
+                return new(fieldDefPointer, new ClaGroup(fieldIteratorPointer, dataRecordPayload));
+            case FieldTypeCode.None:
+            default:
+                throw new TpsParserException($"Unknown field type code (0x{fieldDefPointer.TypeCode}).");
+        }
+    }
+
+    public static IEnumerable<FieldEnumerationResult> EnumerateValues(
+        IEnumerable<FieldIteratorPointer> fieldIteratorPointers,
+        DataRecordPayload dataRecordPayload)
     {
         foreach (var fieldIteratorPointer in fieldIteratorPointers)
         {
-            var fieldDefPointer = fieldIteratorPointer.DefinitionPointer;
-
-            // Special case: Array of any type.
-
-            if (fieldDefPointer.ElementCount > 1)
-            {
-                var array = new ClaArray(
-                    fieldIteratorPointer: fieldIteratorPointer,
-                    dataRecordPayload: dataPayload);
-
-                yield return new(
-                    FieldDefinition: fieldDefPointer,
-                    Value: array);
-
-                // Stop processing this field.
-                continue;
-            }
-
-            // Remainder of cases proceed as normal.
-
-            ushort offset = fieldDefPointer.Offset;
-
-            var span = dataPayload.Content.Span[offset..];
-
-            switch (fieldDefPointer.TypeCode)
-            {
-                case FieldTypeCode.Byte:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaByte(span));
-                    break;
-                case FieldTypeCode.Short:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaShort(span));
-                    break;
-                case FieldTypeCode.UShort:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaUnsignedShort(span));
-                    break;
-                case FieldTypeCode.Long:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaLong(span));
-                    break;
-                case FieldTypeCode.ULong:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaUnsignedLong(span));
-                    break;
-                case FieldTypeCode.Date:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaDate(span));
-                    break;
-                case FieldTypeCode.Time:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaTime(span));
-                    break;
-                case FieldTypeCode.SReal:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaSingleReal(span));
-                    break;
-                case FieldTypeCode.Real:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaReal(span));
-                    break;
-                case FieldTypeCode.Decimal:
-                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaDecimal(
-                        span,
-                        length: fieldDefPointer.BcdElementLength,
-                        digitsAfterDecimalPoint: fieldDefPointer.BcdDigitsAfterDecimalPoint));
-                    break;
-                case FieldTypeCode.FString:
-                    yield return new(fieldDefPointer, new ClaFString(dataPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
-                    break;
-                case FieldTypeCode.CString:
-                    yield return new(fieldDefPointer, new ClaCString(dataPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
-                    break;
-                case FieldTypeCode.PString:
-                    yield return new(fieldDefPointer, new ClaPString(dataPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
-                    break;
-                case FieldTypeCode.Group:
-                    yield return new(fieldDefPointer, new ClaGroup(fieldIteratorPointer, dataPayload));
-                    break;
-                case FieldTypeCode.None:
-                default:
-                    throw new TpsParserException($"Unknown field type code (0x{fieldDefPointer.TypeCode}).");
-            }
+            yield return GetValue(fieldIteratorPointer, dataRecordPayload);
         }
     }
 }

@@ -55,7 +55,7 @@ public readonly record struct FieldDefinitionPointer
 }
 
 /// <summary>
-/// Encapsulates the field value and information about where the field data is located in a <see cref="MetadataRecordPayload"/>.
+/// Encapsulates the field value and information about where the field data is located in a <see cref="DataRecordPayload"/>.
 /// </summary>
 /// <param name="FieldDefinition"></param>
 /// <param name="Value"></param>
@@ -384,7 +384,6 @@ public sealed class FieldDefinitionEnumerable
 
         var newIterator = arrayPointer with { DefinitionPointer = newDefPtr };
 
-        //yield return GetValue(newIterator, dataRecordPayload);
         return newIterator;
     }
 

@@ -83,8 +83,8 @@ internal sealed class TestKey
             Assert.That(encryptedDefinitions, Has.Count.EqualTo(decryptedDefinitions.Count));
 
             // Note that record IDs may differ.
-            var encryptedRecords = encryptedFile.GetDataRecordPayloads(table: 2, tableDefinition: encryptedDefinitions[2]);
-            var decryptedRecords = decryptedFile.GetDataRecordPayloads(table: 1, tableDefinition: decryptedDefinitions[1]);
+            var encryptedRecords = encryptedFile.GetDataRecordPayloads(table: 2);
+            var decryptedRecords = decryptedFile.GetDataRecordPayloads(table: 1);
 
             Assert.That(encryptedRecords.Count(), Is.EqualTo(decryptedRecords.Count()));
 

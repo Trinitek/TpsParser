@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace TpsParser.TypeModel;
 
@@ -15,10 +14,12 @@ namespace TpsParser.TypeModel;
 /// </summary>
 public sealed class ClaArray : IClaObject
 {
-    /// <summary>
-    /// Gets the enumerable of field definition pointers that are used to materialize the values in this array.
-    /// </summary>
-    public IEnumerable<FieldDefinitionPointer> FieldDefinitions { get; }
+    ///// <summary>
+    ///// Gets the enumerable of field definition pointers that are used to materialize the values in this array.
+    ///// </summary>
+    //public IEnumerable<FieldDefinitionPointer> FieldDefinitions { get; }
+
+    public FieldIteratorPointer FieldIteratorPointer { get; }
 
     /// <summary>
     /// Gets the data record payload from which the array values are materialized.
@@ -28,7 +29,7 @@ public sealed class ClaArray : IClaObject
     /// <summary>
     /// Gets the type code of the object contained in this array.
     /// </summary>
-    public FieldTypeCode TypeCode => FieldDefinitions.First().TypeCode;
+    public FieldTypeCode TypeCode => FieldIteratorPointer.DefinitionPointer.TypeCode;
 
     /// <summary>
     /// Instantiates a new array.
@@ -43,10 +44,12 @@ public sealed class ClaArray : IClaObject
     /// </param>
     /// <exception cref="ArgumentNullException"></exception>
     public ClaArray(
-        IEnumerable<FieldDefinitionPointer> fieldDefinitions,
+        //IEnumerable<FieldDefinitionPointer> fieldDefinitions,
+        FieldIteratorPointer fieldIteratorPointer,
         DataRecordPayload dataRecordPayload)
     {
-        FieldDefinitions = fieldDefinitions ?? throw new ArgumentNullException(nameof(fieldDefinitions));
+        //FieldDefinitions = fieldDefinitions ?? throw new ArgumentNullException(nameof(fieldDefinitions));
+        FieldIteratorPointer = fieldIteratorPointer;
         DataRecordPayload = dataRecordPayload;
     }
 
@@ -57,7 +60,8 @@ public sealed class ClaArray : IClaObject
     /// <returns></returns>
     public IEnumerable<FieldEnumerationResult> GetValues()
     {
-        var results = FieldDefinitionEnumerable.EnumerateValues(FieldDefinitions, DataRecordPayload);
+        //var results = FieldDefinitionEnumerable.EnumerateValues(FieldDefinitions, DataRecordPayload);
+        var results = FieldDefinitionEnumerable.EnumerateValues(FieldIteratorPointer.ChildIterators, DataRecordPayload);
 
         foreach (var result in results)
         {
@@ -71,10 +75,12 @@ public sealed class ClaArray : IClaObject
 /// </summary>
 public sealed class ClaGroup : IClaObject
 {
-    /// <summary>
-    /// Gets the enumerable of field definition pointers that are used to materialize the values in this <c>GROUP</c>.
-    /// </summary>
-    public IEnumerable<FieldDefinitionPointer> FieldDefinitions { get; }
+    ///// <summary>
+    ///// Gets the enumerable of field definition pointers that are used to materialize the values in this <c>GROUP</c>.
+    ///// </summary>
+    //public IEnumerable<FieldDefinitionPointer> FieldDefinitions { get; }
+
+    public FieldIteratorPointer FieldIteratorPointer { get; }
 
     /// <summary>
     /// Gets the data record payload from which the <c>GROUP</c> values are materialized.
@@ -95,10 +101,12 @@ public sealed class ClaGroup : IClaObject
     /// </param>
     /// <exception cref="ArgumentNullException"></exception>
     public ClaGroup(
-        IEnumerable<FieldDefinitionPointer> fieldDefinitions,
+        //IEnumerable<FieldDefinitionPointer> fieldDefinitions,
+        FieldIteratorPointer fieldIteratorPointer,
         DataRecordPayload dataRecordPayload)
     {
-        FieldDefinitions = fieldDefinitions ?? throw new ArgumentNullException(nameof(fieldDefinitions));
+        //FieldDefinitions = fieldDefinitions ?? throw new ArgumentNullException(nameof(fieldDefinitions));
+        FieldIteratorPointer = fieldIteratorPointer;
         DataRecordPayload = dataRecordPayload;
     }
 
@@ -109,7 +117,8 @@ public sealed class ClaGroup : IClaObject
     /// <returns></returns>
     public IEnumerable<FieldEnumerationResult> GetValues()
     {
-        var results = FieldDefinitionEnumerable.EnumerateValues(FieldDefinitions, DataRecordPayload);
+        //var results = FieldDefinitionEnumerable.EnumerateValues(FieldDefinitions, DataRecordPayload);
+        var results = FieldDefinitionEnumerable.EnumerateValues(FieldIteratorPointer.ChildIterators, DataRecordPayload);
 
         foreach (var result in results)
         {

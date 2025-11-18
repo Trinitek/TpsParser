@@ -134,23 +134,6 @@ public sealed class TpsFile
             .Select(record => new DataRecord(record, tableDefinition, EncodingOptions.ContentEncoding));
     }
 
-    /// <summary>
-    /// Gets a list of data records for the associated table and its table definition.
-    /// </summary>
-    /// <param name="table">The table from which to get the records.</param>
-    /// <param name="tableDefinition">The table definition that describes the table schema.</param>
-    /// <param name="errorHandlingOptions"></param>
-    /// <returns></returns>
-    public IEnumerable<DataRecordPayload> GetDataRecordPayloads(
-        int table,
-        TableDefinition tableDefinition,
-        ErrorHandlingOptions? errorHandlingOptions = null)
-    {
-        return GetDataRecordPayloads(
-            table: table,
-            errorHandlingOptions: errorHandlingOptions);
-    }
-
     public IEnumerable<DataRecordPayload> GetDataRecordPayloads(
         int table,
         ErrorHandlingOptions? errorHandlingOptions = null)

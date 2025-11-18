@@ -134,7 +134,7 @@ public sealed class FieldDefinitionEnumerable
                 {
                     var maybeGroup = fieldDefinitions[fi];
 
-                    bool isInsideGroup = FieldIsInsideGroup(
+                    bool isInsideGroup = IsFieldInsideGroup(
                         maybeGroup: maybeGroup,
                         subject: fieldDef);
 
@@ -210,7 +210,7 @@ public sealed class FieldDefinitionEnumerable
         {
             var child = fieldDefinitions[i];
 
-            bool childIsInsideGroup = FieldIsInsideGroup(
+            bool childIsInsideGroup = IsFieldInsideGroup(
                 maybeGroup: groupDefPtr.Inner,
                 subject: child);
 
@@ -219,7 +219,9 @@ public sealed class FieldDefinitionEnumerable
                 break;
             }
 
-            FieldIteratorPointer childPtr = new(FieldDefinitionPointer.Create(child), []);
+            FieldIteratorPointer childPtr = new(
+                FieldDefinitionPointer.Create(child),
+                []);
 
             group.ChildIterators.Add(childPtr);
 
@@ -247,7 +249,7 @@ public sealed class FieldDefinitionEnumerable
     /// <param name="maybeGroup"></param>
     /// <param name="subject"></param>
     /// <returns></returns>
-    public static bool FieldIsInsideGroup(FieldDefinition maybeGroup, FieldDefinition subject)
+    public static bool IsFieldInsideGroup(FieldDefinition maybeGroup, FieldDefinition subject)
     {
         if (maybeGroup is not { TypeCode: FieldTypeCode.Group } group)
         {
@@ -326,98 +328,23 @@ public sealed class FieldDefinitionEnumerable
         return;
     }
 
-    public static IEnumerable<FieldDefinitionPointer> GetLevel0Pointers(ImmutableArray<FieldDefinition> fieldDefinitions)
+    public static IEnumerable<FieldEnumerationResult> EnumerateValues(IEnumerable<FieldIteratorPointer> fieldIteratorPointers, DataRecordPayload dataPayload)
     {
-        // We need to turn our flat list of field definitions into nested pointers (FieldDefinitionPointer instances)
-        // so that we can recursively iterate them. Step zero is to get an IEnumerable of all the level-0 fields,
-        // that is, all of the fields that are _not_ already nested in a group. Or more literally, if we encounter
-        // a GROUP field, we return a FieldDefinitionPoint for that, then skip all its inner fields, then return the next.
-
-        for (int i = 0; i < fieldDefinitions.Length; i++)
+        foreach (var fieldIteratorPointer in fieldIteratorPointers)
         {
-            var fieldDefinition = fieldDefinitions[i];
+            var fieldDefPointer = fieldIteratorPointer.DefinitionPointer;
 
-            if (fieldDefinition.TypeCode == FieldTypeCode.Group)
+            // Special case: Array of any type.
+
+            if (fieldDefPointer.ElementCount > 1)
             {
-                yield return FieldDefinitionPointer.Create(fieldDefinition);
-
-                ushort groupLength = fieldDefinition.Length;
-                ushort sum = 0;
-
-                while (true)
-                {
-                    i++;
-                    
-                    sum += fieldDefinitions[i].Length;
-                    
-                    if (sum == groupLength)
-                    {
-                        break;
-                    }
-
-                    if (sum > groupLength)
-                    {
-                        throw new TpsParserException($"Sum of GROUP sub-field lengths ({sum}) does not match expected GROUP length ({groupLength}) on GROUP {fieldDefinition.FullName}.");
-                    }
-                }
-
-                continue;
-            }
-            else
-            {
-                yield return FieldDefinitionPointer.Create(fieldDefinition);
-            }
-        }
-    }
-
-    //public static IEnumerable<FieldDefinition> GetFieldsInGroup()
-
-    public static IEnumerable<FieldEnumerationResult> EnumerateValues(IEnumerable<FieldDefinitionPointer> fieldDefinitions, DataRecordPayload dataPayload)
-    {
-        foreach (var fieldDefinition in fieldDefinitions)
-        {
-            // Special case 1: Array.
-
-            if (fieldDefinition.ElementCount > 1)
-            {
-                IEnumerable<FieldDefinitionPointer> EnumerateArrayElement()
-                {
-                    ushort lengthPerElement = (ushort)(fieldDefinition.Length / fieldDefinition.ElementCount);
-
-                    for (ushort i = 0; i < fieldDefinition.ElementCount; i++)
-                    {
-                        yield return FieldDefinitionPointer.CreateArrayElement(fieldDefinition, i);
-                    }
-                }
+                var array = new ClaArray(
+                    fieldIteratorPointer: fieldIteratorPointer,
+                    dataRecordPayload: dataPayload);
 
                 yield return new(
-                    fieldDefinition,
-                    new ClaArray(EnumerateArrayElement(), dataPayload));
-
-                // Stop processing this field.
-                continue;
-            }
-
-            // Special case 2: Group.
-
-            if (fieldDefinition.TypeCode == FieldTypeCode.Group)
-            {
-                IEnumerable<FieldDefinitionPointer> EnumerateGroupElement()
-                {
-                    ushort groupLength = fieldDefinition.Length;
-                    ushort sum = 0;
-
-                    while (true)
-                    {
-
-                    }
-
-                    // TODO...
-                }
-
-                yield return new(
-                    fieldDefinition,
-                    new ClaGroup(EnumerateGroupElement(), dataPayload));
+                    FieldDefinition: fieldDefPointer,
+                    Value: array);
 
                 // Stop processing this field.
                 continue;
@@ -425,60 +352,60 @@ public sealed class FieldDefinitionEnumerable
 
             // Remainder of cases proceed as normal.
 
-            ushort offset = fieldDefinition.Offset;
+            ushort offset = fieldDefPointer.Offset;
 
             var span = dataPayload.Content.Span[offset..];
 
-            switch (fieldDefinition.TypeCode)
+            switch (fieldDefPointer.TypeCode)
             {
                 case FieldTypeCode.Byte:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaByte(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaByte(span));
                     break;
                 case FieldTypeCode.Short:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaShort(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaShort(span));
                     break;
                 case FieldTypeCode.UShort:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaUnsignedShort(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaUnsignedShort(span));
                     break;
                 case FieldTypeCode.Long:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaLong(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaLong(span));
                     break;
                 case FieldTypeCode.ULong:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaUnsignedLong(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaUnsignedLong(span));
                     break;
                 case FieldTypeCode.Date:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaDate(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaDate(span));
                     break;
                 case FieldTypeCode.Time:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaTime(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaTime(span));
                     break;
                 case FieldTypeCode.SReal:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaSingleReal(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaSingleReal(span));
                     break;
                 case FieldTypeCode.Real:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaReal(span));
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaReal(span));
                     break;
                 case FieldTypeCode.Decimal:
-                    yield return new(fieldDefinition, ClaBinaryPrimitives.ReadClaDecimal(
+                    yield return new(fieldDefPointer, ClaBinaryPrimitives.ReadClaDecimal(
                         span,
-                        length: fieldDefinition.BcdElementLength,
-                        digitsAfterDecimalPoint: fieldDefinition.BcdDigitsAfterDecimalPoint));
+                        length: fieldDefPointer.BcdElementLength,
+                        digitsAfterDecimalPoint: fieldDefPointer.BcdDigitsAfterDecimalPoint));
                     break;
                 case FieldTypeCode.FString:
-                    yield return new(fieldDefinition, new ClaFString(dataPayload.Content[offset..fieldDefinition.StringLength]));
+                    yield return new(fieldDefPointer, new ClaFString(dataPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
                     break;
                 case FieldTypeCode.CString:
-                    yield return new(fieldDefinition, new ClaCString(dataPayload.Content[offset..fieldDefinition.StringLength]));
+                    yield return new(fieldDefPointer, new ClaCString(dataPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
                     break;
                 case FieldTypeCode.PString:
-                    yield return new(fieldDefinition, new ClaPString(dataPayload.Content[offset..fieldDefinition.StringLength]));
+                    yield return new(fieldDefPointer, new ClaPString(dataPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
                     break;
                 case FieldTypeCode.Group:
-                    // GROUPs should be handled as a special case above.
-                    throw new TpsParserException("GROUP field not handled.");
+                    yield return new(fieldDefPointer, new ClaGroup(fieldIteratorPointer, dataPayload));
+                    break;
                 case FieldTypeCode.None:
                 default:
-                    throw new TpsParserException($"Unknown field type code (0x{fieldDefinition.TypeCode}).");
+                    throw new TpsParserException($"Unknown field type code (0x{fieldDefPointer.TypeCode}).");
             }
         }
     }

@@ -77,9 +77,24 @@ public readonly record struct FieldIteratorNode(
     FieldDefinitionPointer DefinitionPointer,
     List<FieldIteratorNode> ChildIterators);
 
-public sealed class FieldDefinitionEnumerable
+/// <summary>
+/// Contains methods to read field values from data records.
+/// </summary>
+public static class FieldValueReader
 {
-    public static ImmutableArray<FieldIteratorNode> CreateFieldIteratorNodes(ImmutableArray<FieldDefinition> fieldDefinitions, ImmutableHashSet<int> requestedFieldIndices)
+    /// <summary>
+    /// Creates an array of nodes with which field values can be read from a data record.
+    /// </summary>
+    /// <param name="fieldDefinitions">An array of field definitions, i.e. from <see cref="TableDefinition.Fields"/>.</param>
+    /// <param name="requestedFieldIndices">
+    /// A hash set of field indices to read. If an index references a <c>GROUP</c> directly, all of the sub-fields within the
+    /// <c>GROUP</c> are recursively added.
+    /// </param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static ImmutableArray<FieldIteratorNode> CreateFieldIteratorNodes(
+        ImmutableArray<FieldDefinition> fieldDefinitions,
+        ImmutableHashSet<int> requestedFieldIndices)
     {
         foreach (int fieldIndex in requestedFieldIndices)
         {
@@ -209,14 +224,18 @@ public sealed class FieldDefinitionEnumerable
     }
 
     /// <summary>
-    /// Recursively populates the child <see cref="FieldIteratorNode"/> elements of the given group field and returns the
-    /// <see cref="FieldDefinition.Index"/> of the next non-child field outside of the group.
+    /// Recursively populates the child <see cref="FieldIteratorNode"/> elements of the given <c>GROUP</c> field.
     /// </summary>
-    /// <param name="fieldDefinitions"></param>
-    /// <param name="group"></param>
-    /// <returns></returns>
+    /// <param name="fieldDefinitions">An array of field definitions, i.e. from <see cref="TableDefinition.Fields"/>.</param>
+    /// <param name="group">The <c>GROUP</c> node that is to be modified.</param>
+    /// <returns>
+    /// The <see cref="FieldDefinition.Index"/> of the next field outside of the <c>GROUP</c>
+    /// field represented by <paramref name="group"/>.
+    /// </returns>
     /// <exception cref="ArgumentException"></exception>
-    public static ushort PopulateChildFieldsForGroup(ImmutableArray<FieldDefinition> fieldDefinitions, FieldIteratorNode group)
+    public static ushort PopulateChildFieldsForGroup(
+        ImmutableArray<FieldDefinition> fieldDefinitions,
+        FieldIteratorNode group)
     {
         var groupDefPtr = group.DefinitionPointer;
 
@@ -292,6 +311,12 @@ public sealed class FieldDefinitionEnumerable
             && ((subject.Offset + subject.Length) <= (group.Offset + groupElementLength));
     }
 
+    /// <summary>
+    /// Merges a node describing one or more nested <c>GROUP</c> fields and their sub-fields into a list of existing nodes.
+    /// </summary>
+    /// <param name="existingNodes"></param>
+    /// <param name="groupToBeMerged"></param>
+    /// <param name="newNode">A reference to the last node in <paramref name="groupToBeMerged"/>.</param>
     public static void MergeGroupNodes(
         IList<FieldIteratorNode> existingNodes,
         FieldIteratorNode groupToBeMerged,
@@ -350,6 +375,12 @@ public sealed class FieldDefinitionEnumerable
         return;
     }
 
+    /// <summary>
+    /// Reads the given data record payload and returns a field value for the given array node.
+    /// </summary>
+    /// <param name="arrayPointer"></param>
+    /// <param name="dataRecordPayload"></param>
+    /// <returns></returns>
     public static IEnumerable<FieldEnumerationResult> EnumerateValuesForArray(
         FieldIteratorNode arrayPointer,
         DataRecordPayload dataRecordPayload)
@@ -358,13 +389,20 @@ public sealed class FieldDefinitionEnumerable
 
         for (ushort elementIndex = 0; elementIndex < elementCount; elementIndex++)
         {
-            var newPointer = GetPointerForArrayIndex(arrayPointer, elementIndex);
+            var newPointer = GetNodeForArrayIndex(arrayPointer, elementIndex);
 
             yield return GetValue(newPointer, dataRecordPayload);
         }
     }
 
-    public static FieldIteratorNode GetPointerForArrayIndex(FieldIteratorNode arrayPointer, ushort elementIndex)
+    /// <summary>
+    /// Creates a node instance that points to a single value in an array.
+    /// </summary>
+    /// <param name="arrayPointer">The array node.</param>
+    /// <param name="elementIndex">The zero-based index into the array.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public static FieldIteratorNode GetNodeForArrayIndex(FieldIteratorNode arrayPointer, ushort elementIndex)
     {
         ushort elementCount = arrayPointer.DefinitionPointer.ElementCount;
 
@@ -387,6 +425,13 @@ public sealed class FieldDefinitionEnumerable
         return newIterator;
     }
 
+    /// <summary>
+    /// Reads the given data record payload and returns a field value for the given node.
+    /// </summary>
+    /// <param name="fieldIteratorPointer"></param>
+    /// <param name="dataRecordPayload"></param>
+    /// <returns></returns>
+    /// <exception cref="TpsParserException"></exception>
     public static FieldEnumerationResult GetValue(
         FieldIteratorNode fieldIteratorPointer,
         DataRecordPayload dataRecordPayload)
@@ -451,13 +496,19 @@ public sealed class FieldDefinitionEnumerable
         }
     }
 
+    /// <summary>
+    /// Reads the given data record payload and returns field values for the given nodes.
+    /// </summary>
+    /// <param name="fieldIteratorNodes"></param>
+    /// <param name="dataRecordPayload"></param>
+    /// <returns></returns>
     public static IEnumerable<FieldEnumerationResult> EnumerateValues(
-        IEnumerable<FieldIteratorNode> fieldIteratorPointers,
+        IEnumerable<FieldIteratorNode> fieldIteratorNodes,
         DataRecordPayload dataRecordPayload)
     {
-        foreach (var fieldIteratorPointer in fieldIteratorPointers)
+        foreach (var node in fieldIteratorNodes)
         {
-            yield return GetValue(fieldIteratorPointer, dataRecordPayload);
+            yield return GetValue(node, dataRecordPayload);
         }
     }
 }

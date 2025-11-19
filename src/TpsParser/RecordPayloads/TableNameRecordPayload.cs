@@ -4,10 +4,15 @@ using System.Text;
 
 namespace TpsParser;
 
+/// <summary>
+/// A record payload that contains the name of a table.
+/// </summary>
 public sealed record TableNameRecordPayload : IRecordPayload, IPayloadTableNumber
 {
+    /// <inheritdoc/>
     public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
+    /// <summary></summary>
     public required ushort PayloadHeaderLength { get; init; }
 
     /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>

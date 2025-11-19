@@ -3,8 +3,12 @@ using System.Buffers.Binary;
 
 namespace TpsParser;
 
+/// <summary>
+/// A record payload that contains field values.
+/// </summary>
 public readonly record struct DataRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
 {
+    /// <inheritdoc/>
     public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
     /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>

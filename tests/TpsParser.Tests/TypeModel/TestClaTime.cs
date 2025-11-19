@@ -16,14 +16,15 @@ internal sealed class TestClaTime
             var file = new TpsFile(stream, errorHandlingOptions: ErrorHandlingOptions.Strict);
 
             var tableDef = file.GetTableDefinitions().First().Value;
-            var record = file.GetDataRows(1, tableDef).First();
 
-            var valuePairs = record.GetFieldValuePairs();
+            var table = Table.MaterializeFromFile(file);
+
+            var record = table.Rows.First();
 
             using (Assert.EnterMultipleScope())
             {
-                ClaTime clockIn = (ClaTime)valuePairs["ClockIn"];
-                ClaTime clockOut = (ClaTime)valuePairs["ClockOut"];
+                ClaTime clockIn = (ClaTime)record.Values["ClockIn"];
+                ClaTime clockOut = (ClaTime)record.Values["ClockOut"];
 
                 Assert.That(clockIn.Hours, Is.EqualTo(6));
                 Assert.That(clockIn.Minutes, Is.EqualTo(23));

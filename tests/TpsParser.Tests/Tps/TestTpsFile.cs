@@ -29,7 +29,7 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var records = file.GetTpsRecords();
+        var records = file.EnumerateRecords();
 
         Assert.That(records.Count(), Is.EqualTo(10));
     }
@@ -77,16 +77,22 @@ internal sealed class TestTpsFile
         var file = GetTableFile();
 
         var tableDefinitions = file.GetTableDefinitions();
-        var dataRecords = file.GetDataRows(table: 1, tableDefinition: tableDefinitions[1])
+        var dataRecordPayloads = file.GetDataRecordPayloads(table: 1)
             .ToList();
+
+        var nodes = FieldValueReader.CreateFieldIteratorNodes(
+            fieldDefinitions: tableDefinitions[1].Fields,
+            requestedFieldIndexes: [.. tableDefinitions[1].Fields.Select(f => f.Index)]);
+
+        var dataRecord0 = FieldValueReader.EnumerateValues(nodes, dataRecordPayloads[0]).ToList();
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(dataRecords, Has.Count.EqualTo(1));
-            Assert.That(dataRecords[0].RecordNumber, Is.EqualTo(2));
-            Assert.That(dataRecords[0].Values, Has.Count.EqualTo(2));
-            Assert.That(((ClaShort)dataRecords[0].Values[0]).ToInt32().Value, Is.EqualTo(1));
-            Assert.That(((ClaShort)dataRecords[0].Values[1]).ToInt32().Value, Is.EqualTo(1));
+            Assert.That(dataRecordPayloads, Has.Count.EqualTo(1));
+            Assert.That(dataRecordPayloads[0].RecordNumber, Is.EqualTo(2));
+            Assert.That(dataRecord0, Has.Count.EqualTo(2));
+            Assert.That(((ClaShort)dataRecord0[0].Value).ToInt32().Value, Is.EqualTo(1));
+            Assert.That(((ClaShort)dataRecord0[1].Value).ToInt32().Value, Is.EqualTo(1));
         }
     }
 
@@ -95,13 +101,13 @@ internal sealed class TestTpsFile
     {
         var file = GetTableFile();
 
-        var indexes1 = file.GetIndexRecordPayloads(table: 1, index: 0)
+        var indexes1 = file.GetIndexRecordPayloads(table: 1, indexDefinitionIndex: 0)
             .ToList();
 
         Assert.That(indexes1, Has.Count.EqualTo(1));
         Assert.That(indexes1[0].RecordNumber, Is.EqualTo(2));
 
-        var indexes2 = file.GetIndexRecordPayloads(table: 1, index: 1)
+        var indexes2 = file.GetIndexRecordPayloads(table: 1, indexDefinitionIndex: 1)
             .ToList();
 
         Assert.That(indexes2, Has.Count.EqualTo(1));

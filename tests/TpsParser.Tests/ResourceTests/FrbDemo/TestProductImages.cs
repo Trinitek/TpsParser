@@ -52,7 +52,7 @@ internal sealed class TestProductImages
         var memos = tpsFile.GetTpsMemos(
             table: 1,
             owningRecord: recordNumber,
-            memoIndex: 1);
+            memoDefinitionIndex: 1);
 
         var blob = (TpsBlob)memos.Single();
 

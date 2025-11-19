@@ -4,8 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace TpsParser;
 
+/// <summary>
+/// A record payload that contains metadata about other records.
+/// </summary>
 public readonly record struct MetadataRecordPayload : IRecordPayload, IPayloadTableNumber
 {
+    /// <inheritdoc/>
     public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
     /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>

@@ -12,15 +12,29 @@ public sealed class TpsFile
 {
     private TpsRandomAccess Data { get; }
 
+    /// <summary>
+    /// Gets the text encoding options to use when reading strings.
+    /// </summary>
     public EncodingOptions EncodingOptions { get; }
+
+    /// <summary>
+    /// Gets the error handling options that determine how parsing behaves when unexpected or invalid data is encountered.
+    /// </summary>
     public ErrorHandlingOptions ErrorHandlingOptions { get; }
 
+    /// <summary>
+    /// Instantiates a new <see cref="TpsFile"/> from the given stream.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="encodingOptions"></param>
+    /// <param name="errorHandlingOptions"></param>
     public TpsFile(
         Stream stream,
         EncodingOptions? encodingOptions = null,
         ErrorHandlingOptions? errorHandlingOptions = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
+
         EncodingOptions = encodingOptions ?? EncodingOptions.Default;
         ErrorHandlingOptions = errorHandlingOptions ?? ErrorHandlingOptions.Default;
 
@@ -35,6 +49,13 @@ public sealed class TpsFile
         Data = new TpsRandomAccess(fileData, EncodingOptions.ContentEncoding);
     }
 
+    /// <summary>
+    /// Instantiates a new <see cref="TpsFile"/> from the given stream and decryption key.
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="key"></param>
+    /// <param name="encodingOptions"></param>
+    /// <param name="errorHandlingOptions"></param>
     public TpsFile(
         Stream stream,
         Key key,
@@ -103,6 +124,11 @@ public sealed class TpsFile
         return blocks;
     }
 
+    /// <summary>
+    /// Gets an enumerable of all the records in the file.
+    /// </summary>
+    /// <param name="errorHandlingOptions"></param>
+    /// <returns></returns>
     public IEnumerable<TpsRecord> EnumerateRecords(ErrorHandlingOptions? errorHandlingOptions = null)
     {
         errorHandlingOptions ??= ErrorHandlingOptions;
@@ -119,6 +145,12 @@ public sealed class TpsFile
         }
     }
 
+    /// <summary>
+    /// Gets an enumerable of all data record payloads for the given table.
+    /// </summary>
+    /// <param name="table"></param>
+    /// <param name="errorHandlingOptions"></param>
+    /// <returns></returns>
     public IEnumerable<DataRecordPayload> GetDataRecordPayloads(
         int table,
         ErrorHandlingOptions? errorHandlingOptions = null)
@@ -149,7 +181,7 @@ public sealed class TpsFile
     }
 
     /// <summary>
-    /// Gets a list of table name records that describe the name of the tables included in the file.
+    /// Gets an enumerable of table name records that describe the name of the tables included in the file.
     /// </summary>
     /// <returns></returns>
     public IEnumerable<TableNameRecordPayload> GetTableNameRecordPayloads()
@@ -159,20 +191,26 @@ public sealed class TpsFile
             .Select(record => (TableNameRecordPayload)record.GetPayload()!);
     }
 
-    public IEnumerable<IndexRecordPayload> GetIndexRecordPayloads(int table, int index)
+    /// <summary>
+    /// Gets an enumerable of index record payloads.
+    /// </summary>
+    /// <param name="table">The table number.</param>
+    /// <param name="indexDefinitionIndex">The array index of the <see cref="IndexDefinition"/> in <see cref="TableDefinition.Indexes"/>.</param>
+    /// <returns></returns>
+    public IEnumerable<IndexRecordPayload> GetIndexRecordPayloads(int table, int indexDefinitionIndex)
     {
         return EnumerateRecords()
             .Where(record =>
                 record.GetPayload() is IndexRecordPayload payload
                 && payload.TableNumber == table
-                && (payload.DefinitionIndex == index || index == -1))
+                && (payload.DefinitionIndex == indexDefinitionIndex || indexDefinitionIndex == -1))
             .Select(record => (IndexRecordPayload)record.GetPayload()!);
     }
 
     /// <summary>
     /// Gets a list of metadata that is included for the associated table.
     /// </summary>
-    /// <param name="table">The table for which to get the metadata.</param>
+    /// <param name="table">The table number.</param>
     /// <returns></returns>
     public IEnumerable<MetadataRecordPayload> GetMetadataRecordPayloads(int table)
     {
@@ -182,32 +220,23 @@ public sealed class TpsFile
     }
 
     /// <summary>
-    /// Gets all of the records in the file.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<TpsRecord> GetTpsRecords()
-    {
-        return EnumerateRecords();
-    }
-
-    /// <summary>
     /// Gets a dictionary of memo and blob records for the associated table.
     /// </summary>
     /// <param name="table">The table number that owns the memos.</param>
     /// <param name="owningRecord">The record number that owns the memo.</param>
-    /// <param name="memoIndex">The index number of the memo in the record, zero-based. Records can have more than one memo.</param>
+    /// <param name="memoDefinitionIndex">The array index of the <see cref="MemoDefinition"/> in <see cref="TableDefinition.Memos"/>.</param>
     /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
     public IEnumerable<ITpsMemo> GetTpsMemos(
         int table,
         int? owningRecord = null,
-        byte? memoIndex = null,
+        byte? memoDefinitionIndex = null,
         ErrorHandlingOptions? errorHandlingOptions = null)
     {
         var memoRecords = EnumerateMemoRecordPayloads(
             table: table,
             owningRecord: owningRecord,
-            memoDefinitionIndex: memoIndex,
+            memoDefinitionIndex: memoDefinitionIndex,
             errorHandlingOptions: errorHandlingOptions);
 
         var tableDef = GetTableDefinitions()[table];
@@ -215,6 +244,14 @@ public sealed class TpsFile
         return TpsMemoBuilder.BuildTpsMemos(memoRecords, tableDef);
     }
 
+    /// <summary>
+    /// Gets an enumerable of memo record payloads.
+    /// </summary>
+    /// <param name="table">The table number that owns the memos.</param>
+    /// <param name="owningRecord">The record number that owns the memo.</param>
+    /// <param name="memoDefinitionIndex">The array index of the <see cref="MemoDefinition"/> in <see cref="TableDefinition.Memos"/>.</param>
+    /// <param name="errorHandlingOptions"></param>
+    /// <returns></returns>
     public IEnumerable<MemoRecordPayload> EnumerateMemoRecordPayloads(
         int table,
         int? owningRecord = null,
@@ -288,7 +325,7 @@ public sealed class TpsFile
             );
     }
 
-    private ReadOnlyMemory<byte> MergeMemory(IEnumerable<ReadOnlyMemory<byte>> memories)
+    private static ReadOnlyMemory<byte> MergeMemory(IEnumerable<ReadOnlyMemory<byte>> memories)
     {
         var mm = memories.ToList();
 

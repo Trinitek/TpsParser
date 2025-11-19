@@ -1,7 +1,19 @@
-﻿namespace TpsParser;
+﻿using System;
 
-public interface IRecordPayload;
+namespace TpsParser;
 
+/// <summary></summary>
+public interface IRecordPayload
+{
+    /// <summary>
+    /// Gets the memory region that backs this payload.
+    /// </summary>
+    ReadOnlyMemory<byte> PayloadData { get; }
+}
+
+/// <summary>
+/// A payload that has a table number.
+/// </summary>
 public interface IPayloadTableNumber
 {
     /// <summary>
@@ -10,6 +22,9 @@ public interface IPayloadTableNumber
     int TableNumber { get; }
 }
 
+/// <summary>
+/// A payload that has a record number.
+/// </summary>
 public interface IPayloadRecordNumber
 {
     /// <summary>

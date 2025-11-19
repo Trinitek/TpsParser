@@ -11,21 +11,22 @@ public sealed record class ErrorHandlingOptions
     /// </summary>
     public static readonly ErrorHandlingOptions Strict = new()
     {
-        ThrowOnInvalidStructure = true,
+        //ThrowOnInvalidStructure = true,
         ThrowOnRleDecompressionError = true,
         RleUndersizedDecompressionBehavior = RleSizeMismatchBehavior.Throw,
         RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Throw
     };
 
-    /// <summary>
-    /// Whether to throw an exception when an invalid TPS file structure is encountered.
-    /// If <see langword="false"/>, the parser will attempt to continue parsing despite errors.
-    /// Default is <see langword="true"/>.
-    /// </summary>
-    public bool ThrowOnInvalidStructure { get; init; } = true;
+    // Not currently used...
+    // /// <summary>
+    // /// Whether to throw an exception when an invalid TPS file structure is encountered.
+    // /// If <see langword="false"/>, the parser will attempt to continue parsing despite errors.
+    // /// Default is <see langword="true"/>.
+    // /// </summary>
+    // public bool ThrowOnInvalidStructure { get; init; } = true;
 
     /// <summary>
-    /// Whether to throw an exception when an unrecoverable error occurs while decompressing RLE data in a page.
+    /// Whether to throw an exception when an unrecoverable error occurs while decompressing RLE data in a <see cref="TpsPage"/>.
     /// If <see langword="false"/>, the parser will skip pages that cannot be decompressed.
     /// Default is <see langword="true"/>.
     /// </summary>

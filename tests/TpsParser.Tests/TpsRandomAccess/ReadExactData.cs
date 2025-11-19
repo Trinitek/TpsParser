@@ -267,7 +267,7 @@ internal sealed class ReadExactData
     public void ShouldReadFixedLengthString_CP850()
     {
         var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
-        var rx = new TpsRandomAccess([0x82, 0x21, 0x22], codepage850);
+        var rx = new TpsRandomAccess([0x82, 0x21, 0x22], codepage850!);
         var parsed = rx.ReadFixedLengthString(2);
 
         using (Assert.EnterMultipleScope())
@@ -311,7 +311,7 @@ internal sealed class ReadExactData
     public void ShouldReadZeroTerminatedString_CP850()
     {
         var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
-        var rx = new TpsRandomAccess([0x82, 0x21, 0x22, 0x00, 0x23], codepage850);
+        var rx = new TpsRandomAccess([0x82, 0x21, 0x22, 0x00, 0x23], codepage850!);
         var parsed = rx.ReadZeroTerminatedString();
 
         using (Assert.EnterMultipleScope())
@@ -355,7 +355,7 @@ internal sealed class ReadExactData
     public void ShouldReadPascalString_CP850()
     {
         var codepage850 = CodePagesEncodingProvider.Instance.GetEncoding(850);
-        var rx = new TpsRandomAccess([0x02, 0x82, 0x21], codepage850);
+        var rx = new TpsRandomAccess([0x02, 0x82, 0x21], codepage850!);
         var parsed = rx.ReadPascalString();
 
         using (Assert.EnterMultipleScope())

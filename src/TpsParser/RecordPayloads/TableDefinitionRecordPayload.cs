@@ -3,8 +3,12 @@ using System.Buffers.Binary;
 
 namespace TpsParser;
 
+/// <summary>
+/// A record payload that contains full or partial data for a <see cref="TableDefinition"/>.
+/// </summary>
 public readonly record struct TableDefinitionRecordPayload : IRecordPayload, IPayloadTableNumber
 {
+    /// <inheritdoc/>
     public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
     /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>

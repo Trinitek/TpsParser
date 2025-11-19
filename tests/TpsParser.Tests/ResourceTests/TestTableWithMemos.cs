@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.IO;
 using System.Linq;
 
 namespace TpsParser.Tests.ResourceTests;
@@ -10,9 +11,11 @@ internal sealed class TestTableWithMemos
     [Test]
     public void ShouldHaveFileHeader()
     {
-        using var parser = new TpsParser(Filename);
+        using var fs = new FileStream(Filename, FileMode.Open);
 
-        var header = parser.TpsFile.GetFileHeader();
+        var file = new TpsFile(fs);
+
+        var header = file.GetFileHeader();
 
         using (Assert.EnterMultipleScope())
         {
@@ -64,9 +67,11 @@ internal sealed class TestTableWithMemos
     [Test]
     public void ShouldHavePages()
     {
-        using var parser = new TpsParser(Filename);
+        using var fs = new FileStream(Filename, FileMode.Open);
 
-        var blocks = parser.TpsFile.GetBlocks().ToList();
+        var file = new TpsFile(fs);
+
+        var blocks = file.GetBlocks().ToList();
 
         using (Assert.EnterMultipleScope())
         {
@@ -91,9 +96,11 @@ internal sealed class TestTableWithMemos
     [Test]
     public void ShouldHaveTableDefinitionRecords()
     {
-        using var parser = new TpsParser(Filename);
+        using var fs = new FileStream(Filename, FileMode.Open);
 
-        var tableDefinitions = parser.TpsFile.GetTableDefinitions(errorHandlingOptions: ErrorHandlingOptions.Strict);
+        var file = new TpsFile(fs);
+
+        var tableDefinitions = file.GetTableDefinitions(errorHandlingOptions: ErrorHandlingOptions.Strict);
 
         Assert.That(tableDefinitions, Has.Count.EqualTo(1));
 

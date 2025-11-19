@@ -57,7 +57,7 @@ public sealed class Table
         return tableDefinitionRecord.Memos
             .SelectMany((definition, index) =>
             {
-                var tpsMemosForIndex = file.GetTpsMemos(table, memoIndex: (byte)index, errorHandlingOptions: errorHandlingOptions);
+                var tpsMemosForIndex = file.GetTpsMemos(table, memoDefinitionIndex: (byte)index, errorHandlingOptions: errorHandlingOptions);
 
                 return tpsMemosForIndex.Select(record =>
                     (owner: record.RecordNumber, name: definition.Name, value: record)

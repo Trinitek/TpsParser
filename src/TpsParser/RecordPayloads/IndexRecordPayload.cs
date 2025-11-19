@@ -3,8 +3,12 @@ using System.Buffers.Binary;
 
 namespace TpsParser;
 
+/// <summary>
+/// A record payload that contains information about an index.
+/// </summary>
 public readonly record struct IndexRecordPayload : IRecordPayload, IPayloadTableNumber, IPayloadRecordNumber
 {
+    /// <inheritdoc/>
     public required ReadOnlyMemory<byte> PayloadData { get; init; }
 
     /// <inheritdoc cref="IPayloadTableNumber.TableNumber"/>

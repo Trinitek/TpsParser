@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using TpsParser.Tps.Record;
 using TpsParser.TypeModel;
 
 namespace TpsParser;
@@ -26,8 +25,8 @@ public sealed record FieldDefinition
     /// Use <see cref="Name"/> for only the field name.
     /// </para>
     /// <para>
-    /// If the field was not defined with a prefix in Clarion, then it will be absent.
-    /// When present, it is rarely the same as the table name, if the table has a name at all.
+    /// If the field was not defined with a prefix in the Clarion <c>FILE</c> declaration,
+    /// then the prefix part will be absent.
     /// </para>
     /// </summary>
     public required string FullName { get; init; }
@@ -59,7 +58,7 @@ public sealed record FieldDefinition
     public ushort Flags { get; init; }
 
     /// <summary>
-    /// Gets the index of the field in the record, starting from zero. This corresponds to the index of the associated value in <see cref="IDataRecord.Values"/>.
+    /// Gets the index of the field in the record, starting from zero.
     /// </summary>
     public ushort Index { get; init; }
 

@@ -86,17 +86,17 @@ public static class FieldValueReader
     /// Creates an array of nodes with which field values can be read from a data record.
     /// </summary>
     /// <param name="fieldDefinitions">An array of field definitions, i.e. from <see cref="TableDefinition.Fields"/>.</param>
-    /// <param name="requestedFieldIndices">
-    /// A hash set of field indices to read. If an index references a <c>GROUP</c> directly, all of the sub-fields within the
+    /// <param name="requestedFieldIndexes">
+    /// A hash set of field indexes to read. If an index references a <c>GROUP</c> directly, all of the sub-fields within the
     /// <c>GROUP</c> are recursively added.
     /// </param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     public static ImmutableArray<FieldIteratorNode> CreateFieldIteratorNodes(
         ImmutableArray<FieldDefinition> fieldDefinitions,
-        ImmutableHashSet<int> requestedFieldIndices)
+        ImmutableHashSet<int> requestedFieldIndexes)
     {
-        foreach (int fieldIndex in requestedFieldIndices)
+        foreach (int fieldIndex in requestedFieldIndexes)
         {
             if (fieldIndex < 0 || fieldIndex >= fieldDefinitions.Length)
             {
@@ -104,11 +104,11 @@ public static class FieldValueReader
             }
         }
 
-        var orderedIndices = requestedFieldIndices.Order();
+        var orderedIndexes = requestedFieldIndexes.Order();
 
         List<FieldIteratorNode> iterators = [];
 
-        foreach (int fieldIndex in orderedIndices)
+        foreach (int fieldIndex in orderedIndexes)
         {
             var fieldDef = fieldDefinitions[fieldIndex];
 
@@ -232,7 +232,7 @@ public static class FieldValueReader
     /// The <see cref="FieldDefinition.Index"/> of the next field outside of the <c>GROUP</c>
     /// field represented by <paramref name="group"/>.
     /// </returns>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="group"/> is not a <c>GROUP</c>.</exception>
     public static ushort PopulateChildFieldsForGroup(
         ImmutableArray<FieldDefinition> fieldDefinitions,
         FieldIteratorNode group)
@@ -284,8 +284,9 @@ public static class FieldValueReader
     }
 
     /// <summary>
-    /// Returns <see langword="true"/> if <paramref name="maybeGroup"/> is a group and <paramref name="subject"/>
-    /// is inside its scope, either as a direct parent-child or indirectly as a grandparent-grandchild.
+    /// Returns <see langword="true"/> if <paramref name="maybeGroup"/> is a <c>GROUP</c> and
+    /// <paramref name="subject"/> is inside its scope, either as a direct parent-child or indirectly
+    /// as a grandparent-grandchild.
     /// </summary>
     /// <param name="maybeGroup"></param>
     /// <param name="subject"></param>

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TpsParser.Tps.Record;
 
 namespace TpsParser;
 
@@ -118,20 +117,6 @@ public sealed class TpsFile
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Gets a list of data records for the associated table and its table definition.
-    /// </summary>
-    /// <param name="table">The table from which to get the records.</param>
-    /// <param name="tableDefinition">The table definition that describes the table schema.</param>
-    /// <param name="errorHandlingOptions"></param>
-    /// <returns></returns>
-    public IEnumerable<IDataRecord> GetDataRows(int table, TableDefinition tableDefinition, ErrorHandlingOptions? errorHandlingOptions = null)
-    {
-        return EnumerateRecords(errorHandlingOptions)
-            .Where(record => record.GetPayload() is DataRecordPayload pl && pl.TableNumber == table)
-            .Select(record => new DataRecord(record, tableDefinition, EncodingOptions.ContentEncoding));
     }
 
     public IEnumerable<DataRecordPayload> GetDataRecordPayloads(

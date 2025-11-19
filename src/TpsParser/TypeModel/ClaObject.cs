@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Text;
 
 namespace TpsParser.TypeModel;
@@ -101,91 +100,6 @@ public interface IClaNumeric : IClaBoolean
     /// <returns></returns>
     Maybe<decimal> ToDecimal();
 }
-
-internal static class ClaObject
-{
-    /// <summary>
-    /// Builds a <see cref="IClaObject"/> from the given binary reader and field definition information.
-    /// </summary>
-    /// <param name="rx">The binary reader.</param>
-    /// <param name="encoding">The text encoding to use when reading string values.</param>
-    /// <param name="enumerator">An enumerator for a collection of field definitions, the first being the field to parse, followed by the remainder of the definitions.
-    /// The enumerator must have already been advanced to the first item with a call to <see cref="IEnumerator.MoveNext"/>.</param>
-    /// <returns></returns>
-    internal static IClaObject ParseField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator)
-    {
-        ArgumentNullException.ThrowIfNull(rx);
-        ArgumentNullException.ThrowIfNull(encoding);
-        ArgumentNullException.ThrowIfNull(enumerator);
-
-        var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
-
-        if (current.IsArray)
-        {
-            return TpsArrayExtensions.Parse(rx, encoding, enumerator);
-        }
-        else
-        {
-            return ParseScalarField(rx, encoding, enumerator);
-        }
-    }
-
-    private static IClaObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, FieldDefinitionEnumerator enumerator) =>
-        ParseScalarField(
-            rx: rx,
-            encoding: encoding,
-            length: enumerator.Current?.Length ?? throw new ArgumentException("The current element is null.", nameof(enumerator)),
-            enumerator: enumerator);
-
-    internal static IClaObject ParseScalarField(TpsRandomAccess rx, Encoding encoding, int length, FieldDefinitionEnumerator enumerator)
-    {
-        ArgumentNullException.ThrowIfNull(rx);
-        ArgumentNullException.ThrowIfNull(encoding);
-        ArgumentNullException.ThrowIfNull(enumerator);
-
-        var current = enumerator.Current ?? throw new ArgumentException("The first item in the enumerator is null.", nameof(enumerator));
-
-        switch (current.TypeCode)
-        {
-            case FieldTypeCode.Byte:
-                return rx.ReadClaByte();
-            case FieldTypeCode.Short:
-                return rx.ReadClaShort();
-            case FieldTypeCode.UShort:
-                return rx.ReadClaUnsignedShort();
-            case FieldTypeCode.Date:
-                return rx.ReadClaDate();
-            case FieldTypeCode.Time:
-                return rx.ReadClaTime();
-            case FieldTypeCode.Long:
-                return rx.ReadClaLong();
-            case FieldTypeCode.ULong:
-                return rx.ReadClaUnsignedLong();
-            case FieldTypeCode.SReal:
-                return rx.ReadClaFloat();
-            case FieldTypeCode.Real:
-                return rx.ReadClaDouble();
-            case FieldTypeCode.Decimal:
-                return rx.ReadClaDecimal(length, current.BcdDigitsAfterDecimalPoint);
-            case FieldTypeCode.FString:
-                return rx.ReadClaFString(length, encoding);
-            case FieldTypeCode.CString:
-                return rx.ReadClaCString(encoding);
-            case FieldTypeCode.PString:
-                return rx.ReadClaPString(encoding);
-            case FieldTypeCode.Group:
-                return TpsGroup.BuildFromFieldDefinitions(rx, encoding, enumerator);
-            default:
-                throw new ArgumentException($"Unsupported type {current.TypeCode} ({length})", nameof(enumerator));
-        }
-    }
-}
-
-/// <summary>
-/// Represents a complex Clarion type that owns one or more instances of <see cref="IClaObject"/>.
-/// </summary>
-public interface IComplex : IClaObject
-{ }
 
 /// <summary>
 /// Represents a Clarion string type.

@@ -1,61 +1,53 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Xml.Linq;
 using TpsParser.TypeModel;
 
 namespace TpsParser.Data;
 
 public class TpsDataReader : DbDataReader
 {
-    private TpsFile _tpsFile;
-    private TableDefinition _tableDefinition;
-    private int _tableNumber;
-    private ImmutableArray<FieldIteratorNode> _fieldIteratorNodes;
+    private sealed record ColumnDef
+    {
+        public FieldDefinition? FieldDef { get; }
+        public MemoDefinition? MemoDef { get; }
 
-    //private Dictionary<int, string> IndexToColumnNames = new();
-    //private Dictionary<string, int> ColumnNamesToIndex = new();
-    //private HashSet<string> ColumnNames_WithCase = new();
-    //private Dictionary<string, string> ColumnNames_ToCase = new();
+        public string Name => FieldDef?.Name ?? MemoDef!.Name;
 
-    private readonly List<(FieldDefinition? FieldDef, MemoDefinition? MemoDef)> _columnDefinitions = [];
+        public ColumnDef(FieldDefinition fieldDef)
+        {
+            FieldDef = fieldDef ?? throw new ArgumentNullException(nameof(fieldDef));
+            MemoDef = null;
+        }
 
-    private IEnumerable<DataRecordPayload> _dataRecordPayloads;
-    private IEnumerator<DataRecordPayload> _dataRecordPayloadEnumerator;
+        public ColumnDef(MemoDefinition memoDef)
+        {
+            FieldDef = null;
+            MemoDef = memoDef ?? throw new ArgumentNullException(nameof(memoDef));
+        }
+    }
 
-    private IEnumerable<FieldEnumerationResult>? _currentEnumerationResults = null;
+    private readonly TpsFile _tpsFile;
+    private readonly TableDefinition _tableDefinition;
+    private readonly int _tableNumber;
+    private readonly ImmutableArray<FieldIteratorNode> _fieldIteratorNodes;
+
+    private FrozenDictionary<string, int> NameToOrdinalLookup { get; }
+    private ReadOnlyCollection<ColumnDef> ColumnDefinitions { get; }
+    private IEnumerator<DataRecordPayload>? DataRecordPayloadEnumerator { get; set; }
 
     private const int VIRTUAL_FIELDS_TOTAL = 1;
     private const string VIRTUAL_FIELDS_RECORDNUMBER = "__RECORD_NUMBER";
     private const int VIRTUAL_FIELDS_RECORDNUMBER_OFFSET = 0;
 
-    private bool IsDisposed;
-
-    public override void Close()
-    {
-        base.Close();
-        
-        //Parser = null;
-        //TableDefinitions.Clear();
-        //IndexToColumnNames.Clear();
-        //ColumnNamesToIndex.Clear();
-        //ColumnNames_WithCase.Clear();
-        //ColumnNames_ToCase.Clear();
-        _columnDefinitions.Clear();
-        //Rows.Clear();
-
-        IsDisposed = true;
-    }
-
-    private void ThrowIfDisposed()
-    {
-        ObjectDisposedException.ThrowIf(IsDisposed, this);
-    }
+    private bool _isDisposed;
 
     public TpsDataReader(
         TpsFile tpsFile,
@@ -67,30 +59,96 @@ public class TpsDataReader : DbDataReader
         _tableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));
         _tableNumber = tableNumber;
         _fieldIteratorNodes = fieldIteratorNodes;
+
+        var columnDefinitions = new List<ColumnDef>(
+            capacity: fieldIteratorNodes.Length + _tableDefinition.Memos.Length);
+
+        columnDefinitions.AddRange(fieldIteratorNodes.Select(node => new ColumnDef(node.DefinitionPointer.Inner)));
+        columnDefinitions.AddRange(_tableDefinition.Memos.Select(memoDef => new ColumnDef(memoDef)));
+
+        ColumnDefinitions = columnDefinitions.AsReadOnly();
+
+        var nameToOrdinalLookup = new Dictionary<string, int>(
+            capacity: columnDefinitions.Count + VIRTUAL_FIELDS_TOTAL);
+
+        for (int ordinal = 0; ordinal < columnDefinitions.Count; ordinal++)
+        {
+            var columnDef = columnDefinitions[ordinal];
+
+            nameToOrdinalLookup.Add(
+                key: columnDef.Name,
+                value: ordinal);
+        }
+
+        nameToOrdinalLookup.Add(
+            key: VIRTUAL_FIELDS_RECORDNUMBER,
+            value: columnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET);
+
+        NameToOrdinalLookup = nameToOrdinalLookup.ToFrozenDictionary(
+            comparer: StringComparer.InvariantCultureIgnoreCase);
+    }
+
+    private void AssertNotDisposed()
+    {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+    }
+
+    private void AssertOrdinalIsWithinRange(int ordinal)
+    {
+        const int minOrdinal = 0;
+        int maxOrdinal = ColumnDefinitions.Count + VIRTUAL_FIELDS_TOTAL;
+
+        if (ordinal < 0 || ordinal >= (ColumnDefinitions.Count + VIRTUAL_FIELDS_TOTAL))
+        {
+            throw new IndexOutOfRangeException($"Ordinal out of range: {ordinal}. Expected between {minOrdinal} and {maxOrdinal}.");
+        }
+    }
+
+    private DataRecordPayload GetCurrentDataRecordPayload()
+    {
+        if (DataRecordPayloadEnumerator is null)
+        {
+            throw new InvalidOperationException("Record enumeration has not started yet. Call Read() first.");
+        }
+
+        return DataRecordPayloadEnumerator.Current;
+    }
+
+    public override void Close()
+    {
+        base.Close();
+
+        _isDisposed = true;
     }
 
     public override bool HasRows
     {
         get
         {
-            ThrowIfDisposed();
+            AssertNotDisposed();
 
-            return _dataRecordPayloads.Any();
+            _hasRows ??= _tpsFile.GetDataRecordPayloads(table: _tableNumber).Any();
+
+            return _hasRows.Value;
         }
     }
+    private bool? _hasRows;
+
 
     public override object this[int i]
     {
         get
         {
-            ThrowIfDisposed();
+            AssertNotDisposed();
 
-            if (i == _fieldIteratorNodes.Length + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET)
+            var currentRecord = GetCurrentDataRecordPayload();
+
+            if (i == ColumnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET)
             {
-                return _dataRecordPayloadEnumerator.Current.RecordNumber;
+                return currentRecord.RecordNumber;
             }
 
-            if (i < 0 || i >= _columnDefinitions.Count)
+            if (i < 0 || i >= ColumnDefinitions.Count)
             {
                 throw new IndexOutOfRangeException($"No such column index: {i}.");
             }
@@ -99,14 +157,14 @@ public class TpsDataReader : DbDataReader
             {
                 var node = _fieldIteratorNodes[i];
 
-                var result = FieldValueReader.GetValue(node, _dataRecordPayloadEnumerator.Current);
+                var result = FieldValueReader.GetValue(node, currentRecord);
 
                 return ConvertToClrType(result.Value);
             }
 
             var memos = _tpsFile.GetTpsMemos(
                 table: _tableNumber,
-                owningRecord: _dataRecordPayloadEnumerator.Current.RecordNumber,
+                owningRecord: currentRecord.RecordNumber,
                 memoDefinitionIndex: (byte)(i - _fieldIteratorNodes.Length));
 
             var memo = memos.SingleOrDefault();
@@ -130,76 +188,68 @@ public class TpsDataReader : DbDataReader
     {
         get
         {
-            ThrowIfDisposed();
+            AssertNotDisposed();
+
+            var currentRecord = GetCurrentDataRecordPayload();
 
             if (string.Equals(name, VIRTUAL_FIELDS_RECORDNUMBER, StringComparison.InvariantCultureIgnoreCase))
             {
-                return _dataRecordPayloadEnumerator.Current.RecordNumber;
+                return currentRecord.RecordNumber;
             }
 
-            foreach (var node in _fieldIteratorNodes)
+            if (!NameToOrdinalLookup.TryGetValue(name, out int ordinal))
             {
-                if (string.Equals(node.DefinitionPointer.Inner.Name, name, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var result = FieldValueReader.GetValue(node, _dataRecordPayloadEnumerator.Current);
-
-                    return ConvertToClrType(result.Value);
-                }
+                throw new IndexOutOfRangeException($"No such column name: '{name}'.");
             }
 
-            for (byte memoIndex = 0; memoIndex < _tableDefinition.Memos.Length; memoIndex++)
+            if (ordinal < _fieldIteratorNodes.Length)
             {
-                var memoDef = _tableDefinition.Memos[memoIndex];
+                var node = _fieldIteratorNodes[ordinal];
 
-                if (string.Equals(memoDef.Name, name, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var memos = _tpsFile.GetTpsMemos(
+                var result = FieldValueReader.GetValue(node, currentRecord);
+
+                return ConvertToClrType(result.Value);
+            }
+
+            int memoOrdinal = ordinal - _fieldIteratorNodes.Length;
+
+            var memos = _tpsFile.GetTpsMemos(
                         table: _tableNumber,
-                        owningRecord: _dataRecordPayloadEnumerator.Current.RecordNumber,
-                        memoDefinitionIndex: memoIndex);
+                        owningRecord: currentRecord.RecordNumber,
+                        memoDefinitionIndex: (byte)memoOrdinal);
 
-                    var memo = memos.SingleOrDefault();
+            var memo = memos.SingleOrDefault();
 
-                    if (memo is TpsTextMemo textMemo)
-                    {
-                        return textMemo.ToString(_tpsFile.EncodingOptions.ContentEncoding);
-                    }
-                    else if (memo is TpsBlob blob)
-                    {
-                        return blob.ToArray();
-                    }
-                    else
-                    {
-                        return DBNull.Value;
-                    }
-                }
+            if (memo is TpsTextMemo textMemo)
+            {
+                return textMemo.ToString(_tpsFile.EncodingOptions.ContentEncoding);
             }
-
-            throw new IndexOutOfRangeException($"No such column name: '{name}'.");
+            else if (memo is TpsBlob blob)
+            {
+                return blob.ToArray();
+            }
+            else
+            {
+                return DBNull.Value;
+            }
         }
     }
 
-    public override int Depth
-    {
-        get
-        {
-            ThrowIfDisposed();
+    public override int Depth => 0;
 
-            return 0;
-        }
-    }
-
-    public override bool IsClosed => !IsDisposed;
+    public override bool IsClosed => !_isDisposed;
 
     public override int RecordsAffected => 0;
+
+    private int FieldCountCore => ColumnDefinitions.Count + VIRTUAL_FIELDS_TOTAL;
 
     public override int FieldCount
     {
         get
         {
-            ThrowIfDisposed();
+            AssertNotDisposed();
 
-            return _columnDefinitions.Count + VIRTUAL_FIELDS_TOTAL;
+            return FieldCountCore;
         }
     }
 
@@ -269,15 +319,17 @@ public class TpsDataReader : DbDataReader
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
     public override Type GetFieldType(int ordinal)
     {
-        if (ordinal == _columnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET)
+        AssertOrdinalIsWithinRange(ordinal);
+
+        if (ordinal == ColumnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET)
         {
             //This will be VIRTUAL_FIELDS_RECORDNUMBER
             return typeof(long);
         }
         
-        var (FieldDef, MemoDef) = _columnDefinitions[ordinal];
+        var columnDef = ColumnDefinitions[ordinal];
 
-        if (FieldDef is FieldDefinition { } fieldDef)
+        if (columnDef.FieldDef is FieldDefinition { } fieldDef)
         {
             return fieldDef.TypeCode switch
             {
@@ -295,21 +347,23 @@ public class TpsDataReader : DbDataReader
                 FieldTypeCode.CString => typeof(string),
                 FieldTypeCode.PString => typeof(string),
                 FieldTypeCode.Group => typeof(ClaGroup),
-                _ => throw new NotImplementedException(),
+                _ => throw new NotImplementedException($"Type conversion for FieldDefinition of type '{fieldDef.TypeCode}' is not implemented."),
             };
-
         }
 
-        if (MemoDef is MemoDefinition { } memoDef)
+        if (columnDef.MemoDef is MemoDefinition { } memoDef)
         {
             if (memoDef.IsBlob)
             {
                 return typeof(byte[]);
             }
+
             if (memoDef.IsTextMemo)
             {
                 return typeof(string);
             }
+
+            throw new NotImplementedException($"Type conversion for this particular MemoDefinition is not implemented.");
         }
 
         throw new NotImplementedException();
@@ -342,23 +396,37 @@ public class TpsDataReader : DbDataReader
 
     public override string GetName(int ordinal)
     {
-        ThrowIfDisposed();
+        AssertNotDisposed();
+        AssertOrdinalIsWithinRange(ordinal);
 
-        var ret = IndexToColumnNames[ordinal];
-        return ret;
+        if (ordinal == ColumnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET)
+        {
+            return VIRTUAL_FIELDS_RECORDNUMBER;
+        }
+
+        return ColumnDefinitions[ordinal].Name;
     }
 
     public override int GetOrdinal(string name)
     {
-        ThrowIfDisposed();
+        AssertNotDisposed();
 
-        var ret = ColumnNamesToIndex[name];
-        return ret;
+        if (string.Equals(name, VIRTUAL_FIELDS_RECORDNUMBER, StringComparison.InvariantCultureIgnoreCase))
+        {
+            return ColumnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET;
+        }
+
+        if (!NameToOrdinalLookup.TryGetValue(name, out int ordinal))
+        {
+            throw new IndexOutOfRangeException($"No such column name: '{name}'.");
+        }
+
+        return ordinal;
     }
 
     public override DataTable? GetSchemaTable()
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     public override string GetString(int ordinal)
@@ -378,11 +446,28 @@ public class TpsDataReader : DbDataReader
 
     public override bool IsDBNull(int ordinal)
     {
-        ThrowIfDisposed();
+        AssertNotDisposed();
+        AssertOrdinalIsWithinRange(ordinal);
 
-        // TODO should return true if a BLOB or MEMO is not present.
+        // MEMOs and BLOBs can potentially be DbNull; all others are not.
 
-        return false;
+        if (ordinal < _fieldIteratorNodes.Length || ordinal >= ColumnDefinitions.Count)
+        {
+            return false;
+        }
+
+        int memoOrdinal = ordinal - _fieldIteratorNodes.Length;
+
+        var currentRecord = GetCurrentDataRecordPayload();
+
+        var memos = _tpsFile.GetTpsMemos(
+                    table: _tableNumber,
+                    owningRecord: currentRecord.RecordNumber,
+                    memoDefinitionIndex: (byte)memoOrdinal);
+
+        var maybeMemo = memos.FirstOrDefault();
+
+        return maybeMemo is null;
     }
 
     public override bool NextResult()
@@ -392,16 +477,21 @@ public class TpsDataReader : DbDataReader
 
     public override bool Read()
     {
-        _dataRecordPayloadEnumerator ??= _dataRecordPayloads.GetEnumerator();
+        AssertNotDisposed();
 
-        if (!_dataRecordPayloadEnumerator.MoveNext())
+        if (DataRecordPayloadEnumerator is null)
         {
-            return false;
+            var dataRecordPayloads = _tpsFile.GetDataRecordPayloads(
+                table: _tableNumber);
+
+            DataRecordPayloadEnumerator = dataRecordPayloads.GetEnumerator();
         }
 
-        _currentEnumerationResults = FieldValueReader.EnumerateValues(_fieldIteratorNodes, _dataRecordPayloadEnumerator.Current);
+        bool moveNextResult = DataRecordPayloadEnumerator.MoveNext();
 
-        return true;
+        _hasRows ??= moveNextResult;
+
+        return moveNextResult;
     }
 
     public override IEnumerator GetEnumerator()

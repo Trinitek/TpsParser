@@ -2,10 +2,12 @@
 using System.Data;
 using System.Data.Common;
 using System.IO;
+using System.Linq;
 
 namespace TpsParser.Data;
 
-public partial class TpsDbCommand : DbCommand {
+public partial class TpsDbCommand : DbCommand
+{
     public override string CommandText { get; set; }
     public override int CommandTimeout { get; set; }
     public override CommandType CommandType { get; set; }
@@ -41,38 +43,52 @@ public partial class TpsDbCommand : DbCommand {
 
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
-        var BaseFileName = QueryParser.GetFileName(CommandText);
+        var baseFileName = QueryParser.GetFileName(CommandText);
 
-        var FileNames = new[] {
-            $@"{BaseFileName}.tps",
-            $@"{BaseFileName}",
-        };
+        string[] filenames =
+        [
+            $@"{baseFileName}.tps",
+            $@"{baseFileName}",
+        ];
 
-        var Folder = (Connection as TpsDbConnection)?.Database;
-        var FoundFile = default(string?);
+        var folder = (Connection as TpsDbConnection)?.Database;
+        var foundFile = default(string?);
 
-        if(Folder is { }) {
-            foreach(var Filename in FileNames) {
-                var Path = System.IO.Path.Combine(Folder, Filename);
-                if (System.IO.File.Exists(Path)) {
-                    FoundFile = Path;
+        if (folder is { })
+        {
+            foreach(var filename in filenames)
+            {
+                var Path = System.IO.Path.Combine(folder, filename);
+
+                if (File.Exists(Path))
+                {
+                    foundFile = Path;
                     break;
                 }
             }
         }
 
-        if (FoundFile is null) {
-            throw new FileNotFoundException($@"Unable to find database file.");
+        if (foundFile is null)
+        {
+            throw new FileNotFoundException($@"Unable to locate database file '{baseFileName}'.");
         }
 
-        var Parser = new TpsParser(FoundFile);
+        using var fs = new FileStream(foundFile, FileMode.Open);
 
-        var Definitions = Parser.TpsFile.GetTableDefinitions();
+        var tpsFile = new TpsFile(fs);
 
-        var ret = new TpsDataReader(Parser, Definitions);
-        ret.NextResult();
-        return ret;
+        var tableDef = tpsFile.GetTableDefinitions().First();
+
+        var ret = new TpsDataReader(
+            tpsFile: tpsFile,
+            tableDefinition: tableDef.Value,
+            tableNumber: tableDef.Key,
+            fieldIteratorNodes: FieldValueReader.CreateFieldIteratorNodes(
+                fieldDefinitions: tableDef.Value.Fields,
+                requestedFieldIndexes: [.. tableDef.Value.Fields.Select(f => f.Index)]));
         
-    }
+        ret.NextResult();
 
+        return ret;
+    }
 }

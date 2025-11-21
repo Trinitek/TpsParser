@@ -3,9 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace TpsParser.Data;
 
-public sealed record FileTableName(string FileName, string? TableName);
+internal sealed record FileTableName(string FileName, string? TableName);
 
-public static partial class QueryParser
+internal static partial class QueryParser
 {
     public static FileTableName GetFileTableName(string commandText)
     {
@@ -33,7 +33,7 @@ public static partial class QueryParser
         | RegexOptions.Compiled;
 
     // language=regex
-    const string REGEX =
+    private const string REGEX =
         """
         \s*SELECT\s+\*\s+FROM\s+
         (

@@ -12,6 +12,9 @@ using TpsParser.TypeModel;
 
 namespace TpsParser.Data;
 
+/// <summary>
+/// Reads a forward-only stream of rows from a TPS file.
+/// </summary>
 public class TpsDataReader : DbDataReader
 {
     private sealed record ColumnDef
@@ -49,6 +52,14 @@ public class TpsDataReader : DbDataReader
 
     private bool _isDisposed;
 
+    /// <summary>
+    /// Instantiates a new reader.
+    /// </summary>
+    /// <param name="tpsFile"></param>
+    /// <param name="tableDefinition"></param>
+    /// <param name="tableNumber"></param>
+    /// <param name="fieldIteratorNodes"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public TpsDataReader(
         TpsFile tpsFile,
         TableDefinition tableDefinition,
@@ -114,6 +125,7 @@ public class TpsDataReader : DbDataReader
         return DataRecordPayloadEnumerator.Current;
     }
 
+    /// <inheritdoc/>
     public override void Close()
     {
         base.Close();
@@ -121,6 +133,7 @@ public class TpsDataReader : DbDataReader
         _isDisposed = true;
     }
 
+    /// <inheritdoc/>
     public override bool HasRows
     {
         get
@@ -134,7 +147,7 @@ public class TpsDataReader : DbDataReader
     }
     private bool? _hasRows;
 
-
+    /// <inheritdoc/>
     public override object this[int i]
     {
         get
@@ -184,6 +197,7 @@ public class TpsDataReader : DbDataReader
         }
     }
 
+    /// <inheritdoc/>
     public override object this[string name]
     {
         get
@@ -235,14 +249,18 @@ public class TpsDataReader : DbDataReader
         }
     }
 
+    /// <inheritdoc/>
     public override int Depth => 0;
 
+    /// <inheritdoc/>
     public override bool IsClosed => !_isDisposed;
 
+    /// <inheritdoc/>
     public override int RecordsAffected => 0;
 
     private int FieldCountCore => ColumnDefinitions.Count + VIRTUAL_FIELDS_TOTAL;
 
+    /// <inheritdoc/>
     public override int FieldCount
     {
         get
@@ -253,46 +271,55 @@ public class TpsDataReader : DbDataReader
         }
     }
 
+    /// <inheritdoc/>
     public override bool GetBoolean(int ordinal)
     {
         return (bool)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override byte GetByte(int ordinal)
     {
         return (byte)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public override char GetChar(int ordinal)
     {
         return (char)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, int length)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public override string GetDataTypeName(int ordinal)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public override DateTime GetDateTime(int ordinal)
     {
         return (DateTime)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override decimal GetDecimal(int ordinal)
     {
         return (decimal)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override double GetDouble(int ordinal)
     {
         return (double)this[ordinal];
@@ -316,6 +343,7 @@ public class TpsDataReader : DbDataReader
             _ => throw new NotImplementedException($"Type conversion not implemented for {claObject?.GetType()?.Name ?? "[null]"}.")
         };
 
+    /// <inheritdoc/>
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
     public override Type GetFieldType(int ordinal)
     {
@@ -369,31 +397,37 @@ public class TpsDataReader : DbDataReader
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public override float GetFloat(int ordinal)
     {
         return (float)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override Guid GetGuid(int ordinal)
     {
         return (Guid)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override short GetInt16(int ordinal)
     {
         return (short)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override int GetInt32(int ordinal)
     {
         return (int)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override long GetInt64(int ordinal)
     {
         return (long)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override string GetName(int ordinal)
     {
         AssertNotDisposed();
@@ -407,6 +441,7 @@ public class TpsDataReader : DbDataReader
         return ColumnDefinitions[ordinal].Name;
     }
 
+    /// <inheritdoc/>
     public override int GetOrdinal(string name)
     {
         AssertNotDisposed();
@@ -424,26 +459,31 @@ public class TpsDataReader : DbDataReader
         return ordinal;
     }
 
+    /// <inheritdoc/>
     public override DataTable? GetSchemaTable()
     {
         throw new NotSupportedException();
     }
 
+    /// <inheritdoc/>
     public override string GetString(int ordinal)
     {
         return (string)this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override object GetValue(int ordinal)
     {
         return this[ordinal];
     }
 
+    /// <inheritdoc/>
     public override int GetValues(object[] values)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public override bool IsDBNull(int ordinal)
     {
         AssertNotDisposed();
@@ -470,11 +510,13 @@ public class TpsDataReader : DbDataReader
         return maybeMemo is null;
     }
 
+    /// <inheritdoc/>
     public override bool NextResult()
     {
         return false;
     }
 
+    /// <inheritdoc/>
     public override bool Read()
     {
         AssertNotDisposed();
@@ -494,6 +536,7 @@ public class TpsDataReader : DbDataReader
         return moveNextResult;
     }
 
+    /// <inheritdoc/>
     public override IEnumerator GetEnumerator()
     {
         throw new NotImplementedException();

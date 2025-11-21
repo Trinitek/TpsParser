@@ -1,28 +1,29 @@
 ﻿using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace TpsParser.Data;
 
+public sealed record FileTableName(string FileName, string? TableName);
+
 public static partial class QueryParser
 {
-    public static string GetFileName(string commandText)
+    public static FileTableName GetFileTableName(string commandText)
     {
         var regex = GetFileNameRegex();
+        
         var match = regex.Match(commandText);
         
         if (!match.Success)
         {
-            throw new ArgumentException($"The command text must be in the format 'SELECT * FROM <FILENAME>'.", nameof(commandText));
+            throw new ArgumentException(@"The command text must be in the format 'SELECT * FROM ""<FileName>[\!<TableName>]""'.", nameof(commandText));
         }
-        
-        var ret = new[]{
-            match.Groups["Value1"].Value,
-            match.Groups["Value2"].Value,
-            match.Groups["Value3"].Value,
-        }.Where(x => !string.IsNullOrEmpty(x)).FirstOrDefault() ?? string.Empty;
 
-        return ret;
+        string fileName = match.Groups["File"].Value;
+        string tableName = match.Groups["TableName"].Value;
+
+        return new (
+            FileName: fileName,
+            TableName: string.IsNullOrEmpty(tableName) ? null : tableName);
     }
 
     private const RegexOptions Options = RegexOptions.None

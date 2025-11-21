@@ -43,7 +43,7 @@ public partial class TpsDbCommand : DbCommand
 
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
-        var baseFileName = QueryParser.GetFileName(CommandText);
+        (string baseFileName, string? tableName) = QueryParser.GetFileTableName(CommandText);
 
         string[] filenames =
         [
@@ -77,15 +77,43 @@ public partial class TpsDbCommand : DbCommand
 
         var tpsFile = new TpsFile(fs);
 
-        var tableDef = tpsFile.GetTableDefinitions().First();
+        var tableDefs = tpsFile.GetTableDefinitions();
+
+        int tableNumber;
+        TableDefinition tableDef;
+
+        if (tableName is not null)
+        {
+            var tableNameRecords = tpsFile.GetTableNameRecordPayloads();
+
+            var foundTableName = tableNameRecords.FirstOrDefault(r => string.Equals(
+                r.GetName(encoding: tpsFile.EncodingOptions.MetadataEncoding),
+                tableName,
+                StringComparison.InvariantCultureIgnoreCase));
+
+            if (foundTableName is null)
+            {
+                throw new InvalidOperationException($"Unable to locate table name '{tableName}' in file.");
+            }
+
+            tableNumber = foundTableName.TableNumber;
+            tableDef = tableDefs[tableNumber];
+        }
+        else
+        {
+            var first = tableDefs.First();
+
+            tableNumber = first.Key;
+            tableDef = first.Value;
+        }
 
         var ret = new TpsDataReader(
             tpsFile: tpsFile,
-            tableDefinition: tableDef.Value,
-            tableNumber: tableDef.Key,
+            tableDefinition: tableDef,
+            tableNumber: tableNumber,
             fieldIteratorNodes: FieldValueReader.CreateFieldIteratorNodes(
-                fieldDefinitions: tableDef.Value.Fields,
-                requestedFieldIndexes: [.. tableDef.Value.Fields.Select(f => f.Index)]));
+                fieldDefinitions: tableDef.Fields,
+                requestedFieldIndexes: [.. tableDef.Fields.Select(f => f.Index)]));
         
         ret.NextResult();
 

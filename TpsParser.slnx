@@ -7,6 +7,7 @@
     <Project Path="src/TpsParser/TpsParser.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/TpsParser.Data.Tests/TpsParser.Data.Tests.csproj" Id="9d472a4d-bf78-4687-9f0b-b5539f9478f1" />
     <Project Path="tests/TpsParser.Tests/TpsParser.Tests.csproj" />
   </Folder>
 </Solution>

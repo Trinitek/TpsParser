@@ -8,39 +8,64 @@ namespace TpsParser.Data;
 
 public partial class TpsDbCommand : DbCommand
 {
-    public override string CommandText { get; set; }
+    /// <inheritdoc/>
+    public override string CommandText { get; set; } = string.Empty;
+
+    /// <inheritdoc/>
     public override int CommandTimeout { get; set; }
+
+    /// <inheritdoc/>
     public override CommandType CommandType { get; set; }
+
+    /// <inheritdoc/>
     public override bool DesignTimeVisible { get; set; }
+
+    /// <inheritdoc/>
     public override UpdateRowSource UpdatedRowSource { get; set; }
+
+    /// <inheritdoc/>
     protected override DbConnection? DbConnection { get; set; }
-    protected override DbParameterCollection DbParameterCollection { get; }
+
+    /// <inheritdoc/>
+    protected override DbParameterCollection DbParameterCollection =>
+        throw new NotSupportedException("DbParameters are not supported.");
+
+    /// <inheritdoc/>
     protected override DbTransaction? DbTransaction { get; set; }
 
-    public override void Cancel() {
-        
+    /// <inheritdoc/>
+    public override void Cancel()
+    {
+        throw new NotSupportedException("Cancellation is not supported.");
     }
 
+    /// <inheritdoc/>
     public override int ExecuteNonQuery()
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("Non-query commands are not supported.");
     }
 
+    /// <inheritdoc/>
     public override object? ExecuteScalar()
     {
-        throw new NotImplementedException();
+        using var reader = ExecuteDbDataReader(CommandBehavior.Default);
+
+        return reader.GetValue(0);
     }
 
+    /// <inheritdoc/>
     public override void Prepare()
     {
-        // Do nothing
+        throw new NotSupportedException("Prepared statements are not supported.");
     }
 
+    /// <inheritdoc/>
     protected override DbParameter CreateDbParameter()
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("DbParameters are not supported.");
     }
 
+    /// <inheritdoc/>
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
         (string baseFileName, string? tableName) = QueryParser.GetFileTableName(CommandText);
@@ -107,7 +132,7 @@ public partial class TpsDbCommand : DbCommand
             tableDef = first.Value;
         }
 
-        var ret = new TpsDataReader(
+        var reader = new TpsDataReader(
             tpsFile: tpsFile,
             tableDefinition: tableDef,
             tableNumber: tableNumber,
@@ -115,8 +140,8 @@ public partial class TpsDbCommand : DbCommand
                 fieldDefinitions: tableDef.Fields,
                 requestedFieldIndexes: [.. tableDef.Fields.Select(f => f.Index)]));
         
-        ret.NextResult();
+        reader.NextResult();
 
-        return ret;
+        return reader;
     }
 }

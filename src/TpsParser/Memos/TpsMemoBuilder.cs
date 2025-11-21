@@ -13,6 +13,10 @@ public static class TpsMemoBuilder
     /// Builds an enumerable of <see cref="ITpsMemo"/> objects from an enumerable of <see cref="MemoRecordPayload"/> objects,
     /// joined and merged based on the payloads' definition index, record number, and sequence number.
     /// </summary>
+    /// <remarks>
+    /// Payloads are assumed to be from the same table (i.e. <see cref="MemoRecordPayload.TableNumber"/> is the same for all
+    /// instances). Mixing payloads from multiple tables will produce incorrectly-formed results.
+    /// </remarks>
     /// <param name="memoPayloads"></param>
     /// <param name="builder"></param>
     /// <returns></returns>

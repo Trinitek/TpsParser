@@ -29,29 +29,21 @@ public static partial class QueryParser
         | RegexOptions.ExplicitCapture
         | RegexOptions.IgnoreCase
         | RegexOptions.IgnorePatternWhitespace
-        | RegexOptions.Compiled
-        ;
+        | RegexOptions.Compiled;
 
-    const string SPACE = $@"(\s|\r|\n)";
-    const string REGEX = $@"
-        {SPACE}*
-        SELECT
-        {SPACE}*
-        \*
-        {SPACE}*
-        FROM
+    // language=regex
+    const string REGEX =
+        """
+        \s*SELECT\s+\*\s+FROM\s+
         (
-            ({SPACE}+ (?<Value1> (\w|\.)+))
-                |
-            ({SPACE}* \""(?<Value2>.*)\"")
-                |
-            ({SPACE}* \[(?<Value3>.*)\])
+            (   (?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?   )
+            |
+            ( ""(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?"" )
+            |
+            ( \[(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?\] )
         )
-
-        {SPACE}*
-        (;)?
-        {SPACE}*
-";
+        \s*(;)?\s*
+        """;
 
 
     [GeneratedRegex(REGEX, Options)]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,8 @@ public sealed class TpsFile
     /// Gets the error handling options that determine how parsing behaves when unexpected or invalid data is encountered.
     /// </summary>
     public ErrorHandlingOptions ErrorHandlingOptions { get; }
+
+    private IReadOnlyDictionary<int, TableDefinition> _cachedTableDefinitions;
 
     /// <summary>
     /// Instantiates a new <see cref="TpsFile"/> from the given stream.
@@ -300,6 +303,11 @@ public sealed class TpsFile
     /// <returns></returns>
     public IReadOnlyDictionary<int, TableDefinition> GetTableDefinitions(ErrorHandlingOptions? errorHandlingOptions = null)
     {
+        return _cachedTableDefinitions ??= ParseTableDefinitions(errorHandlingOptions);
+    }
+
+    private FrozenDictionary<int, TableDefinition> ParseTableDefinitions(ErrorHandlingOptions? errorHandlingOptions)
+    {
         return EnumerateRecords(errorHandlingOptions)
             .Where(record => record.GetPayload() is TableDefinitionRecordPayload)
             .Select(record => (TableDefinitionRecordPayload)record.GetPayload()!)
@@ -313,15 +321,15 @@ public sealed class TpsFile
             // Do not process groups that have skipped block indexes. (i.e. 0, 1, 3, 4)
             .Where(group => group.Count() == group.Last().SequenceNumber + 1)
 
-            .ToDictionary(
-            keySelector: group => group.Key,
-            elementSelector: group =>
-                //TableDefinition.Parse(Merge(group))
-                TableDefinition.Parse(
-                    new TpsRandomAccess(
-                        MergeMemory(
-                            group.Select(r => r.Content)).ToArray(),
-                        EncodingOptions.MetadataEncoding))
+            .ToFrozenDictionary(
+                keySelector: group => group.Key,
+                elementSelector: group =>
+                    //TableDefinition.Parse(Merge(group))
+                    TableDefinition.Parse(
+                        new TpsRandomAccess(
+                            MergeMemory(
+                                group.Select(r => r.Content)).ToArray(),
+                            EncodingOptions.MetadataEncoding))
             );
     }
 

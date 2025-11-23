@@ -23,6 +23,7 @@ public sealed class TpsFile
     /// </summary>
     public ErrorHandlingOptions ErrorHandlingOptions { get; }
 
+    private TpsFileHeader _cachedFileHeader;
     private IReadOnlyDictionary<int, TableDefinition> _cachedTableDefinitions;
 
     /// <summary>
@@ -97,6 +98,11 @@ public sealed class TpsFile
     /// </summary>
     /// <returns></returns>
     public TpsFileHeader GetFileHeader()
+    {
+        return _cachedFileHeader ??= ParseFileHeader();
+    }
+
+    private TpsFileHeader ParseFileHeader()
     {
         Data.JumpAbsolute(0);
 
@@ -309,7 +315,7 @@ public sealed class TpsFile
     private FrozenDictionary<int, TableDefinition> ParseTableDefinitions(ErrorHandlingOptions? errorHandlingOptions)
     {
         return EnumerateRecords(errorHandlingOptions)
-            .Where(record => record.GetPayload() is TableDefinitionRecordPayload)
+            .Where(record => record.PayloadType == RecordPayloadType.TableDef)
             .Select(record => (TableDefinitionRecordPayload)record.GetPayload()!)
 
             // Records must be merged in order according to the header's sequence number.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 
@@ -23,8 +24,9 @@ public sealed class TpsFile
     /// </summary>
     public ErrorHandlingOptions ErrorHandlingOptions { get; }
 
-    private TpsFileHeader _cachedFileHeader;
-    private IReadOnlyDictionary<int, TableDefinition> _cachedTableDefinitions;
+    private TpsFileHeader? _cachedFileHeader;
+    private IReadOnlyDictionary<int, TableDefinition>? _cachedTableDefinitions;
+    private ImmutableArray<TpsBlock>? _cachedBlocks;
 
     /// <summary>
     /// Instantiates a new <see cref="TpsFile"/> from the given stream.
@@ -122,13 +124,19 @@ public sealed class TpsFile
     /// <returns></returns>
     public IEnumerable<TpsBlock> GetBlocks()
     {
+        return _cachedBlocks ??= ParseBlocks();
+    }
+
+    private ImmutableArray<TpsBlock> ParseBlocks()
+    {
         var header = GetFileHeader();
 
         var blocks = header.BlockDescriptors
             // Skip zero-length pages and any blocks that are beyond the file size.
             .Where(range => !(range.Length == 0 || range.StartOffset >= Data.Length))
 
-            .Select(range => TpsBlock.Parse(range, Data));
+            .Select(range => TpsBlock.Parse(range, Data))
+            .ToImmutableArray();
 
         return blocks;
     }

@@ -9,8 +9,18 @@ namespace TpsParser.Data;
 /// </summary>
 public sealed class MemoIndexer
 {
+    private readonly record struct TableNumberKey(
+        int TableNumber);
+
+    private readonly record struct MemoIndexKey(
+        int RecordNumber,
+        byte DefinitionIndex);
+
     private readonly TpsFile _file;
 
+    // Benchmarking on .NET 9 x64 with a 17,000-record file, single MEMO definition, indicates a
+    // FrozenDictionary<MemoIndexKey, List<MemoRecordPayload>> is slightly slower by a few milliseconds
+    // both in construction and enumeration. No clear benefit over a plain Dictionary<,>.
     private Dictionary<TableNumberKey, Dictionary<MemoIndexKey, List<MemoRecordPayload>>>? _memoPayloadLookup;
 
     /// <summary>
@@ -90,11 +100,16 @@ public sealed class MemoIndexer
 
             payloads.Add(memoPayload);
         }
+
+        foreach (var tableLookup in builder)
+        {
+            _memoPayloadLookup.Add(tableLookup.Key, tableLookup.Value);
+        }
     }
 
     /// <summary>
     /// Constructs a complete <c>MEMO</c> or <c>BLOB</c> from the previously indexed payloads,
-    /// or returns <see langword="null"/> if one does not exist or is incomplete.
+    /// or returns <see langword="null"/> if one does not exist or has incomplete data.
     /// </summary>
     /// <param name="tableDefinition"></param>
     /// <param name="tableNumber"></param>
@@ -111,7 +126,7 @@ public sealed class MemoIndexer
         if (_memoPayloadLookup is null
             || !_memoPayloadLookup.TryGetValue(new(tableNumber), out var memoIndexes))
         {
-            throw new InvalidOperationException($"Memo index has not been built for table number {tableNumber}.");
+            throw new InvalidOperationException($"Memo index has not been built yet for table number {tableNumber}.");
         }
 
         if (!memoIndexes.TryGetValue(new(RecordNumber: owningRecord, DefinitionIndex: definitionIndex), out var payloads))
@@ -129,10 +144,3 @@ public sealed class MemoIndexer
         return constructedMemos.FirstOrDefault();
     }
 }
-
-internal readonly record struct TableNumberKey(
-    int TableNumber);
-
-internal readonly record struct MemoIndexKey(
-    int RecordNumber,
-    byte DefinitionIndex);

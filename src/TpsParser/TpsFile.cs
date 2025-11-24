@@ -232,7 +232,9 @@ public sealed class TpsFile
     public IEnumerable<MetadataRecordPayload> GetMetadataRecordPayloads(int table)
     {
         return EnumerateRecords()
-            .Where(record => record.GetPayload() is MetadataRecordPayload header && header.TableNumber == table)
+            .Where(record =>
+                record.GetPayload() is MetadataRecordPayload header
+                && header.TableNumber == table)
             .Select(r => (MetadataRecordPayload)r.GetPayload()!);
     }
 
@@ -270,7 +272,7 @@ public sealed class TpsFile
     /// <param name="errorHandlingOptions"></param>
     /// <returns></returns>
     public IEnumerable<MemoRecordPayload> EnumerateMemoRecordPayloads(
-        int table,
+        int? table = null,
         int? owningRecord = null,
         byte? memoDefinitionIndex = null,
         ErrorHandlingOptions? errorHandlingOptions = null)
@@ -288,7 +290,7 @@ public sealed class TpsFile
 
                 var payload = new MemoRecordPayload { PayloadData = r.PayloadData };
 
-                if (payload.TableNumber != table)
+                if (table.HasValue && payload.TableNumber != table)
                 {
                     continue;
                 }

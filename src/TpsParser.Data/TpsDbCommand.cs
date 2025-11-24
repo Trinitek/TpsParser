@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.IO;
 using System.Linq;
 
 namespace TpsParser.Data;
@@ -32,6 +31,21 @@ public partial class TpsDbCommand : DbCommand
 
     /// <inheritdoc/>
     protected override DbTransaction? DbTransaction { get; set; }
+
+    private TpsDbConnection AssertConnectionIsOpen()
+    {
+        if (DbConnection is null)
+        {
+            throw new InvalidOperationException("DbConnection was not specified.");
+        }
+
+        if (DbConnection.State != ConnectionState.Open)
+        {
+            throw new InvalidOperationException("DbConnection is not open.");
+        }
+
+        return (TpsDbConnection)DbConnection;
+    }
 
     /// <inheritdoc/>
     public override void Cancel()
@@ -68,39 +82,13 @@ public partial class TpsDbCommand : DbCommand
     /// <inheritdoc/>
     protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
     {
+        var conn = AssertConnectionIsOpen();
+
         (string baseFileName, string? tableName) = QueryParser.GetFileTableName(CommandText);
 
-        string[] filenames =
-        [
-            $@"{baseFileName}.tps",
-            $@"{baseFileName}",
-        ];
+        var tpsFileConnectionContext = conn.GetOrOpenTpsFile(requestedFileName: baseFileName);
 
-        var folder = (Connection as TpsDbConnection)?.Database;
-        var foundFile = default(string?);
-
-        if (folder is { })
-        {
-            foreach(var filename in filenames)
-            {
-                var Path = System.IO.Path.Combine(folder, filename);
-
-                if (File.Exists(Path))
-                {
-                    foundFile = Path;
-                    break;
-                }
-            }
-        }
-
-        if (foundFile is null)
-        {
-            throw new FileNotFoundException($@"Unable to locate database file '{baseFileName}'.");
-        }
-
-        using var fs = new FileStream(foundFile, FileMode.Open);
-
-        var tpsFile = new TpsFile(fs);
+        var tpsFile = tpsFileConnectionContext.TpsFile;
 
         var tableDefs = tpsFile.GetTableDefinitions();
 
@@ -133,7 +121,7 @@ public partial class TpsDbCommand : DbCommand
         }
 
         var reader = new TpsDataReader(
-            tpsFile: tpsFile,
+            connectionContext: tpsFileConnectionContext,
             tableDefinition: tableDef,
             tableNumber: tableNumber,
             fieldIteratorNodes: FieldValueReader.CreateFieldIteratorNodes(

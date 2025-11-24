@@ -37,7 +37,7 @@ public class TpsDataReader : DbDataReader
         }
     }
 
-    private readonly TpsFile _tpsFile;
+    private readonly TpsFileConnectionContext _connectionContext;
     private readonly TableDefinition _tableDefinition;
     private readonly int _tableNumber;
     private readonly ImmutableArray<FieldIteratorNode> _fieldIteratorNodes;
@@ -55,18 +55,18 @@ public class TpsDataReader : DbDataReader
     /// <summary>
     /// Instantiates a new reader.
     /// </summary>
-    /// <param name="tpsFile"></param>
+    /// <param name="connectionContext"></param>
     /// <param name="tableDefinition"></param>
     /// <param name="tableNumber"></param>
     /// <param name="fieldIteratorNodes"></param>
     /// <exception cref="ArgumentNullException"></exception>
     public TpsDataReader(
-        TpsFile tpsFile,
+        TpsFileConnectionContext connectionContext,
         TableDefinition tableDefinition,
         int tableNumber,
         ImmutableArray<FieldIteratorNode> fieldIteratorNodes)
     {
-        _tpsFile = tpsFile ?? throw new ArgumentNullException(nameof(tpsFile));
+        _connectionContext = connectionContext ?? throw new ArgumentNullException(nameof(connectionContext));
         _tableDefinition = tableDefinition ?? throw new ArgumentNullException(nameof(tableDefinition));
         _tableNumber = tableNumber;
         _fieldIteratorNodes = fieldIteratorNodes;
@@ -140,7 +140,7 @@ public class TpsDataReader : DbDataReader
         {
             AssertNotDisposed();
 
-            _hasRows ??= _tpsFile.GetDataRecordPayloads(table: _tableNumber).Any();
+            _hasRows ??= _connectionContext.TpsFile.GetDataRecordPayloads(table: _tableNumber).Any();
 
             return _hasRows.Value;
         }
@@ -175,16 +175,22 @@ public class TpsDataReader : DbDataReader
                 return ConvertToClrType(result.Value);
             }
 
-            var memos = _tpsFile.GetTpsMemos(
-                table: _tableNumber,
-                owningRecord: currentRecord.RecordNumber,
-                memoDefinitionIndex: (byte)(i - _fieldIteratorNodes.Length));
+            //var memos = _connectionContext.TpsFile.GetTpsMemos(
+            //    table: _tableNumber,
+            //    owningRecord: currentRecord.RecordNumber,
+            //    memoDefinitionIndex: (byte)(i - _fieldIteratorNodes.Length));
+            //
+            //var memo = memos.SingleOrDefault();
 
-            var memo = memos.SingleOrDefault();
+            var memo = _connectionContext.MemoIndexer.GetValue(
+                tableDefinition: _tableDefinition,
+                tableNumber: _tableNumber,
+                owningRecord: currentRecord.RecordNumber,
+                definitionIndex: (byte)(i - _fieldIteratorNodes.Length));
 
             if (memo is TpsTextMemo textMemo)
             {
-                return textMemo.ToString(_tpsFile.EncodingOptions.ContentEncoding);
+                return textMemo.ToString(_connectionContext.TpsFile.EncodingOptions.ContentEncoding);
             }
             else if (memo is TpsBlob blob)
             {
@@ -227,16 +233,22 @@ public class TpsDataReader : DbDataReader
 
             int memoOrdinal = ordinal - _fieldIteratorNodes.Length;
 
-            var memos = _tpsFile.GetTpsMemos(
-                        table: _tableNumber,
-                        owningRecord: currentRecord.RecordNumber,
-                        memoDefinitionIndex: (byte)memoOrdinal);
+            //var memos = _connectionContext.TpsFile.GetTpsMemos(
+            //    table: _tableNumber,
+            //    owningRecord: currentRecord.RecordNumber,
+            //    memoDefinitionIndex: (byte)memoOrdinal);
+            //
+            //var memo = memos.SingleOrDefault();
 
-            var memo = memos.SingleOrDefault();
+            var memo = _connectionContext.MemoIndexer.GetValue(
+                tableDefinition: _tableDefinition,
+                tableNumber: _tableNumber,
+                owningRecord: currentRecord.RecordNumber,
+                definitionIndex: (byte)memoOrdinal);
 
             if (memo is TpsTextMemo textMemo)
             {
-                return textMemo.ToString(_tpsFile.EncodingOptions.ContentEncoding);
+                return textMemo.ToString(_connectionContext.TpsFile.EncodingOptions.ContentEncoding);
             }
             else if (memo is TpsBlob blob)
             {
@@ -338,7 +350,7 @@ public class TpsDataReader : DbDataReader
             ClaSingleReal claSingleReal => claSingleReal.ToFloat().Value,
             ClaReal claReal => claReal.ToDouble().Value,
             ClaDecimal claDecimal => claDecimal.ToDecimal(),
-            IClaString claString => claString.ToString(_tpsFile.EncodingOptions.ContentEncoding),
+            IClaString claString => claString.ToString(_connectionContext.TpsFile.EncodingOptions.ContentEncoding),
             ClaGroup claGroup => claGroup,
             _ => throw new NotImplementedException($"Type conversion not implemented for {claObject?.GetType()?.Name ?? "[null]"}.")
         };
@@ -500,12 +512,18 @@ public class TpsDataReader : DbDataReader
 
         var currentRecord = GetCurrentDataRecordPayload();
 
-        var memos = _tpsFile.GetTpsMemos(
-                    table: _tableNumber,
-                    owningRecord: currentRecord.RecordNumber,
-                    memoDefinitionIndex: (byte)memoOrdinal);
+        //var memos = _connectionContext.TpsFile.GetTpsMemos(
+        //    table: _tableNumber,
+        //    owningRecord: currentRecord.RecordNumber,
+        //    memoDefinitionIndex: (byte)memoOrdinal);
+        //
+        //var maybeMemo = memos.FirstOrDefault();
 
-        var maybeMemo = memos.FirstOrDefault();
+        var maybeMemo = _connectionContext.MemoIndexer.GetValue(
+            tableDefinition: _tableDefinition,
+            tableNumber: _tableNumber,
+            owningRecord: currentRecord.RecordNumber,
+            definitionIndex: (byte)memoOrdinal);
 
         return maybeMemo is null;
     }
@@ -523,7 +541,9 @@ public class TpsDataReader : DbDataReader
 
         if (DataRecordPayloadEnumerator is null)
         {
-            var dataRecordPayloads = _tpsFile.GetDataRecordPayloads(
+            _connectionContext.MemoIndexer.EnsureBuiltForTables(_tableNumber);
+
+            var dataRecordPayloads = _connectionContext.TpsFile.GetDataRecordPayloads(
                 table: _tableNumber);
 
             DataRecordPayloadEnumerator = dataRecordPayloads.GetEnumerator();

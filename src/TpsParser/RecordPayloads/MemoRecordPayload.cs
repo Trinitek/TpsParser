@@ -33,9 +33,16 @@ public readonly record struct MemoRecordPayload : IRecordPayload, IPayloadTableN
     /// Gets the memory region of the content in this entry.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Reverse-engineering note: for text <c>MEMO</c>s, this seems to be at most 256 bytes.
+    /// An analysis on one file containing 304640 memo payloads shows that no one payload exceeded
+    /// a content length of 256.
+    /// </para>
+    /// <para>
     /// For <c>BLOB</c>s, the first payload in the sequence has, in the first 4 bytes, a little-endian
     /// 32-bit integer describing the size of the blob content, followed by the content.
+    /// Unlike <c>MEMO</c> there does not seem to be a maximum length for a single payload record.
+    /// </para>
     /// </remarks>
     public readonly ReadOnlyMemory<byte> Content => PayloadData[12..];
 }

@@ -9,7 +9,7 @@ internal static partial class QueryParser
 {
     public static FileTableName GetFileTableName(string commandText)
     {
-        var regex = GetFileNameRegex();
+        var regex = GetFileTableNameRegex();
         
         var match = regex.Match(commandText);
         
@@ -33,7 +33,7 @@ internal static partial class QueryParser
         | RegexOptions.Compiled;
 
     // language=regex
-    private const string REGEX =
+    private const string FileTableNameRegex =
         """
         \s*SELECT\s+\*\s+FROM\s+
         (
@@ -47,6 +47,6 @@ internal static partial class QueryParser
         """;
 
 
-    [GeneratedRegex(REGEX, Options)]
-    private static partial Regex GetFileNameRegex();
+    [GeneratedRegex(FileTableNameRegex, Options)]
+    private static partial Regex GetFileTableNameRegex();
 }

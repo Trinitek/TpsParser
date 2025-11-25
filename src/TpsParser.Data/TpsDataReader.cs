@@ -175,13 +175,6 @@ public class TpsDataReader : DbDataReader
                 return ConvertToClrType(result.Value);
             }
 
-            //var memos = _connectionContext.TpsFile.GetTpsMemos(
-            //    table: _tableNumber,
-            //    owningRecord: currentRecord.RecordNumber,
-            //    memoDefinitionIndex: (byte)(i - _fieldIteratorNodes.Length));
-            //
-            //var memo = memos.SingleOrDefault();
-
             var memo = _connectionContext.MemoIndexer.GetValue(
                 tableDefinition: _tableDefinition,
                 tableNumber: _tableNumber,
@@ -232,13 +225,6 @@ public class TpsDataReader : DbDataReader
             }
 
             int memoOrdinal = ordinal - _fieldIteratorNodes.Length;
-
-            //var memos = _connectionContext.TpsFile.GetTpsMemos(
-            //    table: _tableNumber,
-            //    owningRecord: currentRecord.RecordNumber,
-            //    memoDefinitionIndex: (byte)memoOrdinal);
-            //
-            //var memo = memos.SingleOrDefault();
 
             var memo = _connectionContext.MemoIndexer.GetValue(
                 tableDefinition: _tableDefinition,

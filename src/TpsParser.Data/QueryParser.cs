@@ -39,7 +39,7 @@ internal static partial class QueryParser
         (
             (   (?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?   )
             |
-            ( ""(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?"" )
+            ( "(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?" )
             |
             ( \[(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?\] )
         )

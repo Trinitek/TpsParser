@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace TpsParser.Data;
 
@@ -13,35 +15,126 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
         this.ConnectionString = ConnectionString;
     }
 
-    public TpsConnectionErrorHandling OnError
+    private bool TryGetEnumValue<T>(string key, [NotNullWhen(true)] out T? value) where T : struct, Enum
+    {
+        if (!TryGetValue(key, out object? maybeObject))
+        {
+            value = null;
+            return false;
+        }
+
+        if (maybeObject is T tValue)
+        {
+            value = tValue;
+            return true;
+        }
+
+        if (maybeObject is not string sValue)
+        {
+            value = null;
+            return false;
+        }
+
+        if (Enum.TryParse(sValue, out T parsedTValue))
+        {
+            value = parsedTValue;
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets or sets the base error handling options to use when reading the file.
+    /// </summary>
+    public ErrorHandling? ErrorHandling
+    {
+        get => TryGetEnumValue(ErrorHandlingName, out ErrorHandling? value)
+            ? value
+            : null;
+        set => this[ErrorHandlingName] = value;
+    }
+    internal const string ErrorHandlingName = "ErrorHandling";
+
+    /// <inheritdoc cref="ErrorHandlingOptions.ThrowOnRleDecompressionError"/>
+    public bool? ErrorHandlingThrowOnRleDecompressionError
     {
         get
         {
-            TryGetValue(nameof(OnError), out var tret);
-            var ret = (tret as TpsConnectionErrorHandling?) ?? TpsConnectionErrorHandling.OnErrorResumeNext;
-            return ret;
+            if (!TryGetValue(ErrorHandlingThrowOnRleDecompressionErrorName, out object? maybeValue))
+            {
+                return null;
+            }
+            if (maybeValue is bool boolValue)
+            {
+                return boolValue;
+            }
+            if (bool.TryParse(maybeValue as string, out boolValue))
+            {
+                return boolValue;
+            }
+            
+            return null;
         }
-        set
-        {
-            this[nameof(OnError)] = value;
-        }
+        set => this[ErrorHandlingThrowOnRleDecompressionErrorName] = value;
     }
+    internal const string ErrorHandlingThrowOnRleDecompressionErrorName = "ErrorHandling.ThrowOnRleDecompressionError";
 
+    /// <inheritdoc cref="ErrorHandlingOptions.RleUndersizedDecompressionBehavior"/>
+    public RleSizeMismatchBehavior? ErrorHandlingRleUndersizedDecompressionBehavior
+    {
+        get => TryGetEnumValue(ErrorHandlingRleUndersizedDecompressionBehaviorName, out RleSizeMismatchBehavior? value)
+            ? value
+            : null;
+        set => this[ErrorHandlingRleUndersizedDecompressionBehaviorName] = value;
+    }
+    internal const string ErrorHandlingRleUndersizedDecompressionBehaviorName = "ErrorHandling.RleUndersizedDecompressionBehavior";
+
+    /// <inheritdoc cref="ErrorHandlingOptions.RleOversizedDecompressionBehavior"/>
+    public RleSizeMismatchBehavior? ErrorHandlingRleOversizedDecompressionBehavior
+    {
+        get => TryGetEnumValue(ErrorHandlingRleOversizedDecompressionBehaviorName, out RleSizeMismatchBehavior? value)
+            ? value
+            : null;
+        set => this[ErrorHandlingRleOversizedDecompressionBehaviorName] = value;
+    }
+    internal const string ErrorHandlingRleOversizedDecompressionBehaviorName = "ErrorHandling.RleOversizedDecompressionBehavior";
+
+    /// <inheritdoc cref="EncodingOptions.ContentEncoding"/>
+    public Encoding ContentEncoding
+    {
+        get => TryGetValue(ContentEncodingName, out object? maybeValue) && maybeValue is Encoding value
+            ? value
+            : EncodingOptions.Default.ContentEncoding;
+        set => this[ContentEncodingName] = value;
+    }
+    internal const string ContentEncodingName = "ContentEncoding";
+
+    /// <inheritdoc cref="EncodingOptions.MetadataEncoding"/>
+    public Encoding MetadataEncoding
+    {
+        get => TryGetValue(MetadataEncodingName, out object? maybeValue) && maybeValue is Encoding value
+            ? value
+            : EncodingOptions.Default.MetadataEncoding;
+        set => this[ContentEncodingName] = value;
+    }
+    internal const string MetadataEncodingName = "ContentEncoding";
+
+    /// <summary>
+    /// Gets or sets the folder from which to read. The folder should contain one or more TPS files.
+    /// </summary>
     public string? Folder
     {
-        get
-        {
-            TryGetValue(nameof(Folder), out var tret);
-            var ret = tret as string;
-            return ret;
-        }
-        set
-        {
-            this[nameof(Folder)] = value;
-        }
+        get => TryGetValue(FolderName, out object? maybeValue) && maybeValue is string value
+            ? value
+            : null;
+        set => this[nameof(Folder)] = value;
     }
+    internal const string FolderName = "Folder";
 
-    public override object this[string keyword]
+    /// <inheritdoc/>
+    public override object? this[string keyword]
     {
         get
         {
@@ -49,43 +142,76 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
         }
         set
         {
-            var NewValue = value;
+            var comparer = StringComparison.InvariantCultureIgnoreCase;
 
-            if(string.Equals(keyword, nameof(OnError), StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(keyword, ErrorHandlingName, comparer))
             {
-
-                if (NewValue is string { } V1)
+                if (value is string stringValue)
                 {
-                    if (Enum.TryParse<TpsConnectionErrorHandling>(V1, true, out var Value))
+                    if (Enum.TryParse<ErrorHandling>(stringValue, ignoreCase: true, out var parsed))
                     {
-                        NewValue = Value;
-                    }
-                    else if (string.IsNullOrEmpty(V1))
-                    {
-                        NewValue = TpsConnectionErrorHandling.OnErrorResumeNext;
+                        base[keyword] = parsed;
                     }
                     else
                     {
-                        throw new InvalidOperationException($@"{NewValue} is not a valid {nameof(TpsConnectionErrorHandling)}");
+                        throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
                     }
                 }
-                else if(NewValue is TpsConnectionErrorHandling { } V2)
+            }
+            else if (string.Equals(keyword, ErrorHandlingRleUndersizedDecompressionBehaviorName, comparer)
+                || string.Equals(keyword, ErrorHandlingRleOversizedDecompressionBehaviorName, comparer))
+            {
+                if (value is string stringValue)
                 {
-                    NewValue = V2;
-                }
-                else
-                {
-                    throw new InvalidOperationException($@"{NewValue} is not a valid {nameof(TpsConnectionErrorHandling)}");
+                    if (Enum.TryParse<RleSizeMismatchBehavior>(stringValue, ignoreCase: true, out var parsed))
+                    {
+                        base[keyword] = parsed;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
+                    }
                 }
             }
 
-            base[keyword] = NewValue;
+            base[keyword] = value;
         }
     }
 }
 
-public enum TpsConnectionErrorHandling
+/// <summary>
+/// Represents one of the base <see cref="ErrorHandlingOptions"/> values.
+/// </summary>
+public enum ErrorHandling
 {
-    OnErrorResumeNext,
-    OnErrorThrow,
+    /// <summary>
+    /// Represents the equivalent value for <see cref="ErrorHandlingOptions.Default"/>.
+    /// </summary>
+    Default,
+
+    /// <summary>
+    /// Represents the equivalent value for <see cref="ErrorHandlingOptions.Strict"/>.
+    /// </summary>
+    Strict
+}
+
+/// <summary>
+/// Represents an equivalent <see cref="TpsParser.RleSizeMismatchBehavior"/>.
+/// </summary>
+public enum RleSizeMismatchBehavior
+{
+    /// <summary>
+    /// Represents the equivalent value for <see cref="TpsParser.RleSizeMismatchBehavior.Throw"/>.
+    /// </summary>
+    Throw,
+
+    /// <summary>
+    /// Represents the equivalent value for <see cref="TpsParser.RleSizeMismatchBehavior.Allow"/>.
+    /// </summary>
+    Allow,
+
+    /// <summary>
+    /// Represents the equivalent value for <see cref="TpsParser.RleSizeMismatchBehavior.Skip"/>.
+    /// </summary>
+    Skip
 }

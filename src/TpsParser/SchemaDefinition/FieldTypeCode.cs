@@ -79,7 +79,7 @@ public enum FieldTypeCode : byte
     PString = 0x14,
 
     /// <summary>
-    /// Clarion <c>GROUP</c>. Compound data structure.
+    /// Clarion <c>GROUP</c>. Compound data structure. Modeled by <see cref="ClaGroup"/>.
     /// </summary>
     Group = 0x16
 }

@@ -302,6 +302,47 @@ public class TpsDataReader : DbDataReader
     /// <inheritdoc/>
     public override string GetDataTypeName(int ordinal)
     {
+        AssertOrdinalIsWithinRange(ordinal);
+
+        if (ordinal < _fieldIteratorNodes.Length)
+        {
+            var fieldDef = _fieldIteratorNodes[ordinal].DefinitionPointer;
+
+            return fieldDef.TypeCode switch
+            {
+                FieldTypeCode.Byte => "BYTE",
+                FieldTypeCode.Short => "SHORT",
+                FieldTypeCode.UShort => "USHORT",
+                FieldTypeCode.Date => "DATE",
+                FieldTypeCode.Time => "TIME",
+                FieldTypeCode.Long => "LONG",
+                FieldTypeCode.ULong => "ULONG",
+                FieldTypeCode.SReal => "SREAL",
+                FieldTypeCode.Real => "REAL",
+                FieldTypeCode.Decimal => "DECIMAL",
+                FieldTypeCode.FString => "STRING",
+                FieldTypeCode.CString => "CSTRING",
+                FieldTypeCode.PString => "PSTRING",
+                FieldTypeCode.Group => "GROUP",
+                _ => throw new NotImplementedException($"TypeCode name not implemented for {fieldDef.TypeCode}.")
+            };
+        }
+
+        if (ordinal < _fieldIteratorNodes.Length + _tableDefinition.Memos.Length)
+        {
+            int memoIndex = ordinal - _fieldIteratorNodes.Length;
+
+            var memoDef = _tableDefinition.Memos[memoIndex];
+
+            return memoDef.IsTextMemo ? "MEMO" : "BLOB";
+        }
+
+        // RECORD_NUMBER
+        if (ordinal == FieldCount - 1)
+        {
+            return string.Empty;
+        }
+
         throw new NotImplementedException();
     }
 
@@ -497,13 +538,6 @@ public class TpsDataReader : DbDataReader
         int memoOrdinal = ordinal - _fieldIteratorNodes.Length;
 
         var currentRecord = GetCurrentDataRecordPayload();
-
-        //var memos = _connectionContext.TpsFile.GetTpsMemos(
-        //    table: _tableNumber,
-        //    owningRecord: currentRecord.RecordNumber,
-        //    memoDefinitionIndex: (byte)memoOrdinal);
-        //
-        //var maybeMemo = memos.FirstOrDefault();
 
         var maybeMemo = _connectionContext.MemoIndexer.GetValue(
             tableDefinition: _tableDefinition,

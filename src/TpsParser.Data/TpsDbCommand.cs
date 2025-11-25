@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace TpsParser.Data;
 
+/// <summary>
+/// Represents a SQL statement to execute against a <see cref="TpsDbConnection"/>.
+/// </summary>
 public partial class TpsDbCommand : DbCommand
 {
     /// <inheritdoc/>

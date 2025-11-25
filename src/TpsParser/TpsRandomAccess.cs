@@ -525,24 +525,6 @@ public sealed class TpsRandomAccess
     }
 
     /// <summary>
-    /// Reads a <see cref="ClaByte"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaByte ReadClaByte() => ClaBinaryPrimitives.ReadClaByte(ReadBytes(1).Span);// new(ReadByte());
-
-    /// <summary>
-    /// Reads a <see cref="ClaShort"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaShort ReadClaShort() => ClaBinaryPrimitives.ReadClaShort(ReadBytes(2).Span);// new(ReadShortLE());
-
-    /// <summary>
-    /// Reads a <see cref="ClaUnsignedShort"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaUnsignedShort ReadClaUnsignedShort() => ClaBinaryPrimitives.ReadClaUnsignedShort(ReadBytes(2).Span);// new(ReadUnsignedShortLE());
-
-    /// <summary>
     /// Reads a <see cref="ClaDate"/> and advances the current position.
     /// </summary>
     /// <returns></returns>
@@ -553,30 +535,6 @@ public sealed class TpsRandomAccess
     /// </summary>
     /// <returns></returns>
     public ClaTime ReadClaTime() => ClaBinaryPrimitives.ReadClaTime(ReadBytes(4).Span);
-
-    /// <summary>
-    /// Reads a <see cref="ClaLong"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaLong ReadClaLong() => ClaBinaryPrimitives.ReadClaLong(ReadBytes(4).Span);// new(ReadLongLE());
-
-    /// <summary>
-    /// Reads a <see cref="ClaUnsignedLong"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaUnsignedLong ReadClaUnsignedLong() => ClaBinaryPrimitives.ReadClaUnsignedLong(ReadBytes(4).Span);// new(ReadUnsignedLongLE());
-
-    /// <summary>
-    /// Reads a <see cref="ClaSingleReal"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaSingleReal ReadClaFloat() => ClaBinaryPrimitives.ReadClaSingleReal(ReadBytes(4).Span);// new(ReadFloatLE());
-
-    /// <summary>
-    /// Reads a <see cref="ClaReal"/> and advances the current position.
-    /// </summary>
-    /// <returns></returns>
-    public ClaReal ReadClaDouble() => ClaBinaryPrimitives.ReadClaReal(ReadBytes(8).Span); //new(ReadDoubleLE());
 
     /// <summary>
     /// Reads a <see cref="ClaDecimal"/> and advances the current position.
@@ -596,21 +554,6 @@ public sealed class TpsRandomAccess
         encoding ??= Encoding;
 
         return new ClaFString(encoding.GetString(PeekBaseSpan()));
-    }
-
-    /// <summary>
-    /// Reads a <see cref="ClaFString"/> and advances the current position.
-    /// </summary>
-    /// <param name="length">The length of the string in bytes.</param>
-    /// <param name="encoding"></param>
-    /// <returns></returns>
-    public ClaFString ReadClaFString(int length, Encoding? encoding = null)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(length);
-
-        encoding ??= Encoding;
-
-        return new ClaFString(ReadFixedLengthString(length, encoding));
     }
 
     /// <summary>

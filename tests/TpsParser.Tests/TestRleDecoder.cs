@@ -19,8 +19,6 @@ internal sealed class TestRleDecoder
 
         var ra = new TpsRandomAccess(unpacked0!, Encoding.ASCII);
 
-        //var ra = new TpsRandomAccess(, Encoding.ASCII).UnpackRunLengthEncoding();
-
         using (Assert.EnterMultipleScope())
         {
             Assert.That(ra.Length, Is.EqualTo(8));
@@ -40,8 +38,6 @@ internal sealed class TestRleDecoder
         // Skip one, '1', repeat 7 '1', skip '2', '3', repeat '3' 3 times
 
         byte[] data = [0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03];
-
-        //var ra = new TpsRandomAccess([0x01, 0x31, 0x07, 0x02, 0x32, 0x33, 0x03], Encoding.ASCII).UnpackRunLengthEncoding();
 
         bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 13, ErrorHandlingOptions.Default, out byte[]? unpacked0);
 
@@ -70,8 +66,6 @@ internal sealed class TestRleDecoder
     {
         byte[] data = [0x01, 0x31];
 
-        //var ra = new TpsRandomAccess([0x01, 0x31], Encoding.ASCII).UnpackRunLengthEncoding();
-
         bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 1, ErrorHandlingOptions.Default, out byte[]? unpacked0);
 
         Assert.That(unpackResult, Is.True);
@@ -94,8 +88,6 @@ internal sealed class TestRleDecoder
     public void ShouldEndAfterRepeat()
     {
         byte[] data = [0x01, 0x31, 0x07];
-
-        //var ra = new TpsRandomAccess([0x01, 0x31, 0x07], Encoding.ASCII).UnpackRunLengthEncoding();
 
         bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, ErrorHandlingOptions.Default, out byte[]? unpacked0);
 
@@ -137,8 +129,6 @@ internal sealed class TestRleDecoder
     public void ShouldUnpackRleLongRepeat()
     {
         byte[] data = [0x01, 0x31, 0x80, 0x01];
-
-        //var ra = new TpsRandomAccess([0x01, 0x31, 0x80, 0x01], Encoding.ASCII).UnpackRunLengthEncoding();
 
         bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 129, ErrorHandlingOptions.Default, out byte[]? unpacked0);
 
@@ -300,6 +290,214 @@ internal sealed class TestRleDecoder
         {
             Assert.That(result, Is.True);
             Assert.That(unpacked0, Is.EqualTo(decompressedPageData));
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_ThrowOnUndersized_ShouldThrow()
+    {
+        // Skip one, '1', repeat 7 '1'.
+
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { RleUndersizedDecompressionBehavior = RleSizeMismatchBehavior.Throw };
+
+        // Actual expected size is 8, but we set 12.
+        Assert.That(
+            () => RleDecoder.TryUnpack(data, expectedUnpackedSize: 12, options, out byte[]? unpacked0),
+            Throws.Exception.InstanceOf<RunLengthEncodingException>()
+                .With.Message.StartsWith("RLE unpacked size mismatch"));
+    }
+
+    [Test]
+    public void ErrorHandling_SkipOnUndersized_ShouldReturnFalseAndNull()
+    {
+        // Skip one, '1', repeat 7 '1'.
+
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { RleUndersizedDecompressionBehavior = RleSizeMismatchBehavior.Skip };
+
+        // Actual expected size is 8, but we set 12.
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 12, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.False);
+            Assert.That(unpacked0!, Is.Null);
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_AllowOnUndersized_ShouldReturnUnpacked()
+    {
+        // Skip one, '1', repeat 7 '1'.
+
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { RleUndersizedDecompressionBehavior = RleSizeMismatchBehavior.Allow };
+
+        // Actual expected size is 8, but we set 12.
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 12, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.True);
+            Assert.That(unpacked0!, Has.Length.EqualTo(8));
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_ThrowOnOversized_ExceededAtSkip_ShouldThrow()
+    {
+        // Skip one, '1', repeat 7 '1'.
+        // Skip two, '2', '3'
+
+        byte[] data = [
+            0x01, 0x31, 0x07,
+            0x02, 0x32, 0x33];
+
+        var options = ErrorHandlingOptions.Default with { RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Throw };
+
+        // Actual expected size is 10, but we set 8.
+        Assert.That(
+            () => RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, options, out byte[]? unpacked0),
+            Throws.Exception.InstanceOf<RunLengthEncodingException>()
+                .With.Message.StartsWith("RLE unpack exceeded expected total size 8.")
+                .And.Message.Contains("skip"));
+    }
+
+    [Test]
+    public void ErrorHandling_SkipOnOversized_ExceededAtSkip_ShouldReturnFalseAndNull()
+    {
+        // Skip one, '1', repeat 7 '1'.
+        // Skip two, '2', '3'
+
+        byte[] data = [
+            0x01, 0x31, 0x07,
+            0x02, 0x32, 0x33];
+
+        var options = ErrorHandlingOptions.Default with { RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Skip };
+
+        // Actual expected size is 10, but we set 8.
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.False);
+            Assert.That(unpacked0, Is.Null);
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_AllowOnOversized_ExceededAtSkip_ShouldReturnUnpacked()
+    {
+        // Skip one, '1', repeat 7 '1'.
+        // Skip two, '2', '3'
+
+        byte[] data = [
+            0x01, 0x31, 0x07,
+            0x02, 0x32, 0x33];
+
+        var options = ErrorHandlingOptions.Default with { RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Allow };
+
+        // Actual expected size is 10, but we set 8.
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.True);
+            Assert.That(unpacked0!, Has.Length.EqualTo(10));
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_ThrowOnOversized_ExceededAtRepeat_ShouldThrow()
+    {
+        // Skip one, '1', repeat 7 '1'.
+
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Throw };
+
+        // Actual expected size is 8, but we set 6.
+        Assert.That(
+            () => RleDecoder.TryUnpack(data, expectedUnpackedSize: 6, options, out byte[]? unpacked0),
+            Throws.Exception.InstanceOf<RunLengthEncodingException>()
+                .With.Message.StartsWith("RLE unpack exceeded expected total size 6.")
+                .And.Message.Contains("repeat"));
+    }
+
+    [Test]
+    public void ErrorHandling_SkipOnOversized_ExceededAtRepeat_ShouldReturnFalseAndNull()
+    {
+        // Skip one, '1', repeat 7 '1'.
+
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Skip };
+
+        // Actual expected size is 8, but we set 6.
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 6, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.False);
+            Assert.That(unpacked0!, Is.Null);
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_AllowOnOversized_ExceededAtRepeat_ShouldReturnUnpacked()
+    {
+        // Skip one, '1', repeat 7 '1'.
+
+        byte[] data = [0x01, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { RleOversizedDecompressionBehavior = RleSizeMismatchBehavior.Allow };
+
+        // Actual expected size is 8, but we set 6.
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 6, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.True);
+            Assert.That(unpacked0!, Has.Length.EqualTo(8));
+        }
+    }
+
+    [Test]
+    public void ErrorHandling_ThrowOnBadSkip_ShouldThrow()
+    {
+        // Skip one, '1', repeat 7 '1'.
+        // ...except the 0x01 is a 0x00
+
+        byte[] data = [0x00, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { ThrowOnRleDecompressionError = true };
+
+        Assert.That(
+            () => RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, options, out byte[]? unpacked0),
+            Throws.Exception.InstanceOf<RunLengthEncodingException>()
+                .With.Message.StartsWith("Bad RLE Skip (0x00)"));
+    }
+
+    [Test]
+    public void ErrorHandling_SkipOnBadSkip_ShouldReturnFalseAndNull()
+    {
+        // Skip one, '1', repeat 7 '1'.
+        // ...except the 0x01 is 0x00
+
+        byte[] data = [0x00, 0x31, 0x07];
+
+        var options = ErrorHandlingOptions.Default with { ThrowOnRleDecompressionError = false };
+
+        bool unpackResult = RleDecoder.TryUnpack(data, expectedUnpackedSize: 8, options, out byte[]? unpacked0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(unpackResult, Is.False);
+            Assert.That(unpacked0!, Is.Null);
         }
     }
 }

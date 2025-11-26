@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 
 namespace TpsParser;
 
@@ -107,7 +108,7 @@ public sealed record TpsFileHeader
 
         int fileLength1 = header.ReadLongLE();
         int fileLength2 = header.ReadLongLE();
-        string magicNumber = header.ReadFixedLengthString(4);
+        string magicNumber = header.ReadFixedLengthString(4, Encoding.ASCII); // Always ASCII
         short zeroes = header.ReadShortLE();
         int lastIssuedRow = header.ReadLongBE();
         int changes = header.ReadLongLE();

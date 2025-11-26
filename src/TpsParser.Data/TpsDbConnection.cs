@@ -1,30 +1,63 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace TpsParser.Data;
 
 /// <summary>
-/// Represents a database connection to a folder containing one or more TPS files.
+/// Represents a database connection over a folder containing one or more TPS files.
 /// </summary>
 public class TpsDbConnection : DbConnection
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets or sets a string used to open the connection.
+    /// </summary>
+    [AllowNull]
     public override string ConnectionString { get; set; } = string.Empty;
-    
-    public override string DataSource { get; }
-    public override string ServerVersion { get; }
+
+    /// <summary>
+    /// Gets the data source. Always an empty string.
+    /// </summary>
+    public override string DataSource { get; } = string.Empty;
+
+    /// <summary>
+    /// Gets the server version. Always an empty string.
+    /// </summary>
+    public override string ServerVersion { get; } = string.Empty;
 
     /// <inheritdoc/>
     public override ConnectionState State => _state;
     private ConnectionState _state;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the name of the current database. This is a path to a folder that contains one or more TPS files.
+    /// </summary>
     public override string Database => _database;
     private string _database = string.Empty;
 
+    /// <summary>
+    /// Gets the current context containing the <see cref="TpsFile"/> and other info used by this connection,
+    /// or <see langword="null"/> if <see cref="State"/> is not <see cref="ConnectionState.Open"/>.
+    /// </summary>
+    public TpsFileConnectionContext? CurrentFileContext => _currentFileContext;
     private TpsFileConnectionContext? _currentFileContext = null;
+
+    /// <summary>
+    /// Instantiates a new connection.
+    /// </summary>
+    public TpsDbConnection()
+    { }
+
+    /// <summary>
+    /// Instantiates a new connection using a connection string.
+    /// </summary>
+    /// <param name="connectionString"></param>
+    public TpsDbConnection(string connectionString)
+    {
+        ConnectionString = connectionString;
+    }
 
     private void AssertIsOpen()
     {
@@ -54,6 +87,7 @@ public class TpsDbConnection : DbConnection
     public override void ChangeDatabase(string? databaseName)
     {
         // Do nothing if the folder path is exactly the same.
+        // Take care not to do case-insensitive matching; we might be running on a case-sensitive filesystem.
         if (_database == databaseName)
         {
             return;
@@ -61,7 +95,7 @@ public class TpsDbConnection : DbConnection
 
         if (!Directory.Exists(databaseName))
         {
-            throw new DirectoryNotFoundException(databaseName);
+            throw new DirectoryNotFoundException($"Cannot switch database folder to new path because it doesn't exist: {databaseName}");
         }
 
         _database = databaseName;
@@ -149,9 +183,17 @@ public class TpsDbConnection : DbConnection
 
         if (_currentFileContext is null || _currentFileContext.FileName != foundFileName)
         {
+            var csBuilder = new TpsConnectionStringBuilder(ConnectionString);
+
+            var encodingOptions = csBuilder.GetEncodingOptions();
+            var errorOptions = csBuilder.GetErrorHandlingOptions();
+
             using var fs = new FileStream(foundFilePath, FileMode.Open, FileAccess.Read);
 
-            var tpsFile = new TpsFile(fs);
+            var tpsFile = new TpsFile(
+                fs,
+                encodingOptions: encodingOptions,
+                errorHandlingOptions: errorOptions);
 
             _currentFileContext = new(
                 TpsFile: tpsFile,

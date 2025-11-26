@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace TpsParser.Data;
@@ -11,6 +12,7 @@ namespace TpsParser.Data;
 public partial class TpsDbCommand : DbCommand
 {
     /// <inheritdoc/>
+    [AllowNull]
     public override string CommandText { get; set; } = string.Empty;
 
     /// <inheritdoc/>

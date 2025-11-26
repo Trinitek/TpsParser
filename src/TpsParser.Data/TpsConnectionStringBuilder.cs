@@ -1,15 +1,25 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 
 namespace TpsParser.Data;
 
+/// <summary>
+/// A strongly-typed connection string builder for <see cref="TpsDbConnection"/> instances.
+/// </summary>
 public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringBuilder
 {
-
+    /// <summary>
+    /// Instantiates a new connection string builder.
+    /// </summary>
     public TpsConnectionStringBuilder()
     { }
 
+    /// <summary>
+    /// Instantiates a new connection string builder from an existing connection string.
+    /// </summary>
+    /// <param name="ConnectionString"></param>
     public TpsConnectionStringBuilder(string? ConnectionString)
     {
         this.ConnectionString = ConnectionString;
@@ -43,6 +53,48 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
 
         value = null;
         return false;
+    }
+
+    private bool TryGetEncodingValue(string key, [NotNullWhen(true)] out Encoding? value)
+    {
+        if (!TryGetValue(key, out object? maybeObject))
+        {
+            value = null;
+            return false;
+        }
+
+        if (maybeObject is Encoding encoding)
+        {
+            value = encoding;
+            return true;
+        }
+
+        if (maybeObject is not string stringValue)
+        {
+            value = null;
+            return false;
+        }
+
+        // For all ANSI, OEM, and exotic encodings including Windows-1252
+        Encoding? maybeCodePagesEncoding = CodePagesEncodingProvider.Instance.GetEncoding(stringValue);
+
+        if (maybeCodePagesEncoding is not null)
+        {
+            value = maybeCodePagesEncoding;
+            return true;
+        }
+
+        // For UTF-8, US-ASCII, ISO-8859-1, etc.
+        try
+        {
+            value = Encoding.GetEncoding(stringValue);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            value = null;
+            return false;
+        }
     }
 
     /// <summary>
@@ -102,24 +154,24 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     internal const string ErrorHandlingRleOversizedDecompressionBehaviorName = "ErrorHandling.RleOversizedDecompressionBehavior";
 
     /// <inheritdoc cref="EncodingOptions.ContentEncoding"/>
-    public Encoding ContentEncoding
+    public Encoding? ContentEncoding
     {
-        get => TryGetValue(ContentEncodingName, out object? maybeValue) && maybeValue is Encoding value
+        get => TryGetEncodingValue(ContentEncodingName, out Encoding? value)
             ? value
-            : EncodingOptions.Default.ContentEncoding;
-        set => this[ContentEncodingName] = value;
+            : null;
+        set => this[ContentEncodingName] = value?.WebName;
     }
     internal const string ContentEncodingName = "ContentEncoding";
 
     /// <inheritdoc cref="EncodingOptions.MetadataEncoding"/>
-    public Encoding MetadataEncoding
+    public Encoding? MetadataEncoding
     {
-        get => TryGetValue(MetadataEncodingName, out object? maybeValue) && maybeValue is Encoding value
+        get => TryGetEncodingValue(MetadataEncodingName, out Encoding? value)
             ? value
-            : EncodingOptions.Default.MetadataEncoding;
-        set => this[ContentEncodingName] = value;
+            : null;
+        set => this[MetadataEncodingName] = value?.WebName;
     }
-    internal const string MetadataEncodingName = "ContentEncoding";
+    internal const string MetadataEncodingName = "MetadataEncoding";
 
     /// <summary>
     /// Gets or sets the folder from which to read. The folder should contain one or more TPS files.
@@ -134,7 +186,8 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     internal const string FolderName = "Folder";
 
     /// <inheritdoc/>
-    public override object? this[string keyword]
+    [AllowNull]
+    public override object this[string keyword]
     {
         get
         {
@@ -148,13 +201,19 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
             {
                 if (value is string stringValue)
                 {
-                    if (Enum.TryParse<ErrorHandling>(stringValue, ignoreCase: true, out var parsed))
-                    {
-                        base[keyword] = parsed;
-                    }
-                    else
+                    if (!Enum.TryParse<ErrorHandling>(stringValue, ignoreCase: true, out var parsed))
                     {
                         throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
+                    }
+                }
+            }
+            else if (string.Equals(keyword, ErrorHandlingThrowOnRleDecompressionErrorName, comparer))
+            {
+                if (value is string stringValue)
+                {
+                    if (!bool.TryParse(stringValue, out var parsed))
+                    {
+                        throw new ArgumentException($"{stringValue} is not a valid bool.");
                     }
                 }
             }
@@ -163,19 +222,81 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
             {
                 if (value is string stringValue)
                 {
-                    if (Enum.TryParse<RleSizeMismatchBehavior>(stringValue, ignoreCase: true, out var parsed))
+                    if (!Enum.TryParse<RleSizeMismatchBehavior>(stringValue, ignoreCase: true, out var parsed))
                     {
-                        base[keyword] = parsed;
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
+                        throw new ArgumentException($"{stringValue} is not a valid {nameof(RleSizeMismatchBehavior)}.", nameof(value));
                     }
                 }
             }
+            else if (string.Equals(keyword, ContentEncodingName, comparer)
+                || string.Equals(keyword, MetadataEncodingName, comparer))
+            {
+                if (value is string stringValue)
+                {
+                    bool hasEncoding =
+                        Encoding.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer))
+                        || CodePagesEncodingProvider.Instance.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer));
 
-            base[keyword] = value;
+                    if (!hasEncoding)
+                    {
+                        throw new ArgumentException($"{stringValue} is not recognized as a valid encoding.");
+                    }
+                }
+                else if (value is Encoding encoding)
+                {
+                    base[keyword] = encoding.WebName;
+                    return;
+                }
+            }
+            
+            base[keyword] = value; 
         }
+    }
+
+    /// <summary>
+    /// Gets a <see cref="EncodingOptions"/> instance based on the values set in the connection string.
+    /// </summary>
+    /// <returns></returns>
+    public EncodingOptions GetEncodingOptions()
+    {
+        var def = EncodingOptions.Default;
+
+        return def with
+        {
+            ContentEncoding = ContentEncoding ?? def.ContentEncoding,
+            MetadataEncoding = MetadataEncoding ?? def.MetadataEncoding,
+        };
+    }
+
+    /// <summary>
+    /// Gets a <see cref="ErrorHandlingOptions"/> instance based on the values set in the connection string.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public ErrorHandlingOptions GetErrorHandlingOptions()
+    {
+        static TpsParser.RleSizeMismatchBehavior? Map(RleSizeMismatchBehavior? b) => b switch
+        {
+            RleSizeMismatchBehavior.Throw => TpsParser.RleSizeMismatchBehavior.Throw,
+            RleSizeMismatchBehavior.Skip => TpsParser.RleSizeMismatchBehavior.Skip,
+            RleSizeMismatchBehavior.Allow => TpsParser.RleSizeMismatchBehavior.Allow,
+            null => null,
+            _ => throw new NotImplementedException()
+        };
+
+        ErrorHandlingOptions def = ErrorHandling switch
+        {
+            null or Data.ErrorHandling.Default => ErrorHandlingOptions.Default,
+            Data.ErrorHandling.Strict => ErrorHandlingOptions.Strict,
+            _ => throw new NotImplementedException()
+        };
+
+        return def with
+        {
+            ThrowOnRleDecompressionError = ErrorHandlingThrowOnRleDecompressionError ?? def.ThrowOnRleDecompressionError,
+            RleUndersizedDecompressionBehavior = Map(ErrorHandlingRleUndersizedDecompressionBehavior) ?? def.RleUndersizedDecompressionBehavior,
+            RleOversizedDecompressionBehavior = Map(ErrorHandlingRleOversizedDecompressionBehavior) ?? def.RleOversizedDecompressionBehavior
+        };
     }
 }
 

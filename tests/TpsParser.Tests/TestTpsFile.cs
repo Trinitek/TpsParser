@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using TpsParser.TypeModel;
 
-namespace TpsParser.Tests.Tps;
+namespace TpsParser.Tests;
 
 [TestFixture]
 internal sealed class TestTpsFile

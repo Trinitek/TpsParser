@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace TpsParser.Tests.Tps;
+namespace TpsParser.Tests;
 
 [TestFixture]
 internal sealed class TestKey

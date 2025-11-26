@@ -44,7 +44,7 @@ public sealed record TpsFileHeader
     public int FileLength2 { get; init; }
 
     /// <summary>
-    /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' for all TPS files.
+    /// Gets the magic number signature in the TopSpeed file header. This should be 'tOpS' ASCII for all TPS files.
     /// </summary>
     public required string MagicNumber { get; init; }
 

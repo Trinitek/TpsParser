@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Text;
 
-namespace TpsParser.Tests.Tps;
+namespace TpsParser.Tests;
 
 [TestFixture]
 internal sealed class TestTpsBlock

@@ -15,7 +15,20 @@ public class TpsDbConnection : DbConnection
     /// Gets or sets a string used to open the connection.
     /// </summary>
     [AllowNull]
-    public override string ConnectionString { get; set; } = string.Empty;
+    public override string ConnectionString
+    {
+        get => _connectionString;
+        set
+        {
+            if (State != ConnectionState.Closed)
+            {
+                throw new InvalidOperationException("Cannot set the connection string on a connection that is not closed.");
+            }
+
+            _connectionString = value ?? string.Empty;
+        }
+    }
+    private string _connectionString = string.Empty;
 
     /// <summary>
     /// Gets the data source. Always an empty string.
@@ -79,27 +92,10 @@ public class TpsDbConnection : DbConnection
         throw new NotSupportedException("Transactions are not supported.");
     }
     
-    /// <summary>
-    /// Changes the current database. The database name is the folder path that contains the TPS file.
-    /// </summary>
-    /// <param name="databaseName"></param>
-    /// <exception cref="DirectoryNotFoundException"></exception>
+    /// <inheritdoc/>
     public override void ChangeDatabase(string? databaseName)
     {
-        // Do nothing if the folder path is exactly the same.
-        // Take care not to do case-insensitive matching; we might be running on a case-sensitive filesystem.
-        if (_database == databaseName)
-        {
-            return;
-        }
-
-        if (!Directory.Exists(databaseName))
-        {
-            throw new DirectoryNotFoundException($"Cannot switch database folder to new path because it doesn't exist: {databaseName}");
-        }
-
-        _database = databaseName;
-        _currentFileContext = null;
+        throw new NotSupportedException("Changing databases is not supported.");
     }
 
     /// <inheritdoc/>

@@ -254,7 +254,7 @@ public class TpsDataReader : DbDataReader
     public override bool IsClosed => !_isDisposed;
 
     /// <inheritdoc/>
-    public override int RecordsAffected => 0;
+    public override int RecordsAffected => -1;
 
     private int FieldCountCore => ColumnDefinitions.Count + VIRTUAL_FIELDS_TOTAL;
 

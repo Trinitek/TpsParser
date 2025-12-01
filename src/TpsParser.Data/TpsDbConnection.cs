@@ -45,16 +45,16 @@ public class TpsDbConnection : DbConnection
     private TpsFileConnectionContext? _currentFileContext = null;
 
     /// <summary>
-    /// Instantiates a new connection.
+    /// Instantiates a new <see cref="TpsDbConnection"/>.
     /// </summary>
     public TpsDbConnection()
     { }
 
     /// <summary>
-    /// Instantiates a new connection using a connection string.
+    /// Instantiates a new <see cref="TpsDbConnection"/>.
     /// </summary>
     /// <param name="connectionString"></param>
-    public TpsDbConnection(string connectionString)
+    public TpsDbConnection(string? connectionString)
     {
         ConnectionString = connectionString;
     }
@@ -78,7 +78,7 @@ public class TpsDbConnection : DbConnection
     {
         throw new NotSupportedException("Transactions are not supported.");
     }
-
+    
     /// <summary>
     /// Changes the current database. The database name is the folder path that contains the TPS file.
     /// </summary>

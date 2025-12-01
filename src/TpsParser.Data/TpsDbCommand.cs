@@ -37,6 +37,32 @@ public partial class TpsDbCommand : DbCommand
     /// <inheritdoc/>
     protected override DbTransaction? DbTransaction { get; set; }
 
+    /// <summary>
+    /// Instantiates a new <see cref="TpsDbCommand"/>.
+    /// </summary>
+    public TpsDbCommand()
+    { }
+
+    /// <summary>
+    /// Instantiates a new <see cref="TpsDbCommand"/>.
+    /// </summary>
+    /// <param name="commandText"></param>
+    public TpsDbCommand(string? commandText)
+    {
+        CommandText = commandText;
+    }
+
+    /// <summary>
+    /// Instantiates a new <see cref="TpsDbCommand"/>.
+    /// </summary>
+    /// <param name="commandText"></param>
+    /// <param name="connection"></param>
+    public TpsDbCommand(string? commandText, TpsDbConnection? connection)
+    {
+        CommandText = commandText;
+        DbConnection = connection;
+    }
+
     private TpsDbConnection AssertConnectionIsOpen()
     {
         if (DbConnection is null)

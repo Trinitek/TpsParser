@@ -48,14 +48,7 @@ public readonly struct ClaPString : IClaString, IEquatable<ClaPString>
         return ToBoolean(EncodingOptions.Default.ContentEncoding);
     }
 
-    /// <summary>
-    /// Returns <see langword="true"/> if the string's length is greater than zero and is not entirely filled with SPACE as padding.
-    /// If <see cref="StringValue"/> is available, <paramref name="encoding"/> is ignored.
-    /// Otherwise, the SPACE character is determined using the specified encoding against <see cref="ContentValue"/>.
-    /// </summary>
-    /// <param name="encoding"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
+    /// <inheritdoc/>
     public bool ToBoolean(Encoding encoding)
     {
         return ClaStringCommon.ToBoolean(StringValue, ContentValue, encoding);

@@ -35,7 +35,7 @@ internal sealed class ErrorHandlingRleOversizedDecompressionBehavior
         var b = new TpsConnectionStringBuilder();
 
         Assert.That(
-            () => b[TpsConnectionStringBuilder.ErrorHandlingRleOversizedDecompressionBehaviorName] = "foo",
+            () => b["ErrorHandling.RleOversizedDecompressionBehavior"] = "foo",
             Throws.Exception.InstanceOf<ArgumentException>()
             .With.Message.Contains("is not a valid")
             .With.Message.Contains(nameof(RleSizeMismatchBehavior)));
@@ -46,7 +46,7 @@ internal sealed class ErrorHandlingRleOversizedDecompressionBehavior
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ErrorHandlingRleOversizedDecompressionBehaviorName] = null
+            ["ErrorHandling.RleOversizedDecompressionBehavior"] = null
         };
 
         Assert.That(b.ErrorHandlingRleOversizedDecompressionBehavior, Is.Null);
@@ -57,7 +57,7 @@ internal sealed class ErrorHandlingRleOversizedDecompressionBehavior
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ErrorHandlingRleOversizedDecompressionBehaviorName] = "Throw"
+            ["ErrorHandling.RleOversizedDecompressionBehavior"] = "Throw"
         };
 
         Assert.That(b.ErrorHandlingRleOversizedDecompressionBehavior, Is.EqualTo(RleSizeMismatchBehavior.Throw));
@@ -68,7 +68,7 @@ internal sealed class ErrorHandlingRleOversizedDecompressionBehavior
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ErrorHandlingRleOversizedDecompressionBehaviorName] = RleSizeMismatchBehavior.Throw
+            ["ErrorHandling.RleOversizedDecompressionBehavior"] = RleSizeMismatchBehavior.Throw
         };
 
         Assert.That(b.ErrorHandlingRleOversizedDecompressionBehavior, Is.EqualTo(RleSizeMismatchBehavior.Throw));

@@ -34,7 +34,7 @@ internal sealed class MetadataEncoding
         var b = new TpsConnectionStringBuilder();
 
         Assert.That(
-            () => b[TpsConnectionStringBuilder.MetadataEncodingName] = "foo",
+            () => b["MetadataEncoding"] = "foo",
             Throws.Exception.InstanceOf<ArgumentException>()
             .With.Message.Contains("is not recognized as a valid encoding"));
     }
@@ -44,7 +44,7 @@ internal sealed class MetadataEncoding
     {
         var b = new TpsConnectionStringBuilder()
         {
-            [TpsConnectionStringBuilder.MetadataEncodingName] = null
+            ["MetadataEncoding"] = null
         };
 
         Assert.That(b.MetadataEncoding, Is.Null);
@@ -55,7 +55,7 @@ internal sealed class MetadataEncoding
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.MetadataEncodingName] = "us-ascii"
+            ["MetadataEncoding"] = "us-ascii"
         };
 
         Assert.That(b.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
@@ -66,7 +66,7 @@ internal sealed class MetadataEncoding
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.MetadataEncodingName] = Encoding.ASCII
+            ["MetadataEncoding"] = Encoding.ASCII
         };
 
         Assert.That(b.MetadataEncoding, Is.EqualTo(Encoding.ASCII));

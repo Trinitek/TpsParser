@@ -34,7 +34,7 @@ internal sealed class ErrorHandling
         var b = new TpsConnectionStringBuilder();
 
         Assert.That(
-            () => b[TpsConnectionStringBuilder.ErrorHandlingName] = "foo",
+            () => b["ErrorHandling"] = "foo",
             Throws.Exception.InstanceOf<ArgumentException>()
             .With.Message.Contains("is not a valid")
             .With.Message.Contains(nameof(ErrorHandling)));
@@ -45,7 +45,7 @@ internal sealed class ErrorHandling
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ErrorHandlingName] = null
+            ["ErrorHandling"] = null
         };
 
         Assert.That(b.ErrorHandling, Is.Null);
@@ -56,7 +56,7 @@ internal sealed class ErrorHandling
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ErrorHandlingName] = "Default"
+            ["ErrorHandling"] = "Default"
         };
 
         Assert.That(b.ErrorHandling, Is.EqualTo(Data.ErrorHandling.Default));
@@ -67,7 +67,7 @@ internal sealed class ErrorHandling
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ErrorHandlingName] = Data.ErrorHandling.Default
+            ["ErrorHandling"] = Data.ErrorHandling.Default
         };
 
         Assert.That(b.ErrorHandling, Is.EqualTo(Data.ErrorHandling.Default));

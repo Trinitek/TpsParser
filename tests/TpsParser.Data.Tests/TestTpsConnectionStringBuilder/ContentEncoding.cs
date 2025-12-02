@@ -34,9 +34,9 @@ internal sealed class ContentEncoding
         var b = new TpsConnectionStringBuilder();
 
         Assert.That(
-            () => b[TpsConnectionStringBuilder.ContentEncodingName] = "foo",
+            () => b["ContentEncoding"] = "foo",
             Throws.Exception.InstanceOf<ArgumentException>()
-            .With.Message.Contains("is not recognized as a valid encoding"));
+            .With.Message.Contains("not a supported encoding name"));
     }
 
     [Test]
@@ -44,7 +44,7 @@ internal sealed class ContentEncoding
     {
         var b = new TpsConnectionStringBuilder()
         {
-            [TpsConnectionStringBuilder.ContentEncodingName] = null
+            ["ContentEncoding"] = null
         };
 
         Assert.That(b.ContentEncoding, Is.Null);
@@ -55,7 +55,7 @@ internal sealed class ContentEncoding
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ContentEncodingName] = "us-ascii"
+            ["ContentEncoding"] = "us-ascii"
         };
 
         Assert.That(b.ContentEncoding, Is.EqualTo(Encoding.ASCII));
@@ -66,7 +66,7 @@ internal sealed class ContentEncoding
     {
         var b = new TpsConnectionStringBuilder
         {
-            [TpsConnectionStringBuilder.ContentEncodingName] = Encoding.ASCII
+            ["ContentEncoding"] = Encoding.ASCII
         };
 
         Assert.That(b.ContentEncoding, Is.EqualTo(Encoding.ASCII));

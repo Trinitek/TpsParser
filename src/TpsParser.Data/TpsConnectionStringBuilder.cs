@@ -1,15 +1,82 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Globalization;
 using System.Text;
 
 namespace TpsParser.Data;
+
+// Referencing Microsoft.Data.Sqlite SqliteConnectionStringBuilder implementation
+// https://github.com/dotnet/efcore/blob/9a868352299586a7e23b736d945f2931b1e822bf/src/Microsoft.Data.Sqlite.Core/SqliteConnectionStringBuilder.cs
 
 /// <summary>
 /// A strongly-typed connection string builder for <see cref="TpsDbConnection"/> instances.
 /// </summary>
 public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringBuilder
 {
+    private const string DataSourceKeyword = "Data Source";
+    private const string DataSourceNoSpaceKeyword = "DataSource";
+    private const string FolderKeyword = "Folder";
+    private const string ContentEncodingKeyword = "ContentEncoding";
+    private const string MetadataEncodingKeyword = "MetadataEncoding";
+    private const string ErrorHandlingKeyword = "ErrorHandling";
+    private const string ErrorHandlingThrowOnRleDecompressionErrorKeyword = "ErrorHandling.ThrowOnRleDecompressionError";
+    private const string ErrorHandlingRleOversizedDecompressionBehaviorKeyword = "ErrorHandling.RleOversizedDecompressionBehavior";
+    private const string ErrorHandlingRleUndersizedDecompressionBehaviorKeyword = "ErrorHandling.RleUndersizedDecompressionBehavior";
+
+    private enum Keywords
+    {
+        DataSource,
+        ContentEncoding,
+        MetadataEncoding,
+        ErrorHandling,
+        ErrorHandlingThrowOnRleDecompressionError,
+        ErrorHandlingRleOversizedDecompressionBehavior,
+        ErrorHandlingRleUndersizedDecompressionBehavior,
+    }
+
+    private static readonly IReadOnlyList<string> _validKeywords;
+    private static readonly IReadOnlyDictionary<string, Keywords> _keywords;
+
+    private string _dataSource = string.Empty;
+    private Encoding? _contentEncoding = null;
+    private Encoding? _metadataEncoding = null;
+    private ErrorHandling? _errorHandling = null;
+    private bool? _errorHandlingThrowOnRleDecompressionError = null;
+    private RleSizeMismatchBehavior? _errorHandlingRleOversizedDecompressionBehavior = null;
+    private RleSizeMismatchBehavior? _errorHandlingRleUndersizedDecompressionBehavior = null;
+
+    static TpsConnectionStringBuilder()
+    {
+        var validKeywords = new string[7];
+        validKeywords[(int)Keywords.DataSource] = DataSourceKeyword;
+        validKeywords[(int)Keywords.ContentEncoding] = ContentEncodingKeyword;
+        validKeywords[(int)Keywords.MetadataEncoding] = MetadataEncodingKeyword;
+        validKeywords[(int)Keywords.ErrorHandling] = ErrorHandlingKeyword;
+        validKeywords[(int)Keywords.ErrorHandlingThrowOnRleDecompressionError] = ErrorHandlingThrowOnRleDecompressionErrorKeyword;
+        validKeywords[(int)Keywords.ErrorHandlingRleOversizedDecompressionBehavior] = ErrorHandlingRleOversizedDecompressionBehaviorKeyword;
+        validKeywords[(int)Keywords.ErrorHandlingRleUndersizedDecompressionBehavior] = ErrorHandlingRleUndersizedDecompressionBehaviorKeyword;
+        _validKeywords = validKeywords;
+
+        _keywords = new Dictionary<string, Keywords>(9, StringComparer.OrdinalIgnoreCase)
+        {
+            [DataSourceKeyword] = Keywords.DataSource,
+            [ContentEncodingKeyword] = Keywords.ContentEncoding,
+            [MetadataEncodingKeyword] = Keywords.MetadataEncoding,
+            [ErrorHandlingKeyword] = Keywords.ErrorHandling,
+            [ErrorHandlingThrowOnRleDecompressionErrorKeyword] = Keywords.ErrorHandlingThrowOnRleDecompressionError,
+            [ErrorHandlingRleOversizedDecompressionBehaviorKeyword] = Keywords.ErrorHandlingRleOversizedDecompressionBehavior,
+            [ErrorHandlingRleUndersizedDecompressionBehaviorKeyword] = Keywords.ErrorHandlingRleUndersizedDecompressionBehavior,
+
+            // Aliases
+            [DataSourceNoSpaceKeyword] = Keywords.DataSource,
+            [FolderKeyword] = Keywords.DataSource,
+        };
+    }
+
     /// <summary>
     /// Instantiates a new connection string builder.
     /// </summary>
@@ -19,82 +86,205 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     /// <summary>
     /// Instantiates a new connection string builder from an existing connection string.
     /// </summary>
-    /// <param name="ConnectionString"></param>
-    public TpsConnectionStringBuilder(string? ConnectionString)
+    /// <param name="connectionString"></param>
+    public TpsConnectionStringBuilder(string? connectionString)
     {
-        this.ConnectionString = ConnectionString;
+        ConnectionString = connectionString;
     }
 
-    private bool TryGetEnumValue<T>(string key, [NotNullWhen(true)] out T? value) where T : struct, Enum
+    private object? GetAt(Keywords index) => index switch
     {
-        if (!TryGetValue(key, out object? maybeObject))
-        {
-            value = null;
-            return false;
-        }
+        Keywords.DataSource => DataSource,
+        Keywords.ContentEncoding => ContentEncoding,
+        Keywords.MetadataEncoding => MetadataEncoding,
+        Keywords.ErrorHandling => ErrorHandling,
+        Keywords.ErrorHandlingThrowOnRleDecompressionError => ErrorHandlingThrowOnRleDecompressionError,
+        Keywords.ErrorHandlingRleOversizedDecompressionBehavior => ErrorHandlingRleOversizedDecompressionBehavior,
+        Keywords.ErrorHandlingRleUndersizedDecompressionBehavior => ErrorHandlingRleUndersizedDecompressionBehavior,
+        _ => throw new NotImplementedException($"Unexpected keyword index {index}.")
+    };
 
-        if (maybeObject is T tValue)
-        {
-            value = tValue;
-            return true;
-        }
+    private static Keywords GetIndex(string keyword) =>
+        !_keywords.TryGetValue(keyword, out var index)
+        ? throw new ArgumentException($"Keyword not supported: '{keyword}'", nameof(keyword))
+        : index;
 
-        if (maybeObject is not string sValue)
-        {
-            value = null;
-            return false;
-        }
+    /// <summary>
+    /// Gets a collection containing the keys used by the connection string.
+    /// </summary>
+    public override ICollection Keys => new ReadOnlyCollection<string>((string[])_validKeywords);
 
-        if (Enum.TryParse(sValue, out T parsedTValue))
+    /// <summary>
+    /// Gets a collection containing the values used by the connection string.
+    /// </summary>
+    public override ICollection Values
+    {
+        get
         {
-            value = parsedTValue;
-            return true;
-        }
+            var values = new object?[_validKeywords.Count];
+            for (int i = 0; i < _validKeywords.Count; i++)
+            {
+                values[i] = GetAt((Keywords)i);
+            }
 
-        value = null;
-        return false;
+            return new ReadOnlyCollection<object?>(values);
+        }
     }
 
-    private bool TryGetEncodingValue(string key, [NotNullWhen(true)] out Encoding? value)
+    /// <summary>
+    /// Determines whether the specified key should be serialized into the connection string.
+    /// </summary>
+    /// <param name="keyword"></param>
+    /// <returns></returns>
+    public override bool ShouldSerialize(string keyword) =>
+        _keywords.TryGetValue(keyword, out var index)
+        && base.ShouldSerialize(_validKeywords[(int)index]);
+
+    /// <summary>
+    /// Gets the value of the specified key if it is used.
+    /// </summary>
+    /// <param name="keyword"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+#pragma warning disable CS8765 // Some properties like "ContentEncoding" may return null by design.
+    public override bool TryGetValue(string keyword, out object? value)
+#pragma warning restore CS8765
     {
-        if (!TryGetValue(key, out object? maybeObject))
+        if (!_keywords.TryGetValue(keyword, out var index))
         {
             value = null;
             return false;
         }
 
-        if (maybeObject is Encoding encoding)
-        {
-            value = encoding;
-            return true;
-        }
+        value = GetAt(index);
+        return true;
+    }
 
-        if (maybeObject is not string stringValue)
+    private void Reset(Keywords index)
+    {
+        switch (index)
         {
-            value = null;
+            case Keywords.DataSource:
+                _dataSource = string.Empty;
+                return;
+            case Keywords.ContentEncoding:
+                _contentEncoding = null;
+                return;
+            case Keywords.MetadataEncoding:
+                _metadataEncoding = null;
+                return;
+            case Keywords.ErrorHandling:
+                _errorHandling = null;
+                return;
+            case Keywords.ErrorHandlingThrowOnRleDecompressionError:
+                _errorHandlingThrowOnRleDecompressionError = null;
+                return;
+            case Keywords.ErrorHandlingRleOversizedDecompressionBehavior:
+                _errorHandlingRleOversizedDecompressionBehavior = null;
+                return;
+            case Keywords.ErrorHandlingRleUndersizedDecompressionBehavior:
+                _errorHandlingRleUndersizedDecompressionBehavior = null;
+                return;
+            default:
+                throw new NotImplementedException($"Unexpected keyword {index}.");
+        }
+    }
+
+    /// <summary>
+    /// Clears the contents of the builder.
+    /// </summary>
+    public override void Clear()
+    {
+        base.Clear();
+
+        for (int i = 0; i < _validKeywords.Count; i++)
+        {
+            Reset((Keywords)i);
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the specified key is used by the connection string.
+    /// </summary>
+    /// <param name="keyword"></param>
+    /// <returns></returns>
+    public override bool ContainsKey(string keyword) =>
+        _keywords.ContainsKey(keyword);
+
+    /// <summary>
+    /// Removes the specified key and its value from the connection string.
+    /// </summary>
+    /// <param name="keyword"></param>
+    /// <returns></returns>
+    public override bool Remove(string keyword)
+    {
+        if (!_keywords.TryGetValue(keyword, out var index)
+            || !base.Remove(_validKeywords[(int)index]))
+        {
             return false;
         }
 
-        // For all ANSI, OEM, and exotic encodings including Windows-1252
-        Encoding? maybeCodePagesEncoding = CodePagesEncodingProvider.Instance.GetEncoding(stringValue);
+        Reset(index);
 
-        if (maybeCodePagesEncoding is not null)
+        return true;
+    }
+
+    private static T ConvertToEnum<T>(object value)
+        where T : struct, Enum
+    {
+        if (value is string stringValue)
         {
-            value = maybeCodePagesEncoding;
-            return true;
+            return Enum.Parse<T>(stringValue, ignoreCase: true);
         }
 
-        // For UTF-8, US-ASCII, ISO-8859-1, etc.
-        try
+        T enumValue;
+
+        if (value is T tt)
         {
-            value = Encoding.GetEncoding(stringValue);
-            return true;
+            enumValue = tt;
         }
-        catch (ArgumentException)
+        else if (value.GetType().IsEnum)
         {
-            value = null;
-            return false;
+            throw new ArgumentException($"Failed to convert '{value}' to enum of type '{typeof(T)}'.", nameof(value));
         }
+        else
+        {
+            enumValue = (T)Enum.ToObject(typeof(T), value);
+        }
+
+        if (!Enum.IsDefined(enumValue))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(value),
+                actualValue: value,
+                message: $"Invalid enum value '{enumValue}' for enum type '{typeof(T)}'.");
+        }
+
+        return enumValue;
+    }
+
+    private static Encoding ConvertToEncoding(object value)
+    {
+        if (value is Encoding ee)
+        {
+            return ee;
+        }
+        else if (value is string encodingWebName)
+        {
+            // For all ANSI, OEM, and exotic encodings including Windows-1252
+            Encoding? maybeCodePagesEncoding = CodePagesEncodingProvider.Instance.GetEncoding(encodingWebName);
+
+            if (maybeCodePagesEncoding is not null)
+            {
+                return maybeCodePagesEncoding;
+            }
+
+            // For UTF-8, US-ASCII, ISO-8859-1, etc.
+            // Will throw if no encoding is found.
+            return Encoding.GetEncoding(encodingWebName);
+        }
+
+        throw new ArgumentException($"Failed to convert '{value}' to an encoding or encoding WebName.", nameof(value));
     }
 
     /// <summary>
@@ -102,156 +292,180 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     /// </summary>
     public ErrorHandling? ErrorHandling
     {
-        get => TryGetEnumValue(ErrorHandlingName, out ErrorHandling? value)
-            ? value
-            : null;
-        set => this[ErrorHandlingName] = value;
+        get => _errorHandling;
+        set => this[ErrorHandlingKeyword] = _errorHandling = value;
     }
-    internal const string ErrorHandlingName = "ErrorHandling";
-
+    
     /// <inheritdoc cref="ErrorHandlingOptions.ThrowOnRleDecompressionError"/>
     public bool? ErrorHandlingThrowOnRleDecompressionError
     {
-        get
-        {
-            if (!TryGetValue(ErrorHandlingThrowOnRleDecompressionErrorName, out object? maybeValue))
-            {
-                return null;
-            }
-            if (maybeValue is bool boolValue)
-            {
-                return boolValue;
-            }
-            if (bool.TryParse(maybeValue as string, out boolValue))
-            {
-                return boolValue;
-            }
-            
-            return null;
-        }
-        set => this[ErrorHandlingThrowOnRleDecompressionErrorName] = value;
+        get => _errorHandlingThrowOnRleDecompressionError;
+        set => this[ErrorHandlingThrowOnRleDecompressionErrorKeyword] = _errorHandlingThrowOnRleDecompressionError = value;
     }
-    internal const string ErrorHandlingThrowOnRleDecompressionErrorName = "ErrorHandling.ThrowOnRleDecompressionError";
-
+    
     /// <inheritdoc cref="ErrorHandlingOptions.RleUndersizedDecompressionBehavior"/>
     public RleSizeMismatchBehavior? ErrorHandlingRleUndersizedDecompressionBehavior
     {
-        get => TryGetEnumValue(ErrorHandlingRleUndersizedDecompressionBehaviorName, out RleSizeMismatchBehavior? value)
-            ? value
-            : null;
-        set => this[ErrorHandlingRleUndersizedDecompressionBehaviorName] = value;
+        get => _errorHandlingRleUndersizedDecompressionBehavior;
+        set => base[ErrorHandlingRleUndersizedDecompressionBehaviorKeyword] = _errorHandlingRleUndersizedDecompressionBehavior = value;
     }
-    internal const string ErrorHandlingRleUndersizedDecompressionBehaviorName = "ErrorHandling.RleUndersizedDecompressionBehavior";
-
+    
     /// <inheritdoc cref="ErrorHandlingOptions.RleOversizedDecompressionBehavior"/>
     public RleSizeMismatchBehavior? ErrorHandlingRleOversizedDecompressionBehavior
     {
-        get => TryGetEnumValue(ErrorHandlingRleOversizedDecompressionBehaviorName, out RleSizeMismatchBehavior? value)
-            ? value
-            : null;
-        set => this[ErrorHandlingRleOversizedDecompressionBehaviorName] = value;
+        get => _errorHandlingRleOversizedDecompressionBehavior;
+        set => this[ErrorHandlingRleOversizedDecompressionBehaviorKeyword] = _errorHandlingRleOversizedDecompressionBehavior = value;
     }
-    internal const string ErrorHandlingRleOversizedDecompressionBehaviorName = "ErrorHandling.RleOversizedDecompressionBehavior";
-
+    
     /// <inheritdoc cref="EncodingOptions.ContentEncoding"/>
     public Encoding? ContentEncoding
     {
-        get => TryGetEncodingValue(ContentEncodingName, out Encoding? value)
-            ? value
-            : null;
-        set => this[ContentEncodingName] = value?.WebName;
+        get => _contentEncoding;
+        set => base[ContentEncodingKeyword] = _contentEncoding = value;
     }
-    internal const string ContentEncodingName = "ContentEncoding";
-
+    
     /// <inheritdoc cref="EncodingOptions.MetadataEncoding"/>
     public Encoding? MetadataEncoding
     {
-        get => TryGetEncodingValue(MetadataEncodingName, out Encoding? value)
-            ? value
-            : null;
-        set => this[MetadataEncodingName] = value?.WebName;
+        get => _metadataEncoding;
+        set => base[MetadataEncodingKeyword] = _metadataEncoding = value;
     }
-    internal const string MetadataEncodingName = "MetadataEncoding";
 
     /// <summary>
-    /// Gets or sets the folder from which to read. The folder should contain one or more TPS files.
+    /// Gets or sets the TPS folder path.
     /// </summary>
-    public string? Folder
-    {
-        get => TryGetValue(FolderName, out object? maybeValue) && maybeValue is string value
-            ? value
-            : null;
-        set => this[nameof(Folder)] = value;
-    }
-    internal const string FolderName = "Folder";
-
-    /// <inheritdoc/>
     [AllowNull]
-    public override object this[string keyword]
+    public string DataSource
     {
-        get
-        {
-            return base[keyword];
-        }
+        get => _dataSource;
+        set => base[DataSourceKeyword] = _dataSource = value ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Alias of <see cref="DataSource"/>. Gets or sets the TPS folder path.
+    /// </summary>
+    [AllowNull]
+    public string Folder
+    {
+        get => DataSource;
+        set => DataSource = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the value associated with the specified key.
+    /// </summary>
+    /// <param name="keyword"></param>
+    /// <returns></returns>
+    public override object? this[string keyword]
+    {
+#pragma warning disable CS8764 // Some properties like "ContentEncoding" may return null by design.
+        get => GetAt(GetIndex(keyword));
+#pragma warning restore CS8764
         set
         {
-            var comparer = StringComparison.InvariantCultureIgnoreCase;
+            if (value == null)
+            {
+                Remove(keyword);
+                return;
+            }
 
-            if (string.Equals(keyword, ErrorHandlingName, comparer))
+            switch (GetIndex(keyword))
             {
-                if (value is string stringValue)
-                {
-                    if (!Enum.TryParse<ErrorHandling>(stringValue, ignoreCase: true, out var parsed))
-                    {
-                        throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
-                    }
-                }
-            }
-            else if (string.Equals(keyword, ErrorHandlingThrowOnRleDecompressionErrorName, comparer))
-            {
-                if (value is string stringValue)
-                {
-                    if (!bool.TryParse(stringValue, out var parsed))
-                    {
-                        throw new ArgumentException($"{stringValue} is not a valid bool.");
-                    }
-                }
-            }
-            else if (string.Equals(keyword, ErrorHandlingRleUndersizedDecompressionBehaviorName, comparer)
-                || string.Equals(keyword, ErrorHandlingRleOversizedDecompressionBehaviorName, comparer))
-            {
-                if (value is string stringValue)
-                {
-                    if (!Enum.TryParse<RleSizeMismatchBehavior>(stringValue, ignoreCase: true, out var parsed))
-                    {
-                        throw new ArgumentException($"{stringValue} is not a valid {nameof(RleSizeMismatchBehavior)}.", nameof(value));
-                    }
-                }
-            }
-            else if (string.Equals(keyword, ContentEncodingName, comparer)
-                || string.Equals(keyword, MetadataEncodingName, comparer))
-            {
-                if (value is string stringValue)
-                {
-                    bool hasEncoding =
-                        Encoding.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer))
-                        || CodePagesEncodingProvider.Instance.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer));
-
-                    if (!hasEncoding)
-                    {
-                        throw new ArgumentException($"{stringValue} is not recognized as a valid encoding.");
-                    }
-                }
-                else if (value is Encoding encoding)
-                {
-                    base[keyword] = encoding.WebName;
+                case Keywords.DataSource:
+                    DataSource = Convert.ToString(value, CultureInfo.InvariantCulture);
                     return;
-                }
+                case Keywords.ContentEncoding:
+                    ContentEncoding = ConvertToEncoding(value);
+                    return;
+                case Keywords.MetadataEncoding:
+                    MetadataEncoding = ConvertToEncoding(value);
+                    return;
+                case Keywords.ErrorHandling:
+                    ErrorHandling = ConvertToEnum<ErrorHandling>(value);
+                    return;
+                case Keywords.ErrorHandlingThrowOnRleDecompressionError:
+                    ErrorHandlingThrowOnRleDecompressionError = Convert.ToBoolean(value);
+                    return;
+                case Keywords.ErrorHandlingRleOversizedDecompressionBehavior:
+                    ErrorHandlingRleOversizedDecompressionBehavior = ConvertToEnum<RleSizeMismatchBehavior>(value);
+                    return;
+                case Keywords.ErrorHandlingRleUndersizedDecompressionBehavior:
+                    ErrorHandlingRleUndersizedDecompressionBehavior = ConvertToEnum<RleSizeMismatchBehavior>(value);
+                    return;
+                default:
+                    Debug.Fail($"Unexpected keyword: {keyword}");
+                    return;
             }
-            
-            base[keyword] = value; 
         }
     }
+
+    ///// <inheritdoc/>
+    //[AllowNull]
+    //public override object this[string keyword]
+    //{
+    //    get
+    //    {
+    //        return base[keyword];
+    //    }
+    //    set
+    //    {
+    //        var comparer = StringComparison.InvariantCultureIgnoreCase;
+    //
+    //        if (string.Equals(keyword, ErrorHandlingName, comparer))
+    //        {
+    //            if (value is string stringValue)
+    //            {
+    //                if (!Enum.TryParse<ErrorHandling>(stringValue, ignoreCase: true, out var parsed))
+    //                {
+    //                    throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
+    //                }
+    //            }
+    //        }
+    //        else if (string.Equals(keyword, ErrorHandlingThrowOnRleDecompressionErrorName, comparer))
+    //        {
+    //            if (value is string stringValue)
+    //            {
+    //                if (!bool.TryParse(stringValue, out var parsed))
+    //                {
+    //                    throw new ArgumentException($"{stringValue} is not a valid bool.");
+    //                }
+    //            }
+    //        }
+    //        else if (string.Equals(keyword, ErrorHandlingRleUndersizedDecompressionBehaviorName, comparer)
+    //            || string.Equals(keyword, ErrorHandlingRleOversizedDecompressionBehaviorName, comparer))
+    //        {
+    //            if (value is string stringValue)
+    //            {
+    //                if (!Enum.TryParse<RleSizeMismatchBehavior>(stringValue, ignoreCase: true, out var parsed))
+    //                {
+    //                    throw new ArgumentException($"{stringValue} is not a valid {nameof(RleSizeMismatchBehavior)}.", nameof(value));
+    //                }
+    //            }
+    //        }
+    //        else if (string.Equals(keyword, ContentEncodingName, comparer)
+    //            || string.Equals(keyword, MetadataEncodingName, comparer))
+    //        {
+    //            if (value is string stringValue)
+    //            {
+    //                bool hasEncoding =
+    //                    Encoding.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer))
+    //                    || CodePagesEncodingProvider.Instance.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer));
+    //
+    //                if (!hasEncoding)
+    //                {
+    //                    throw new ArgumentException($"{stringValue} is not recognized as a valid encoding.");
+    //                }
+    //            }
+    //            else if (value is Encoding encoding)
+    //            {
+    //                base[keyword] = encoding.WebName;
+    //                return;
+    //            }
+    //        }
+    //        
+    //        base[keyword] = value; 
+    //    }
+    //}
 
     /// <summary>
     /// Gets a <see cref="EncodingOptions"/> instance based on the values set in the connection string.

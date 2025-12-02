@@ -34,7 +34,7 @@ internal sealed class ErrorHandlingThrowOnRleDecompressionError
         var b = new TpsConnectionStringBuilder();
 
         Assert.That(
-            () => b[TpsConnectionStringBuilder.ErrorHandlingThrowOnRleDecompressionErrorName] = "foo",
+            () => b["ErrorHandling.ThrowOnRleDecompressionError"] = "foo",
             Throws.Exception.InstanceOf<ArgumentException>()
             .With.Message.Contains("is not a valid")
             .With.Message.Contains("bool"));

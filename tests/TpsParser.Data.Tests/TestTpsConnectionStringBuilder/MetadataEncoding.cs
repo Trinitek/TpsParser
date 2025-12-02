@@ -11,7 +11,7 @@ internal sealed class MetadataEncoding
     {
         var b = new TpsConnectionStringBuilder()
         {
-            MetadataEncoding = Encoding.ASCII
+            MetadataEncoding = Encoding.ASCII.WebName
         };
 
         Assert.That(b.ConnectionString, Is.EqualTo("MetadataEncoding=us-ascii"));
@@ -58,7 +58,13 @@ internal sealed class MetadataEncoding
             ["MetadataEncoding"] = "us-ascii"
         };
 
-        Assert.That(b.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
+        var encodingOptions = b.GetEncodingOptions();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(encodingOptions.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
+        }
     }
 
     [Test]
@@ -69,7 +75,13 @@ internal sealed class MetadataEncoding
             ["MetadataEncoding"] = Encoding.ASCII
         };
 
-        Assert.That(b.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
+        var encodingOptions = b.GetEncodingOptions();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(encodingOptions.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
+        }
     }
 
     [Test]
@@ -80,6 +92,12 @@ internal sealed class MetadataEncoding
             ConnectionString = "MetadataEncoding=us-ascii"
         };
 
-        Assert.That(b.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
+        var encodingOptions = b.GetEncodingOptions();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(encodingOptions.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
+        }
     }
 }

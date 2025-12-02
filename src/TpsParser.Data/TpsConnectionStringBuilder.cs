@@ -42,8 +42,8 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     private static readonly IReadOnlyDictionary<string, Keywords> _keywords;
 
     private string _dataSource = string.Empty;
-    private Encoding? _contentEncoding = null;
-    private Encoding? _metadataEncoding = null;
+    private string? _contentEncoding = null;
+    private string? _metadataEncoding = null;
     private ErrorHandling? _errorHandling = null;
     private bool? _errorHandlingThrowOnRleDecompressionError = null;
     private RleSizeMismatchBehavior? _errorHandlingRleOversizedDecompressionBehavior = null;
@@ -263,6 +263,20 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
         return enumValue;
     }
 
+    private static string ConvertToEncodingWebName(object value)
+    {
+        if (value is string ss)
+        {
+            return ss;
+        }
+        else if (value is Encoding ee)
+        {
+            return ee.WebName;
+        }
+
+        throw new ArgumentException($"Failed to convert '{value}' to an encoding WebName.", nameof(value));
+    }
+
     private static Encoding ConvertToEncoding(object value)
     {
         if (value is Encoding ee)
@@ -318,14 +332,14 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     }
     
     /// <inheritdoc cref="EncodingOptions.ContentEncoding"/>
-    public Encoding? ContentEncoding
+    public string? ContentEncoding
     {
         get => _contentEncoding;
         set => base[ContentEncodingKeyword] = _contentEncoding = value;
     }
     
     /// <inheritdoc cref="EncodingOptions.MetadataEncoding"/>
-    public Encoding? MetadataEncoding
+    public string? MetadataEncoding
     {
         get => _metadataEncoding;
         set => base[MetadataEncodingKeyword] = _metadataEncoding = value;
@@ -375,10 +389,10 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
                     DataSource = Convert.ToString(value, CultureInfo.InvariantCulture);
                     return;
                 case Keywords.ContentEncoding:
-                    ContentEncoding = ConvertToEncoding(value);
+                    ContentEncoding = ConvertToEncodingWebName(value);
                     return;
                 case Keywords.MetadataEncoding:
-                    MetadataEncoding = ConvertToEncoding(value);
+                    MetadataEncoding = ConvertToEncodingWebName(value);
                     return;
                 case Keywords.ErrorHandling:
                     ErrorHandling = ConvertToEnum<ErrorHandling>(value);
@@ -399,74 +413,6 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
         }
     }
 
-    ///// <inheritdoc/>
-    //[AllowNull]
-    //public override object this[string keyword]
-    //{
-    //    get
-    //    {
-    //        return base[keyword];
-    //    }
-    //    set
-    //    {
-    //        var comparer = StringComparison.InvariantCultureIgnoreCase;
-    //
-    //        if (string.Equals(keyword, ErrorHandlingName, comparer))
-    //        {
-    //            if (value is string stringValue)
-    //            {
-    //                if (!Enum.TryParse<ErrorHandling>(stringValue, ignoreCase: true, out var parsed))
-    //                {
-    //                    throw new ArgumentException($"{stringValue} is not a valid {nameof(Data.ErrorHandling)}.", nameof(value));
-    //                }
-    //            }
-    //        }
-    //        else if (string.Equals(keyword, ErrorHandlingThrowOnRleDecompressionErrorName, comparer))
-    //        {
-    //            if (value is string stringValue)
-    //            {
-    //                if (!bool.TryParse(stringValue, out var parsed))
-    //                {
-    //                    throw new ArgumentException($"{stringValue} is not a valid bool.");
-    //                }
-    //            }
-    //        }
-    //        else if (string.Equals(keyword, ErrorHandlingRleUndersizedDecompressionBehaviorName, comparer)
-    //            || string.Equals(keyword, ErrorHandlingRleOversizedDecompressionBehaviorName, comparer))
-    //        {
-    //            if (value is string stringValue)
-    //            {
-    //                if (!Enum.TryParse<RleSizeMismatchBehavior>(stringValue, ignoreCase: true, out var parsed))
-    //                {
-    //                    throw new ArgumentException($"{stringValue} is not a valid {nameof(RleSizeMismatchBehavior)}.", nameof(value));
-    //                }
-    //            }
-    //        }
-    //        else if (string.Equals(keyword, ContentEncodingName, comparer)
-    //            || string.Equals(keyword, MetadataEncodingName, comparer))
-    //        {
-    //            if (value is string stringValue)
-    //            {
-    //                bool hasEncoding =
-    //                    Encoding.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer))
-    //                    || CodePagesEncodingProvider.Instance.GetEncodings().Select(e => e.Name).Any(name => string.Equals(stringValue, name, comparer));
-    //
-    //                if (!hasEncoding)
-    //                {
-    //                    throw new ArgumentException($"{stringValue} is not recognized as a valid encoding.");
-    //                }
-    //            }
-    //            else if (value is Encoding encoding)
-    //            {
-    //                base[keyword] = encoding.WebName;
-    //                return;
-    //            }
-    //        }
-    //        
-    //        base[keyword] = value; 
-    //    }
-    //}
-
     /// <summary>
     /// Gets a <see cref="EncodingOptions"/> instance based on the values set in the connection string.
     /// </summary>
@@ -477,8 +423,8 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
 
         return def with
         {
-            ContentEncoding = ContentEncoding ?? def.ContentEncoding,
-            MetadataEncoding = MetadataEncoding ?? def.MetadataEncoding,
+            ContentEncoding = ContentEncoding is not null ? ConvertToEncoding(ContentEncoding) : def.ContentEncoding,
+            MetadataEncoding = MetadataEncoding is not null ? ConvertToEncoding(MetadataEncoding) : def.MetadataEncoding,
         };
     }
 

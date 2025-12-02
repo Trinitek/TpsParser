@@ -11,7 +11,7 @@ internal sealed class ContentEncoding
     {
         var b = new TpsConnectionStringBuilder()
         {
-            ContentEncoding = Encoding.ASCII
+            ContentEncoding = Encoding.ASCII.WebName
         };
 
         Assert.That(b.ConnectionString, Is.EqualTo("ContentEncoding=us-ascii"));
@@ -58,7 +58,13 @@ internal sealed class ContentEncoding
             ["ContentEncoding"] = "us-ascii"
         };
 
-        Assert.That(b.ContentEncoding, Is.EqualTo(Encoding.ASCII));
+        var encodingOptions = b.GetEncodingOptions();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(encodingOptions.ContentEncoding, Is.EqualTo(Encoding.ASCII));
+        }
     }
 
     [Test]
@@ -69,7 +75,13 @@ internal sealed class ContentEncoding
             ["ContentEncoding"] = Encoding.ASCII
         };
 
-        Assert.That(b.ContentEncoding, Is.EqualTo(Encoding.ASCII));
+        var encodingOptions = b.GetEncodingOptions();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(encodingOptions.ContentEncoding, Is.EqualTo(Encoding.ASCII));
+        }
     }
 
     [Test]
@@ -80,6 +92,12 @@ internal sealed class ContentEncoding
             ConnectionString = "ContentEncoding=us-ascii"
         };
 
-        Assert.That(b.ContentEncoding, Is.EqualTo(Encoding.ASCII));
+        var encodingOptions = b.GetEncodingOptions();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(encodingOptions.ContentEncoding, Is.EqualTo(Encoding.ASCII));
+        }
     }
 }

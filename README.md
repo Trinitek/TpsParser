@@ -4,28 +4,40 @@ A library for parsing Clarion TopSpeed (TPS) files.
 
 ## Overview
 
-This repository contains two projects: **TpsParser**, a low-level reader for TPS files, and **TpsParser.Data**, an ADO.NET adapter.
+This repository contains two projects.
 
-**TpsParser** is a C# rewrite of the Java library [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). It is able to open and read both unencrypted and encrypted TPS files. It is not able to write to TPS files.
+**TpsParser** is a low-level TPS file reader. It is a C# rewrite of the Java library [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). It is able to open and read both unencrypted and encrypted TPS files. It is not able to write to TPS files.
 
 **TpsParser.Data** is a read-only ADO.NET adapter. It is designed for extract-transform-load scenarios where you need to read a folder full of TPS files and write them to another data store.
 
-## Migrating from v5 to v6
+## ⚠️ Migrating from v5 to v6
 
-Version 6 constitutes a major rewrite to dramatically reduce memory usage, improve read speed, and improve testability.
+Version 6 is a major rewrite over version 5 to dramatically reduce memory usage, improve read speed, and improve testability.
+
+### Retargeted from `netstandard2.0` to `net9.0`
+
+Thanks to our removal of the `netstandard2.0` target, we've taken advantage of newer BCL types like `ReadOnlyMemory<byte>` and use them liberally throughout the object model.
 
 ### The deserializer has been removed.
-Version 5 included a deserializer that could map a data record to a user-defined class. The `TpsParser` class, `Deserialize` methods, and attributes have been removed. The deserializer was complicated to maintain through the rewrite. They may return in a future version under a different NuGet package; kindly file an issue if you need this.
+Version 5 included a deserializer that could map a data record to a user-defined class. The `TpsParser` class, `Deserialize` methods, and attributes have been removed. The deserializer was complicated to maintain through the rewrite. It may return in a future version under a different NuGet package; kindly file an issue if you need this.
 
-### Class names and namespaces are changed.
+### Class names, namespaces, and interface hierarchies are simplified.
 
-The namespace hierarchy has been flattened into the `TpsParser` namespace. Data type model classes are located in the `TpsParser.TypeModel` namespace. Type models have adopted a `Cla*` prefix instead of `Tps*`. Type models are designed to better reflect behaviors of their respective type from the Clarion language runtime.
+The namespace hierarchy has been flattened into the `TpsParser` namespace. Data type model classes are located in the `TpsParser.TypeModel` namespace. Unnecessary interfaces and abstract classes have been removed.
 
-## TpsParser: Basic Usage Guidelines
+### The value type model has been reworked.
+
+Type models have adopted a `Cla*` prefix instead of `Tps*`. Type models are designed to better reflect behaviors of their respective type from the Clarion language runtime.
+
+### Addition of error handling and text encoding options.
+
+The `TpsFile` class now has `ErrorHandlingOptions` and `EncodingOptions` to control how the parser behaves when decompressing pages and decoding text.
+
+## ➡️ TpsParser: Basic Usage Guidelines
 
 ### Simple Table Objects
 
-For simple (but less performant) reading of tables, the `Table` class abstracts away the low-level file structures for easier manipulation.
+The `Table` class abstracts away the low-level file structures for easier manipulation.
 
 ```cs
 using TpsParser;
@@ -51,11 +63,11 @@ if (firstContactRow.Memos.TryGetValue("NOTES", out IClaMemo? maybeNotes)
 
 ### Compound Data Structures
 
-The parser can read `GROUP` and array structures. `GROUP`s can have nested `GROUP`s, arrayed fields, and arrays of `GROUP`s.
+The parser can read GROUP and array structures. GROUPs can have nested GROUPs, arrayed fields, and arrays of GROUPs.
 
-#### `GROUP` Structures
+#### GROUP Structures
 
-`GROUP` fields, modeled by the `ClaGroup` type, can contain one or more other value types, including other nested `GROUP`s.
+GROUP fields, modeled by the `ClaGroup` type, can contain one or more other value types, including other nested GROUPs.
 
 ```cs
 ClaGroup address = (ClaGroup)firstContactRow.Values["ADDRESS"];
@@ -113,27 +125,24 @@ for (int i = 0; i < tagNumbers.Count; i++)
  */
 ```
 
-## TpsParser.Data: Basic Usage Guidelines
+## ➡️ TpsParser.Data: Basic Usage Guidelines
 
-Many Clarion apps you encounter will structure their TPS file such that there are many files with one table in each. TpsParser.Data is oriented around using the folder as the Data Source.
+Many Clarion apps you encounter will structure their database such that there are many TPS files with one table in each. TpsParser.Data is oriented around using the folder as the Data Source.
 
 ```cs
 using TpsParser.Data;
 
 var csBuilder = new TpsConnectionStringBuilder
 {
-    Folder = "c:/path/to/folder
+    Folder = "c:/path/to/folder"
 };
 
 var conn = new TpsDbConnection(csBuilder.ConnectionString);
 
 conn.Open();
 
-var command = new TpsDbCommand()
-{
-    Connection = conn
-    CommandText = "SELECT * FROM contacts"
-};
+// Opens "c:/path/to/folder/contacts.tps" to the default table "UNNAMED"
+var command = new TpsDbCommand("SELECT * FROM contacts", conn);
 
 var reader = command.ExecuteReader();
 ```
@@ -142,16 +151,48 @@ For files that contain more than one table, specify the table name in the SELECT
 
 ```cs
 /*
- * Clarion snippet:
- * ----------------
  * FooContact   FILE,DRIVER('TOPSPEED'),NAME('Contacts\!Foo')
  */
 
-CommandText = "SELECT * FROM contacts\!foo"
+command.CommandText = "SELECT * FROM contacts\!foo"
+```
+
+### Compound Data Structures
+
+By default, the reader will return `ClaGroup` and `ClaArray` objects with their children as unconverted `IClaObject` values just as they are returned from the low-level parser. You can flatten these by setting the appropriate property on the connection string:
+
+```cs
+csBuilder.FlattenCompoundStructureResults = true;
+```
+
+Field names will then be flattened like so:
+
+```
+// Without flattening...
+
+reader["A"]     --> string
+reader["B"]     --> ClaArray of 4 ClaFString
+reader["C"]     --> ClaGroup of (ClaLong, ClaDate)
+
+// With flattening...
+
+reader["A"]     --> string
+reader["B[0]"]  --> string
+reader["B[1]"]  --> string
+reader["B[2]"]  --> string
+reader["B[3]"]  --> string
+reader["C.X"]   --> int
+reader["C.Y"]   --> DateOnly
 ```
 
 ## Attributions
 
-Copyright © 2025 Blake Burgess.  Licensed under MIT (see [LICENSE](LICENSE)).
+Copyright © 2025 Blake Burgess. Licensed under MIT (see [LICENSE](LICENSE)).
 
 Based on the previous work by Erik Hooijmeijer, [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). Copyright © 2012-2013 Erik Hooijmeijer.  Licensed under [Apache 2](https://www.apache.org/licenses/LICENSE-2.0.html).
+
+## Other Resources
+
+- [Liberating data from Clarion TPS files](https://web.archive.org/web/20190216120027/http://dontpanic.42.nl/2013/01/liberating-data-from-clarion-tps-files.html). Erik Hooijmeijer. January 21, 2013.
+- [Liberating data from Encrypted TPS files](https://web.archive.org/web/20160816043524/http://dontpanic.42.nl/2013/05/liberating-data-from-encrypted-tps-files.html). Erik Hooijmeijer. May 20, 2013.
+- [TopSpeed TPS файл](https://web.archive.org/web/20140405102309/http://www.clarionlife.net/content/view/41/29/). Evgeniy Stefanenko. February 3, 2006.

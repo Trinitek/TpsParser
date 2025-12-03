@@ -158,7 +158,7 @@ public class TpsDataReader : DbDataReader
 
             if (i == ColumnDefinitions.Count + VIRTUAL_FIELDS_RECORDNUMBER_OFFSET)
             {
-                return currentRecord.RecordNumber;
+                return (long)currentRecord.RecordNumber;
             }
 
             if (i < 0 || i >= ColumnDefinitions.Count)
@@ -207,7 +207,7 @@ public class TpsDataReader : DbDataReader
 
             if (string.Equals(name, VIRTUAL_FIELDS_RECORDNUMBER, StringComparison.InvariantCultureIgnoreCase))
             {
-                return currentRecord.RecordNumber;
+                return (long)currentRecord.RecordNumber;
             }
 
             if (!NameToOrdinalLookup.TryGetValue(name, out int ordinal))
@@ -370,8 +370,8 @@ public class TpsDataReader : DbDataReader
             ClaByte claByte => claByte.ToByte().Value,
             ClaShort claShort => claShort.ToInt16().Value,
             ClaUnsignedShort claUnsignedShort => claUnsignedShort.ToUInt16().Value,
-            ClaDate claDate => claDate.ToDateOnly(),
-            ClaTime claTime => claTime.ToTimeOnly(),
+            ClaDate claDate => claDate.ToDateOnly().Value is var d && d.HasValue ? d : DBNull.Value,
+            ClaTime claTime => claTime.ToTimeOnly().Value is var t && t.HasValue ? t : DBNull.Value,
             ClaLong claLong => claLong.ToInt32().Value,
             ClaUnsignedLong claUnsignedLong => claUnsignedLong.ToUInt32().Value,
             ClaSingleReal claSingleReal => claSingleReal.ToFloat().Value,
@@ -403,8 +403,8 @@ public class TpsDataReader : DbDataReader
                 FieldTypeCode.Byte => typeof(byte),
                 FieldTypeCode.Short => typeof(short),
                 FieldTypeCode.UShort => typeof(ushort),
-                FieldTypeCode.Date => typeof(DateOnly),
-                FieldTypeCode.Time => typeof(TimeOnly),
+                FieldTypeCode.Date => typeof(DateOnly?),
+                FieldTypeCode.Time => typeof(TimeOnly?),
                 FieldTypeCode.Long => typeof(long),
                 FieldTypeCode.ULong => typeof(ulong),
                 FieldTypeCode.SReal => typeof(double),
@@ -528,12 +528,14 @@ public class TpsDataReader : DbDataReader
         AssertNotDisposed();
         AssertOrdinalIsWithinRange(ordinal);
 
-        // MEMOs and BLOBs can potentially be DbNull; all others are not.
+        // Of the field types, only ClaDate and ClaTime can potentially be DbNull; all others are not.
 
         if (ordinal < _fieldIteratorNodes.Length || ordinal >= ColumnDefinitions.Count)
         {
-            return false;
+            return GetValue(ordinal) is DBNull;
         }
+
+        // MEMOs and BLOBs can also be DbNull.
 
         int memoOrdinal = ordinal - _fieldIteratorNodes.Length;
 

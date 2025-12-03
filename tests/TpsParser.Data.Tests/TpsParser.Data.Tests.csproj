@@ -23,10 +23,9 @@
     <None Update="Resources\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\TpsParser.Tests\Resources\table-with-memos.tps" Link="Resources\table-with-memos.tps" />
+    
+    <None Include="..\TpsParser.Tests\Resources\array-of-groups.TPS" Link="Resources\array-of-groups.TPS" CopyToOutputDirectory="Always" />
+    <None Include="..\TpsParser.Tests\Resources\table-with-memos.tps" Link="Resources\table-with-memos.tps" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

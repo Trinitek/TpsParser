@@ -379,6 +379,7 @@ public class TpsDataReader : DbDataReader
             ClaDecimal claDecimal => claDecimal.ToDecimal(),
             IClaString claString => claString.ToString(_connectionContext.TpsFile.EncodingOptions.ContentEncoding),
             ClaGroup claGroup => claGroup,
+            ClaArray claArray => claArray,
             _ => throw new NotImplementedException($"Type conversion not implemented for {claObject?.GetType()?.Name ?? "[null]"}.")
         };
 

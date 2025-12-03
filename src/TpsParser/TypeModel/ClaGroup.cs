@@ -58,4 +58,25 @@ public readonly struct ClaGroup : IClaObject
             yield return result;
         }
     }
+
+    /// <summary>
+    /// Gets a <see cref="FieldEnumerationResult"/> containing the field information and the <see cref="IClaObject"/>
+    /// value at the given index.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public FieldEnumerationResult GetValue(ushort index)
+    {
+        var result = FieldValueReader.GetValue(FieldIteratorNode.ChildIterators[index], DataRecordPayload);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Gets a <see cref="FieldEnumerationResult"/> containing the field information and the <see cref="IClaObject"/>
+    /// value at the given index.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public FieldEnumerationResult this[ushort index] => GetValue(index);
 }

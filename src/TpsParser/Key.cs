@@ -14,9 +14,11 @@ public sealed class Key
     /// Instantiates a key and initializes it using the given password.
     /// </summary>
     /// <param name="password">The password or "owner" of the file.</param>
-    public Key(string password)
+    /// <param name="encoding">The encoding to use to convert the password to bytes. If null, ISO-8859-1 "Latin1" is used.</param>
+    public Key(string password, Encoding? encoding = null)
     {
-        var encoding = CodePagesEncodingProvider.Instance.GetEncoding("Windows-1258");
+        encoding ??= Encoding.Latin1;
+
         var passwordBytes = encoding.GetBytes(password);
 
         var keyBytes = new byte[passwordBytes.Length + 1];
@@ -73,6 +75,11 @@ public sealed class Key
         }
     }
 
+    /// <summary>
+    /// Gets the word at the given index and advances the reader position.
+    /// </summary>
+    /// <param name="word"></param>
+    /// <returns></returns>
     public int GetWord(int word)
     {
         Data.JumpAbsolute(word * 4);
@@ -91,10 +98,7 @@ public sealed class Key
     /// <param name="buffer">The buffer to encrypt.</param>
     public void Encrypt64(TpsRandomAccess buffer)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (buffer.Length != 64)
         {
@@ -133,10 +137,7 @@ public sealed class Key
     /// <param name="buffer"></param>
     public void Decrypt64(TpsRandomAccess buffer)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         if (buffer.Length != 64)
         {
@@ -174,10 +175,7 @@ public sealed class Key
     /// <param name="encrypted">The encrypted data to decrypt.</param>
     public void Decrypt(TpsRandomAccess encrypted)
     {
-        if (encrypted == null)
-        {
-            throw new ArgumentNullException(nameof(encrypted));
-        }
+        ArgumentNullException.ThrowIfNull(encrypted);
 
         if (encrypted.Position != 0)
         {
@@ -201,6 +199,7 @@ public sealed class Key
         }
     }
 
+    /// <inheritdoc/>
     public override string ToString() =>
         Data.ToHexString(step: 64, ascii: false);
 }

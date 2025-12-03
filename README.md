@@ -6,7 +6,7 @@ A library for parsing Clarion TopSpeed (TPS) files.
 
 This repository contains two projects.
 
-**TpsParser** is a low-level TPS file reader. It is a C# rewrite of the Java library [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). It is able to open and read both unencrypted and encrypted TPS files. It is not able to write to TPS files.
+**TpsParser** is a low-level TPS file reader. It is a C# rewrite of the Java library [tps-parse](https://github.com/ctrl-alt-dev/tps-parse). Both encrypted and unencrypted files are supported.
 
 **TpsParser.Data** is a read-only ADO.NET adapter. It is designed for extract-transform-load scenarios where you need to read a folder full of TPS files and write them to another data store.
 
@@ -33,17 +33,61 @@ Type models have adopted a `Cla*` prefix instead of `Tps*`. Type models are desi
 
 The `TpsFile` class now has `ErrorHandlingOptions` and `EncodingOptions` to control how the parser behaves when decompressing pages and decoding text.
 
-## ➡️ TpsParser: Basic Usage Guidelines
+## ➡️ TpsParser: Basic Usage
 
-### Simple Table Objects
+### Getting Records and Metadata
 
-The `Table` class abstracts away the low-level file structures for easier manipulation.
+The `TpsFile` class has methods for enumerating data records, metadata, and table definition schemas.
 
 ```cs
 using TpsParser;
 
 using var fs = new FileStream("contacts.tps", FileMode.Open);
-var tpsFile = new TpsFile(fs)
+var tpsFile = new TpsFile(fs);
+
+var tableDefs = tpsFile.GetTableDefinitions();
+var firstTableDef = tableDefs.First();
+
+int tableNumber = firstTableDef.Key;
+TableDefinition tableDef = firstTableDef.Value;
+
+var dataRecords = tpsFile.GetDataRecordPayloads(table: tableNumber);
+```
+
+### Reading Field Values
+
+To parse a data record into field values (which are types that implement `IClaObject`), use the `FieldValueReader` class.
+
+```cs
+ImmutableArray<FieldIteratorNode> nodes FieldValueReader.CreateFieldIteratorNodes(
+    fieldDefinitions: tableDef.Fields,
+    requestedFieldIndexes: [.. tableDef.Fields.Select(f => f.Index)]);
+
+List<IClaObject[]> rows = [];
+
+foreach (var dataRecord in dataRecords)
+{
+    var row = new IClaObject[tableDef.Fields.Length];
+
+    for (int i = 0; i < row.Length; i++)
+    {
+        var node = nodes[i];
+        row[i] = FieldValueReader.GetValue(node, dataRecord).Value;
+    }
+
+    rows.Add(row);
+}
+```
+
+### Simple Table Objects
+
+The easiest (but not necessarily the most performant) way to get data out of a file is to use the `Table` class. This class abstracts away the low-level file structures for easier manipulation.
+
+```cs
+using TpsParser;
+
+using var fs = new FileStream("contacts.tps", FileMode.Open);
+var tpsFile = new TpsFile(fs);
 
 // Gets the first table in the file by default.
 Table contactsTable = Table.MaterializeFromFile(tpsFile);
@@ -125,7 +169,7 @@ for (int i = 0; i < tagNumbers.Count; i++)
  */
 ```
 
-## ➡️ TpsParser.Data: Basic Usage Guidelines
+## ➡️ TpsParser.Data: Basic Usage
 
 Many Clarion apps you encounter will structure their database such that there are many TPS files with one table in each. TpsParser.Data is oriented around using the folder as the Data Source.
 

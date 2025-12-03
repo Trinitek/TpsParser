@@ -522,22 +522,22 @@ public static class FieldValueReader
     /// <summary>
     /// Reads the given data record payload and returns a field value for the given node.
     /// </summary>
-    /// <param name="fieldIteratorPointer"></param>
+    /// <param name="fieldIteratorNode"></param>
     /// <param name="dataRecordPayload"></param>
     /// <returns></returns>
     /// <exception cref="TpsParserException"></exception>
     public static FieldEnumerationResult GetValue(
-        FieldIteratorNode fieldIteratorPointer,
+        FieldIteratorNode fieldIteratorNode,
         DataRecordPayload dataRecordPayload)
     {
-        var fieldDefPointer = fieldIteratorPointer.DefinitionPointer;
+        var fieldDefPointer = fieldIteratorNode.DefinitionPointer;
 
         // Special case: Array of any type.
 
         if (fieldDefPointer.ElementCount > 1)
         {
             var array = new ClaArray(
-                fieldIteratorNode: fieldIteratorPointer,
+                fieldIteratorNode: fieldIteratorNode,
                 dataRecordPayload: dataRecordPayload);
 
             return new(
@@ -583,7 +583,7 @@ public static class FieldValueReader
             case FieldTypeCode.PString:
                 return new(fieldDefPointer, new ClaPString(dataRecordPayload.Content[offset..(offset + fieldDefPointer.StringLength)]));
             case FieldTypeCode.Group:
-                return new(fieldDefPointer, new ClaGroup(fieldIteratorPointer, dataRecordPayload));
+                return new(fieldDefPointer, new ClaGroup(fieldIteratorNode, dataRecordPayload));
             case FieldTypeCode.None:
             default:
                 throw new TpsParserException($"Unknown field type code (0x{fieldDefPointer.TypeCode}).");

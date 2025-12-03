@@ -1,6 +1,6 @@
 
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter]
     [string]
     $VersionSuffix
 )

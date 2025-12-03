@@ -116,7 +116,12 @@ public class TpsDbConnection : DbConnection
             ConnectionString = ConnectionString,
         };
 
-        _dataSource = csBuilder.Folder;
+        if (string.IsNullOrWhiteSpace(csBuilder.DataSource))
+        {
+            throw new InvalidOperationException("Connection string must specify a Data Source or Folder.");
+        }
+
+        _dataSource = csBuilder.DataSource;
 
         _state = ConnectionState.Open;
     }

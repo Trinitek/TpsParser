@@ -20,6 +20,7 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     private const string DataSourceKeyword = "Data Source";
     private const string DataSourceNoSpaceKeyword = "DataSource";
     private const string FolderKeyword = "Folder";
+    private const string FlattenCompoundStructureResultsKeyword = "FlattenCompoundStructureResults";
     private const string ContentEncodingKeyword = "ContentEncoding";
     private const string MetadataEncodingKeyword = "MetadataEncoding";
     private const string ErrorHandlingKeyword = "ErrorHandling";
@@ -30,6 +31,7 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     private enum Keywords
     {
         DataSource,
+        FlattenCompoundStructureResults,
         ContentEncoding,
         MetadataEncoding,
         ErrorHandling,
@@ -42,6 +44,7 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     private static readonly ReadOnlyDictionary<string, Keywords> _keywords;
 
     private string? _dataSource = null;
+    private bool? _flattenCompoundStructureResults = null;
     private string? _contentEncoding = null;
     private string? _metadataEncoding = null;
     private ErrorHandling? _errorHandling = null;
@@ -51,8 +54,9 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
 
     static TpsConnectionStringBuilder()
     {
-        var validKeywords = new string[7];
+        var validKeywords = new string[8];
         validKeywords[(int)Keywords.DataSource] = DataSourceKeyword;
+        validKeywords[(int)Keywords.FlattenCompoundStructureResults] = FlattenCompoundStructureResultsKeyword;
         validKeywords[(int)Keywords.ContentEncoding] = ContentEncodingKeyword;
         validKeywords[(int)Keywords.MetadataEncoding] = MetadataEncodingKeyword;
         validKeywords[(int)Keywords.ErrorHandling] = ErrorHandlingKeyword;
@@ -61,9 +65,10 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
         validKeywords[(int)Keywords.ErrorHandlingRleUndersizedDecompressionBehavior] = ErrorHandlingRleUndersizedDecompressionBehaviorKeyword;
         _validKeywords = validKeywords.AsReadOnly();
 
-        _keywords = new Dictionary<string, Keywords>(9, StringComparer.OrdinalIgnoreCase)
+        _keywords = new Dictionary<string, Keywords>(10, StringComparer.OrdinalIgnoreCase)
         {
             [DataSourceKeyword] = Keywords.DataSource,
+            [FlattenCompoundStructureResultsKeyword] = Keywords.FlattenCompoundStructureResults,
             [ContentEncodingKeyword] = Keywords.ContentEncoding,
             [MetadataEncodingKeyword] = Keywords.MetadataEncoding,
             [ErrorHandlingKeyword] = Keywords.ErrorHandling,
@@ -95,6 +100,7 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     private object? GetAt(Keywords index) => index switch
     {
         Keywords.DataSource => DataSource,
+        Keywords.FlattenCompoundStructureResults => FlattenCompoundStructureResults,
         Keywords.ContentEncoding => ContentEncoding,
         Keywords.MetadataEncoding => MetadataEncoding,
         Keywords.ErrorHandling => ErrorHandling,
@@ -166,6 +172,9 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
         {
             case Keywords.DataSource:
                 _dataSource = string.Empty;
+                return;
+            case Keywords.FlattenCompoundStructureResults:
+                _flattenCompoundStructureResults = null;
                 return;
             case Keywords.ContentEncoding:
                 _contentEncoding = null;
@@ -366,6 +375,16 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     }
 
     /// <summary>
+    /// Gets or sets whether to flatten <see cref="TypeModel.ClaArray"/> and <see cref="TypeModel.ClaGroup"/>
+    /// structures in query results.
+    /// </summary>
+    public bool? FlattenCompoundStructureResults
+    {
+        get => _flattenCompoundStructureResults;
+        set => base[FlattenCompoundStructureResultsKeyword] = _flattenCompoundStructureResults = value;
+    }
+
+    /// <summary>
     /// Gets or sets the value associated with the specified key.
     /// </summary>
     /// <param name="keyword"></param>
@@ -387,6 +406,9 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
             {
                 case Keywords.DataSource:
                     DataSource = Convert.ToString(value, CultureInfo.InvariantCulture);
+                    return;
+                case Keywords.FlattenCompoundStructureResults:
+                    FlattenCompoundStructureResults = Convert.ToBoolean(value);
                     return;
                 case Keywords.ContentEncoding:
                     ContentEncoding = ConvertToEncodingWebName(value);

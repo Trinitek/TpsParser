@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
@@ -151,13 +152,22 @@ public partial class TpsDbCommand : DbCommand
             tableDef = first.Value;
         }
 
+        var csBuilder = new TpsConnectionStringBuilder(conn.ConnectionString);
+
+        ImmutableArray<FieldIteratorNode> nodes = FieldValueReader.CreateFieldIteratorNodes(
+            fieldDefinitions: tableDef.Fields,
+            requestedFieldIndexes: [.. tableDef.Fields.Select(f => f.Index)]);
+
+        if (csBuilder.FlattenCompoundStructureResults == true)
+        {
+            nodes = [.. FieldValueReader.RecursivelyFlattenNodes(nodes)];
+        }
+
         var reader = new TpsDataReader(
             connectionContext: tpsFileConnectionContext,
             tableDefinition: tableDef,
             tableNumber: tableNumber,
-            fieldIteratorNodes: FieldValueReader.CreateFieldIteratorNodes(
-                fieldDefinitions: tableDef.Fields,
-                requestedFieldIndexes: [.. tableDef.Fields.Select(f => f.Index)]));
+            fieldIteratorNodes: nodes);
         
         reader.NextResult();
 

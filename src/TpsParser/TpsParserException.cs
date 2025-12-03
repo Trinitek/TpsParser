@@ -1,15 +1,19 @@
 ﻿using System;
 
-namespace TpsParser
-{
-    public sealed class TpsParserException : Exception
-    {
-        public TpsParserException(string message)
-            : base(message)
-        { }
+namespace TpsParser;
 
-        public TpsParserException(string message, Exception innerException)
-            : base(message, innerException)
-        { }
-    }
+/// <summary>
+/// Represents errors that occur when reading or parsing a TPS file.
+/// </summary>
+public class TpsParserException : Exception
+{
+    /// <inheritdoc/>
+    public TpsParserException(string message)
+        : base(message)
+    { }
+
+    /// <inheritdoc/>
+    public TpsParserException(string message, Exception innerException)
+        : base(message, innerException)
+    { }
 }

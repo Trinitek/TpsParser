@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageReference Include="NUnit" Version="4.4.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.11.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NUnit3TestAdapter" Version="5.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TpsParser.Data\TpsParser.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    
+    <None Include="..\TpsParser.Tests\Resources\array-of-groups.TPS" Link="Resources\array-of-groups.TPS" CopyToOutputDirectory="Always" />
+    <None Include="..\TpsParser.Tests\Resources\table-with-memos.tps" Link="Resources\table-with-memos.tps" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+</Project>

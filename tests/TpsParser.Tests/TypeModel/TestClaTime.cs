@@ -1,0 +1,44 @@
+﻿using NUnit.Framework;
+using System;
+using System.IO;
+using System.Linq;
+
+namespace TpsParser.TypeModel.Tests;
+
+[TestFixture]
+internal sealed class TestClaTime
+{
+    [Test]
+    public void ShouldReadFromFile()
+    {
+        using (var stream = new FileStream("Resources/table-with-time.tps", FileMode.Open))
+        {
+            var file = new TpsFile(stream, errorHandlingOptions: ErrorHandlingOptions.Strict);
+
+            var tableDef = file.GetTableDefinitions().First().Value;
+
+            var table = Table.MaterializeFromFile(file);
+
+            var record = table.Rows.First();
+
+            using (Assert.EnterMultipleScope())
+            {
+                ClaTime clockIn = (ClaTime)record.Values["ClockIn"];
+                ClaTime clockOut = (ClaTime)record.Values["ClockOut"];
+
+                Assert.That(clockIn.Hours, Is.EqualTo(6));
+                Assert.That(clockIn.Minutes, Is.EqualTo(23));
+                Assert.That(clockIn.Seconds, Is.EqualTo(15));
+                Assert.That(clockIn.Centiseconds, Is.EqualTo(0));
+
+                Assert.That(clockOut.Hours, Is.EqualTo(12));
+                Assert.That(clockOut.Minutes, Is.EqualTo(59));
+                Assert.That(clockOut.Seconds, Is.EqualTo(59));
+                Assert.That(clockOut.Centiseconds, Is.EqualTo(0));
+
+                Assert.That(clockIn.ToTimeOnly().Value, Is.EqualTo(new TimeOnly(6, 23, 15, 0)));
+                Assert.That(clockOut.ToTimeOnly().Value, Is.EqualTo(new TimeOnly(12, 59, 59, 0)));
+            }
+        }
+    }
+}

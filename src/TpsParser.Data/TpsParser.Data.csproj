@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Blake Burgess</Authors>
+    <PackageProjectUrl>https://github.com/Trinitek/TpsParser</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Trinitek/TpsParser</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © 2025 Blake Burgess</Copyright>
+    <Description>A .NET data provider for Clarion TopSpeed (TPS) files.</Description>
+    <PackageTags>clarion;tps;topspeed;softvelocity;ado;ado.net;database</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
+    <VersionPrefix>6.0.0</VersionPrefix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TpsParser.Data.Tests"/>
+  </ItemGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\debug\TpsParser.Data.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\release\TpsParser.Data.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TpsParser\TpsParser.csproj"/>
+  </ItemGroup>
+
+</Project>

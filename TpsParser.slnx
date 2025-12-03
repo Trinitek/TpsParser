@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TpsParser.Data/TpsParser.Data.csproj" Id="d2c5ca94-d372-48fe-8564-bfbca3365ee9" />
+    <Project Path="src/TpsParser/TpsParser.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TpsParser.Data.Tests/TpsParser.Data.Tests.csproj" Id="9d472a4d-bf78-4687-9f0b-b5539f9478f1" />
+    <Project Path="tests/TpsParser.Tests/TpsParser.Tests.csproj" />
+  </Folder>
+</Solution>

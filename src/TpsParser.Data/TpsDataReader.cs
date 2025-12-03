@@ -19,14 +19,14 @@ public class TpsDataReader : DbDataReader
 {
     private sealed record ColumnDef
     {
-        public FieldDefinition? FieldDef { get; }
+        public FieldDefinitionPointer? FieldDef { get; }
         public MemoDefinition? MemoDef { get; }
 
         public string Name => FieldDef?.Name ?? MemoDef!.Name;
 
-        public ColumnDef(FieldDefinition fieldDef)
+        public ColumnDef(FieldDefinitionPointer fieldDef)
         {
-            FieldDef = fieldDef ?? throw new ArgumentNullException(nameof(fieldDef));
+            FieldDef = fieldDef;
             MemoDef = null;
         }
 
@@ -74,7 +74,7 @@ public class TpsDataReader : DbDataReader
         var columnDefinitions = new List<ColumnDef>(
             capacity: fieldIteratorNodes.Length + _tableDefinition.Memos.Length);
 
-        columnDefinitions.AddRange(fieldIteratorNodes.Select(node => new ColumnDef(node.DefinitionPointer.Inner)));
+        columnDefinitions.AddRange(fieldIteratorNodes.Select(node => new ColumnDef(node.DefinitionPointer)));
         columnDefinitions.AddRange(_tableDefinition.Memos.Select(memoDef => new ColumnDef(memoDef)));
 
         ColumnDefinitions = columnDefinitions.AsReadOnly();
@@ -397,7 +397,7 @@ public class TpsDataReader : DbDataReader
         
         var columnDef = ColumnDefinitions[ordinal];
 
-        if (columnDef.FieldDef is FieldDefinition { } fieldDef)
+        if (columnDef.FieldDef is FieldDefinitionPointer { } fieldDef)
         {
             return fieldDef.TypeCode switch
             {

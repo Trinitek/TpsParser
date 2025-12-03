@@ -7,12 +7,18 @@ namespace TpsParser.Data.Tests.ResourceTests.TableWithMemos;
 
 internal sealed class TestTpsDataReader
 {
-    [Test]
-    public void FullRead()
+    [TestCase(null)]
+    [TestCase(false)]
+    [TestCase(true)]
+    [Description(
+        "Performs a full read and property value check for all rows in the file. " +
+        "This file contains no arrays or groups, so FlattenCompoundStructureResults should have no effect.")]
+    public void FullRead(bool? flattenResults)
     {
         var csBuilder = new TpsConnectionStringBuilder
         {
-            Folder = "Resources"
+            Folder = "Resources",
+            FlattenCompoundStructureResults = flattenResults
         };
 
         using var connection = new TpsDbConnection(csBuilder.ConnectionString);
@@ -161,7 +167,5 @@ internal sealed class TestTpsDataReader
 
             Assert.That(reader.Read(), Is.False);
         }
-
-
     }
 }

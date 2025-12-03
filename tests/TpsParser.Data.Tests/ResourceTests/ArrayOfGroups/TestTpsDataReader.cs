@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Data;
 using System.Linq;
 using TpsParser.TypeModel;
 
@@ -129,6 +130,100 @@ internal sealed class TestTpsDataReader
             }
 
             Assert.That(reader.GetInt64(5), Is.EqualTo(2));
+
+            // -- end
+
+            Assert.That(reader.Read(), Is.False);
+        }
+    }
+
+    [Test]
+    public void FullRead_Flattened()
+    {
+        var csBuilder = new TpsConnectionStringBuilder
+        {
+            Folder = "Resources",
+            FlattenCompoundStructureResults = true
+        };
+
+        using var connection = new TpsDbConnection(csBuilder.ConnectionString);
+
+        connection.Open();
+
+        using var command = new TpsDbCommand("select * from array-of-groups", connection);
+
+        using var reader = command.ExecuteReader();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(reader.Read(), Is.True);
+            Assert.That(reader.FieldCount, Is.EqualTo(30));
+            Assert.That(reader.VisibleFieldCount, Is.EqualTo(30));
+            Assert.That(reader.RecordsAffected, Is.EqualTo(-1));
+            Assert.That(reader.HasRows, Is.True);
+            Assert.That(reader.Depth, Is.Zero);
+
+            Assert.That(reader.GetString(0).TrimEnd(), Is.EqualTo("Hello world!"));
+            Assert.That(reader.GetString(1).TrimEnd(), Is.EqualTo("First"));
+            Assert.That(reader.GetString(2).TrimEnd(), Is.EqualTo("Second"));
+            Assert.That(reader.GetString(3).TrimEnd(), Is.EqualTo("Third"));
+            Assert.That(reader.GetString(4).TrimEnd(), Is.EqualTo("Fourth"));
+            Assert.That(reader.GetString(5).TrimEnd(), Is.EqualTo("Fifth"));
+            Assert.That(reader.GetString(6).TrimEnd(), Is.EqualTo("Sixth"));
+            Assert.That(reader.GetInt32(7), Is.EqualTo(1));
+            Assert.That(reader.GetInt32(8), Is.EqualTo(2));
+            Assert.That(reader.GetInt32(9), Is.EqualTo(3));
+            Assert.That(reader.GetInt32(10), Is.EqualTo(4));
+            Assert.That(reader.GetInt32(11), Is.EqualTo(5));
+            Assert.That(reader.GetInt32(12), Is.EqualTo(6));
+            Assert.That(reader.GetInt32(13), Is.EqualTo(123456));
+            Assert.That(reader.GetString(14).TrimEnd(), Is.EqualTo("Field B in Group D"));
+            Assert.That(reader.GetString(15).TrimEnd(), Is.EqualTo("ESubA 1"));
+            Assert.That(reader.GetString(16).TrimEnd(), Is.EqualTo("ESubA 2"));
+            Assert.That(reader.GetString(17).TrimEnd(), Is.EqualTo("ESubA 3"));
+            Assert.That(reader.GetString(18).TrimEnd(), Is.EqualTo("ESubA 4"));
+            Assert.That(reader.GetString(19).TrimEnd(), Is.EqualTo("ESubA 5"));
+            Assert.That(reader.GetString(20).TrimEnd(), Is.EqualTo("ESubA 6"));
+            Assert.That(reader.GetInt32(21), Is.EqualTo(987654));
+            Assert.That(reader.GetString(22).TrimEnd(), Is.EqualTo("ESubA 1"));
+            Assert.That(reader.GetString(23).TrimEnd(), Is.EqualTo("ESubA 2"));
+            Assert.That(reader.GetString(24).TrimEnd(), Is.EqualTo("ESubA 3"));
+            Assert.That(reader.GetString(25).TrimEnd(), Is.EqualTo("ESubA 4"));
+            Assert.That(reader.GetString(26).TrimEnd(), Is.EqualTo("ESubA 5"));
+            Assert.That(reader.GetString(27).TrimEnd(), Is.EqualTo("ESubA 6"));
+            Assert.That(reader.GetInt32(28), Is.EqualTo(987654));
+            Assert.That(reader.GetInt64(29), Is.EqualTo(2));
+
+            Assert.That(reader.GetString("A").TrimEnd(), Is.EqualTo("Hello world!"));
+            Assert.That(reader.GetString("BArray[0]").TrimEnd(), Is.EqualTo("First"));
+            Assert.That(reader.GetString("BArray[1]").TrimEnd(), Is.EqualTo("Second"));
+            Assert.That(reader.GetString("BArray[2]").TrimEnd(), Is.EqualTo("Third"));
+            Assert.That(reader.GetString("BArray[3]").TrimEnd(), Is.EqualTo("Fourth"));
+            Assert.That(reader.GetString("BArray[4]").TrimEnd(), Is.EqualTo("Fifth"));
+            Assert.That(reader.GetString("BArray[5]").TrimEnd(), Is.EqualTo("Sixth"));
+            Assert.That(reader.GetInt32("CArray2_3[0]"), Is.EqualTo(1));
+            Assert.That(reader.GetInt32("CArray2_3[1]"), Is.EqualTo(2));
+            Assert.That(reader.GetInt32("CArray2_3[2]"), Is.EqualTo(3));
+            Assert.That(reader.GetInt32("CArray2_3[3]"), Is.EqualTo(4));
+            Assert.That(reader.GetInt32("CArray2_3[4]"), Is.EqualTo(5));
+            Assert.That(reader.GetInt32("CArray2_3[5]"), Is.EqualTo(6));
+            Assert.That(reader.GetInt32("DGroup.DSubA"), Is.EqualTo(123456));
+            Assert.That(reader.GetString("DGroup.DSubB").TrimEnd(), Is.EqualTo("Field B in Group D"));
+            Assert.That(reader.GetString("EGroupArray[0].ESubAArray[0]").TrimEnd(), Is.EqualTo("ESubA 1"));
+            Assert.That(reader.GetString("EGroupArray[0].ESubAArray[1]").TrimEnd(), Is.EqualTo("ESubA 2"));
+            Assert.That(reader.GetString("EGroupArray[0].ESubAArray[2]").TrimEnd(), Is.EqualTo("ESubA 3"));
+            Assert.That(reader.GetString("EGroupArray[0].ESubAArray[3]").TrimEnd(), Is.EqualTo("ESubA 4"));
+            Assert.That(reader.GetString("EGroupArray[0].ESubAArray[4]").TrimEnd(), Is.EqualTo("ESubA 5"));
+            Assert.That(reader.GetString("EGroupArray[0].ESubAArray[5]").TrimEnd(), Is.EqualTo("ESubA 6"));
+            Assert.That(reader.GetInt32("EGroupArray[0].ESubB"), Is.EqualTo(987654));
+            Assert.That(reader.GetString("EGroupArray[1].ESubAArray[0]").TrimEnd(), Is.EqualTo("ESubA 1"));
+            Assert.That(reader.GetString("EGroupArray[1].ESubAArray[1]").TrimEnd(), Is.EqualTo("ESubA 2"));
+            Assert.That(reader.GetString("EGroupArray[1].ESubAArray[2]").TrimEnd(), Is.EqualTo("ESubA 3"));
+            Assert.That(reader.GetString("EGroupArray[1].ESubAArray[3]").TrimEnd(), Is.EqualTo("ESubA 4"));
+            Assert.That(reader.GetString("EGroupArray[1].ESubAArray[4]").TrimEnd(), Is.EqualTo("ESubA 5"));
+            Assert.That(reader.GetString("EGroupArray[1].ESubAArray[5]").TrimEnd(), Is.EqualTo("ESubA 6"));
+            Assert.That(reader.GetInt32("EGroupArray[1].ESubB"), Is.EqualTo(987654));
+            Assert.That(reader.GetInt64("__record_number"), Is.EqualTo(2));
 
             // -- end
 

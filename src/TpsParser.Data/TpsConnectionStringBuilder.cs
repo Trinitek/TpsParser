@@ -15,7 +15,7 @@ namespace TpsParser.Data;
 /// <summary>
 /// A strongly-typed connection string builder for <see cref="TpsDbConnection"/> instances.
 /// </summary>
-public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringBuilder
+public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringBuilder
 {
     private const string DataSourceKeyword = "Data Source";
     private const string DataSourceNoSpaceKeyword = "DataSource";
@@ -38,8 +38,8 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
         ErrorHandlingRleUndersizedDecompressionBehavior,
     }
 
-    private static readonly IReadOnlyList<string> _validKeywords;
-    private static readonly IReadOnlyDictionary<string, Keywords> _keywords;
+    private static readonly ReadOnlyCollection<string> _validKeywords;
+    private static readonly ReadOnlyDictionary<string, Keywords> _keywords;
 
     private string _dataSource = string.Empty;
     private string? _contentEncoding = null;
@@ -59,7 +59,7 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
         validKeywords[(int)Keywords.ErrorHandlingThrowOnRleDecompressionError] = ErrorHandlingThrowOnRleDecompressionErrorKeyword;
         validKeywords[(int)Keywords.ErrorHandlingRleOversizedDecompressionBehavior] = ErrorHandlingRleOversizedDecompressionBehaviorKeyword;
         validKeywords[(int)Keywords.ErrorHandlingRleUndersizedDecompressionBehavior] = ErrorHandlingRleUndersizedDecompressionBehaviorKeyword;
-        _validKeywords = validKeywords;
+        _validKeywords = validKeywords.AsReadOnly();
 
         _keywords = new Dictionary<string, Keywords>(9, StringComparer.OrdinalIgnoreCase)
         {
@@ -74,7 +74,7 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
             // Aliases
             [DataSourceNoSpaceKeyword] = Keywords.DataSource,
             [FolderKeyword] = Keywords.DataSource,
-        };
+        }.AsReadOnly();
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     /// <summary>
     /// Gets a collection containing the keys used by the connection string.
     /// </summary>
-    public override ICollection Keys => new ReadOnlyCollection<string>((string[])_validKeywords);
+    public override ICollection Keys => _validKeywords;
 
     /// <summary>
     /// Gets a collection containing the values used by the connection string.

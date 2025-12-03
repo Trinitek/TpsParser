@@ -37,11 +37,11 @@ internal static partial class QueryParser
         """
         \s*SELECT\s+\*\s+FROM\s+
         (
-            (   (?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?   )
+            (   (?<File>([\w-_]*\.?[\w-_]+)) (\\!(?<TableName>\w+))?   )
             |
-            (  "(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))? " )
+            (  "(?<File>([\w-_]*\.?[\w-_]+)) (\\!(?<TableName>\w+))? " )
             |
-            ( \[(?<File>(\w*\.?\w+)) (\\!(?<TableName>\w+))?\] )
+            ( \[(?<File>([\w-_]*\.?[\w-_]+)) (\\!(?<TableName>\w+))?\] )
         )
         \s*(;)?\s*
         """;

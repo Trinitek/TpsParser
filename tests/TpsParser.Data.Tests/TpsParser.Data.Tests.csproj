@@ -25,4 +25,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\TpsParser.Tests\Resources\table-with-memos.tps" Link="Resources\table-with-memos.tps" />
+  </ItemGroup>
+
 </Project>

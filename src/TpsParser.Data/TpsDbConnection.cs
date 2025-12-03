@@ -31,9 +31,10 @@ public class TpsDbConnection : DbConnection
     private string _connectionString = string.Empty;
 
     /// <summary>
-    /// Gets the data source. Always an empty string.
+    /// Gets the data source. This is a path to a folder that contains one or more TPS files.
     /// </summary>
-    public override string DataSource { get; } = string.Empty;
+    public override string DataSource => _dataSource;
+    private string _dataSource = string.Empty;
 
     /// <summary>
     /// Gets the server version. Always an empty string.
@@ -45,7 +46,7 @@ public class TpsDbConnection : DbConnection
     private ConnectionState _state;
 
     /// <summary>
-    /// Gets the name of the current database. This is a path to a folder that contains one or more TPS files.
+    /// Gets the name of the current database. This is a path to the currently open TPS file, if any.
     /// </summary>
     public override string Database => _database;
     private string _database = string.Empty;
@@ -102,6 +103,8 @@ public class TpsDbConnection : DbConnection
     public override void Close()
     {
         _currentFileContext = null;
+        _dataSource = string.Empty;
+        _database = string.Empty;
         _state = ConnectionState.Closed;
     }
 
@@ -113,7 +116,7 @@ public class TpsDbConnection : DbConnection
             ConnectionString = ConnectionString,
         };
 
-        ChangeDatabase(csBuilder.Folder);
+        _dataSource = csBuilder.Folder;
 
         _state = ConnectionState.Open;
     }
@@ -150,14 +153,14 @@ public class TpsDbConnection : DbConnection
             $@"{requestedFileName}",
         ];
 
-        string folder = Database;
+        string folder = DataSource;
 
         string? foundFileName = null;
         string? foundFilePath = null;
 
         if (string.IsNullOrWhiteSpace(folder))
         {
-            throw new InvalidOperationException("Folder was not specified in connection string.");
+            throw new InvalidOperationException("Data Source was not specified in connection string.");
         }
 
         foreach (var filename in filenames)
@@ -174,7 +177,7 @@ public class TpsDbConnection : DbConnection
 
         if (foundFilePath is null)
         {
-            throw new FileNotFoundException($@"Unable to locate database file '{requestedFileName}'.");
+            throw new FileNotFoundException($"Unable to locate database file '{requestedFileName}'.");
         }
 
         if (_currentFileContext is null || _currentFileContext.FileName != foundFileName)
@@ -195,6 +198,8 @@ public class TpsDbConnection : DbConnection
                 TpsFile: tpsFile,
                 FileName: foundFileName!,
                 MemoIndexer: new(tpsFile));
+
+            _database = foundFilePath;
 
             return _currentFileContext;
         }

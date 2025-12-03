@@ -17,6 +17,9 @@ public readonly record struct FieldDefinitionPointer
     /// </summary>
     public required FieldDefinition Inner { get; init; }
 
+    /// <inheritdoc cref="FieldDefinition.Name"/>
+    public required string Name { get; init; }
+
     /// <inheritdoc cref="FieldDefinition.Offset"/>
     public required ushort Offset { get; init; }
 
@@ -48,6 +51,7 @@ public readonly record struct FieldDefinitionPointer
         return new FieldDefinitionPointer
         {
             Inner = fieldDef,
+            Name = fieldDef.Name,
             Offset = fieldDef.Offset,
             ElementCount = fieldDef.ElementCount,
         };
@@ -374,6 +378,95 @@ public static class FieldValueReader
         existingNodes.Add(groupToBeMerged);
 
         return;
+    }
+
+    /// <summary>
+    /// Recursively flattens a hierarchy of <see cref="FieldIteratorNode"/> elements, producing a sequence of leaf nodes with fully
+    /// qualified names.
+    /// </summary>
+    /// <remarks>
+    /// Array and group nodes are traversed recursively. For array nodes, each element is expanded
+    /// with its index in the name. Group nodes are expanded with their child nodes. Only leaf nodes (fields that are
+    /// not groups or arrays) are returned in the sequence. This method does not modify the original nodes; it returns
+    /// new node instances with adjusted names.
+    /// </remarks>
+    /// <param name="nodes">
+    /// The collection of root field iterator nodes to flatten. Each node may represent a field, group, or array structure.
+    /// </param>
+    /// <param name="namePrefix">
+    /// The prefix to prepend to each node's name in the resulting sequence. Typically used to build fully qualified
+    /// field names.
+    /// </param>
+    /// <returns>
+    /// An enumerable sequence of leaf-level <see cref="FieldIteratorNode"/> instances, each with its name adjusted to reflect its
+    /// position in the hierarchy. The sequence is empty if no nodes are provided.
+    /// </returns>
+    public static IEnumerable<FieldIteratorNode> RecursivelyFlattenNodes(
+        IEnumerable<FieldIteratorNode> nodes,
+        string? namePrefix = null)
+    {
+        namePrefix ??= string.Empty;
+
+        foreach (var node in nodes)
+        {
+            // Special case for arrays
+
+            if (node.DefinitionPointer.ElementCount > 1)
+            {
+                for (ushort elementIndex = 0; elementIndex < node.DefinitionPointer.ElementCount; elementIndex++)
+                {
+                    var elementNode = GetNodeForArrayIndex(node, elementIndex);
+
+                    string nodeName = $"{namePrefix}{elementNode.DefinitionPointer.Name}[{elementIndex}]";
+
+                    var adjustedPointer = elementNode.DefinitionPointer with { Name = nodeName };
+
+                    var adjustedElementNode = elementNode with { DefinitionPointer = adjustedPointer };
+
+                    if (adjustedElementNode.ChildIterators.Count > 0)
+                    {
+                        foreach (var child in RecursivelyFlattenNodes(adjustedElementNode.ChildIterators, $"{nodeName}."))
+                        {
+                            yield return child;
+                        }
+                    }
+                    else
+                    {
+                        yield return adjustedElementNode;
+                    }
+                }
+
+                // Stop processing the array node.
+                continue;
+            }
+
+            if (node.ChildIterators.Count > 0)
+            {
+                string groupNodeName = $"{namePrefix}{node.DefinitionPointer.Name}";
+
+                foreach (var child in RecursivelyFlattenNodes(node.ChildIterators, $"{groupNodeName}."))
+                {
+                    string nodeName = child.DefinitionPointer.Name;
+
+                    var adjustedPointer = child.DefinitionPointer with { Name = nodeName };
+
+                    var adjustedNode = child with { DefinitionPointer = adjustedPointer };
+
+                    yield return adjustedNode;
+                }
+            }
+            
+            else if (node.DefinitionPointer.TypeCode != FieldTypeCode.Group)
+            {
+                string nodeName = $"{namePrefix}{node.DefinitionPointer.Name}";
+
+                var adjustedPointer = node.DefinitionPointer with { Name = nodeName };
+
+                var adjustedNode = node with { DefinitionPointer = adjustedPointer };
+
+                yield return adjustedNode;
+            }
+        }
     }
 
     /// <summary>

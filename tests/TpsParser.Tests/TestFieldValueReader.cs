@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TpsParser.Tests;
 
-internal sealed class TestFieldDefinitionEnumerable
+internal sealed class TestFieldValueReader
 {
     [Test]
     public void MergeGroupPointers_GroupsNone_TargetA0_MergeA_A0()

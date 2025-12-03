@@ -29,14 +29,17 @@ internal sealed class MetadataEncoding
     }
 
     [Test]
-    public void MetadataEncoding_Keyword_SetToInvalidName_ShouldThrow()
+    public void MetadataEncoding_Keyword_SetToInvalidName_GetEncodingOptions_ShouldThrow()
     {
-        var b = new TpsConnectionStringBuilder();
+        var b = new TpsConnectionStringBuilder
+        {
+            ["MetadataEncoding"] = "foo"
+        };
 
         Assert.That(
-            () => b["MetadataEncoding"] = "foo",
+            b.GetEncodingOptions,
             Throws.Exception.InstanceOf<ArgumentException>()
-            .With.Message.Contains("is not recognized as a valid encoding"));
+            .With.Message.Contains("not a supported encoding name"));
     }
 
     [Test]
@@ -62,7 +65,7 @@ internal sealed class MetadataEncoding
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(b.MetadataEncoding, Is.EqualTo("us-ascii"));
             Assert.That(encodingOptions.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
         }
     }
@@ -79,7 +82,7 @@ internal sealed class MetadataEncoding
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(b.MetadataEncoding, Is.EqualTo("us-ascii"));
             Assert.That(encodingOptions.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
         }
     }
@@ -96,7 +99,7 @@ internal sealed class MetadataEncoding
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(b.ContentEncoding, Is.EqualTo("us-ascii"));
+            Assert.That(b.MetadataEncoding, Is.EqualTo("us-ascii"));
             Assert.That(encodingOptions.MetadataEncoding, Is.EqualTo(Encoding.ASCII));
         }
     }

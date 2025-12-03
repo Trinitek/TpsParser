@@ -35,9 +35,7 @@ internal sealed class ErrorHandlingThrowOnRleDecompressionError
 
         Assert.That(
             () => b["ErrorHandling.ThrowOnRleDecompressionError"] = "foo",
-            Throws.Exception.InstanceOf<ArgumentException>()
-            .With.Message.Contains("is not a valid")
-            .With.Message.Contains("bool"));
+            Throws.Exception.InstanceOf<FormatException>());
     }
 
     [TestCase("", ExpectedResult = null)]

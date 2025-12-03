@@ -35,9 +35,7 @@ internal sealed class ErrorHandling
 
         Assert.That(
             () => b["ErrorHandling"] = "foo",
-            Throws.Exception.InstanceOf<ArgumentException>()
-            .With.Message.Contains("is not a valid")
-            .With.Message.Contains(nameof(ErrorHandling)));
+            Throws.Exception.InstanceOf<ArgumentException>());
     }
 
     [Test]

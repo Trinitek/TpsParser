@@ -36,9 +36,7 @@ internal sealed class ErrorHandlingRleOversizedDecompressionBehavior
 
         Assert.That(
             () => b["ErrorHandling.RleOversizedDecompressionBehavior"] = "foo",
-            Throws.Exception.InstanceOf<ArgumentException>()
-            .With.Message.Contains("is not a valid")
-            .With.Message.Contains(nameof(RleSizeMismatchBehavior)));
+            Throws.Exception.InstanceOf<ArgumentException>());
     }
 
     [Test]

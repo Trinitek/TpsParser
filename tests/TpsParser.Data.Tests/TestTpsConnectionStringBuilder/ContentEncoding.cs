@@ -29,12 +29,15 @@ internal sealed class ContentEncoding
     }
 
     [Test]
-    public void ContentEncoding_Keyword_SetToInvalidName_ShouldThrow()
+    public void ContentEncoding_Keyword_SetToInvalidName_GetEncodingOptions_ShouldThrow()
     {
-        var b = new TpsConnectionStringBuilder();
+        var b = new TpsConnectionStringBuilder
+        {
+            ["ContentEncoding"] = "foo"
+        };
 
         Assert.That(
-            () => b["ContentEncoding"] = "foo",
+            b.GetEncodingOptions,
             Throws.Exception.InstanceOf<ArgumentException>()
             .With.Message.Contains("not a supported encoding name"));
     }

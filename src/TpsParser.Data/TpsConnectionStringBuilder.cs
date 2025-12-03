@@ -307,14 +307,14 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     public ErrorHandling? ErrorHandling
     {
         get => _errorHandling;
-        set => this[ErrorHandlingKeyword] = _errorHandling = value;
+        set => base[ErrorHandlingKeyword] = _errorHandling = value;
     }
     
     /// <inheritdoc cref="ErrorHandlingOptions.ThrowOnRleDecompressionError"/>
     public bool? ErrorHandlingThrowOnRleDecompressionError
     {
         get => _errorHandlingThrowOnRleDecompressionError;
-        set => this[ErrorHandlingThrowOnRleDecompressionErrorKeyword] = _errorHandlingThrowOnRleDecompressionError = value;
+        set => base[ErrorHandlingThrowOnRleDecompressionErrorKeyword] = _errorHandlingThrowOnRleDecompressionError = value;
     }
     
     /// <inheritdoc cref="ErrorHandlingOptions.RleUndersizedDecompressionBehavior"/>
@@ -328,7 +328,7 @@ public sealed class TpsConnectionStringBuilder : System.Data.Common.DbConnection
     public RleSizeMismatchBehavior? ErrorHandlingRleOversizedDecompressionBehavior
     {
         get => _errorHandlingRleOversizedDecompressionBehavior;
-        set => this[ErrorHandlingRleOversizedDecompressionBehaviorKeyword] = _errorHandlingRleOversizedDecompressionBehavior = value;
+        set => base[ErrorHandlingRleOversizedDecompressionBehaviorKeyword] = _errorHandlingRleOversizedDecompressionBehavior = value;
     }
     
     /// <inheritdoc cref="EncodingOptions.ContentEncoding"/>

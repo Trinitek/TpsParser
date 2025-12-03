@@ -41,7 +41,7 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     private static readonly ReadOnlyCollection<string> _validKeywords;
     private static readonly ReadOnlyDictionary<string, Keywords> _keywords;
 
-    private string _dataSource = string.Empty;
+    private string? _dataSource = null;
     private string? _contentEncoding = null;
     private string? _metadataEncoding = null;
     private ErrorHandling? _errorHandling = null;
@@ -349,17 +349,17 @@ public class TpsConnectionStringBuilder : System.Data.Common.DbConnectionStringB
     /// Gets or sets the TPS folder path.
     /// </summary>
     [AllowNull]
-    public string DataSource
+    public string? DataSource
     {
         get => _dataSource;
-        set => base[DataSourceKeyword] = _dataSource = value ?? string.Empty;
+        set => base[DataSourceKeyword] = _dataSource = value;
     }
 
     /// <summary>
     /// Alias of <see cref="DataSource"/>. Gets or sets the TPS folder path.
     /// </summary>
     [AllowNull]
-    public string Folder
+    public string? Folder
     {
         get => DataSource;
         set => DataSource = value;

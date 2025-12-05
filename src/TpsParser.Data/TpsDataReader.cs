@@ -376,7 +376,7 @@ public class TpsDataReader : DbDataReader
             ClaUnsignedLong claUnsignedLong => claUnsignedLong.ToUInt32().Value,
             ClaSingleReal claSingleReal => claSingleReal.ToFloat().Value,
             ClaReal claReal => claReal.ToDouble().Value,
-            ClaDecimal claDecimal => claDecimal.ToDecimal(),
+            ClaDecimal claDecimal => claDecimal.ToDecimal().Value,
             IClaString claString => claString.ToString(_connectionContext.TpsFile.EncodingOptions.ContentEncoding),
             ClaGroup claGroup => claGroup,
             ClaArray claArray => claArray,

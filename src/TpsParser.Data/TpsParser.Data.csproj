@@ -16,7 +16,7 @@
     <Description>A .NET data provider for Clarion TopSpeed (TPS) files.</Description>
     <PackageTags>clarion;tps;topspeed;softvelocity;ado;ado.net;database</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>
-    <VersionPrefix>6.0.0</VersionPrefix>
+    <VersionPrefix>6.0.1</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>

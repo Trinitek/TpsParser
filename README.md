@@ -59,7 +59,7 @@ var dataRecords = tpsFile.GetDataRecordPayloads(table: tableNumber);
 To parse a data record into field values (which are types that implement `IClaObject`), use the `FieldValueReader` class.
 
 ```cs
-ImmutableArray<FieldIteratorNode> nodes FieldValueReader.CreateFieldIteratorNodes(
+ImmutableArray<FieldIteratorNode> nodes = FieldValueReader.CreateFieldIteratorNodes(
     fieldDefinitions: tableDef.Fields,
     requestedFieldIndexes: [.. tableDef.Fields.Select(f => f.Index)]);
 
@@ -107,11 +107,11 @@ if (firstContactRow.Memos.TryGetValue("NOTES", out IClaMemo? maybeNotes)
 
 ### Compound Data Structures
 
-The parser can read GROUP and array structures. GROUPs can have nested GROUPs, arrayed fields, and arrays of GROUPs.
+The parser can read groups (Clarion `GROUP`) and array structures. Groups can have nested groups, arrayed fields, and arrays of groups.
 
 #### GROUP Structures
 
-GROUP fields, modeled by the `ClaGroup` type, can contain one or more other value types, including other nested GROUPs.
+Group fields, modeled by the `ClaGroup` type, can contain one or more other value types, including other nested groups.
 
 ```cs
 ClaGroup address = (ClaGroup)firstContactRow.Values["ADDRESS"];

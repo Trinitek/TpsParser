@@ -157,7 +157,7 @@ public sealed record TpsBlock
 
             if (offset < pageSize)
             {
-                int address = BinaryPrimitives.ReadInt32LittleEndian(span[offset..]);
+                int address = BinaryPrimitives.ReadInt32BigEndian(span[offset..]);
 
                 if (address == position)
                 {
